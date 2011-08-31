@@ -1,10 +1,9 @@
 #include <p18cxxx.h>
 #include <timers.h>
+#include <pwm.h>
 
 /** D E F I N E D ********************************************************/
-#define ROUGE 0
-#define BLEU 1
-#define VIDE 2
+#define ID_BALISE 0x44
 
 /** V A R I A B L E S ********************************************************/
 #pragma udata
@@ -56,6 +55,9 @@ void MyInterrupt(void){
 		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
 									// on est à 180,7 Hz
 		timer0++;
+		// Emission UART
+		TXREG = ID_BALISE;
+		
 		
 	}
 
@@ -91,9 +93,11 @@ void main(void){
 }
 
 void Init(){
+	// Activation des interruptions
    	INTCONbits.GIEH = 1; // Activation interruptions hautes
   	INTCONbits.GIEL = 1; // Activation interruptions basses
   	RCONbits.IPEN=1; // Activation des niveau d'interruptions
+  	
     // Initialisation du Timer 0 pour la base de temps
 	OpenTimer0(	TIMER_INT_ON &  // interruption ON
 				T0_16BIT &		// Timer 0 en 16 bits
@@ -101,6 +105,25 @@ void Init(){
 				T0_PS_1_32);		// 128 cycle, 1 incrémentation
 	WriteTimer0(0xffff - 2074);
 	timer0 = 0;
+	
+	// Initialisation de l'UART
+	TXSTAbits.TX9  = 0; // Mode 8 bits
+	TXSTAbits.TXEN = 1; // Activation du module UART de transmission
+	TXSTAbits.BRGH = 0; // Gestion de la base de temps
+	BAUDCONbits.BRG16 = 1; // Gestion de la base de temps
+	SPBRGH = 3; // Gestion de la base de temps => 0x0361 = 829
+	SPBRG = 61; // Gestion de la base de temps
+	RCSTAbits.SPEN=1;
+	TRISCbits.TRISC6 = 1;
+	TRISCbits.TRISC7 = 1;
+	
+	// Configuration de la MLI
+	OpenTimer2( TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1 );
+	OpenPWM1(82);
+	SetDCPWM1((unsigned int)164);
+	
+	
+	
 	// On allume la LED
 	TRISCbits.TRISC1 = 0;
 	PORTCbits.RC1 = 1;
