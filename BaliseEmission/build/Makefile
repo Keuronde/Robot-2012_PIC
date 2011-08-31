@@ -1,6 +1,6 @@
 BIN	:=	BaliseEmission
 
-SRCS	:=	../R11_Servo.c 
+SRCS	:=	../R12_bal_emi.c 
 
 ## Information concernant le compilateur
 include ../../build/commun.mk

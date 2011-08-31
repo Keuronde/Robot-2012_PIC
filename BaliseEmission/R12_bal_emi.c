@@ -8,7 +8,7 @@
 
 /** V A R I A B L E S ********************************************************/
 #pragma udata
-
+volatile unsigned char timer0;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
@@ -50,14 +50,15 @@ void MyInterrupt(void){
 	sauv2 = PRODH;
 	
 
-/*	
+	
 	if(INTCONbits.TMR0IF == 1){
 		INTCONbits.TMR0IF = 0;
-		WriteTimer0(65535 - 48000); //pour un préscaler de 1 : 12000 = 1ms
-                                    // On est à 4 ms.
-		timer++;
+		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
+									// on est à 180,7 Hz
+		timer0++;
+		
 	}
-*/
+
 
 	PRODL = sauv1;
 	PRODH = sauv2;		
@@ -80,6 +81,10 @@ void main(void){
     
     
     while(1){
+		if(timer0 > 180){
+			PORTCbits.RC1 = !PORTCbits.RC1;
+			timer0 = 0;
+		}
 
     }
 
@@ -93,9 +98,13 @@ void Init(){
 	OpenTimer0(	TIMER_INT_ON &  // interruption ON
 				T0_16BIT &		// Timer 0 en 16 bits
 				T0_SOURCE_INT & // Source interne (Quartz + PLL)
-				T0_PS_1_1);		// 1 cycle, 1 incrémentation
+				T0_PS_1_32);		// 128 cycle, 1 incrémentation
+	WriteTimer0(0xffff - 2074);
+	timer0 = 0;
+	// On allume la LED
 	TRISCbits.TRISC1 = 0;
 	PORTCbits.RC1 = 1;
+	
 }
 
 
