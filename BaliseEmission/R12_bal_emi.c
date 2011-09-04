@@ -3,11 +3,18 @@
 #include <pwm.h>
 
 /** D E F I N E D ********************************************************/
+// Identifiant balise
 #define ID_BALISE 0x44
-
+// Emission IR
+#define NB_MESSAGES 16
+#define NB_MSG_TOTAL 48
+// Clignotement LED
+#define F_1HZ 90
+#define F_5HZ 18
 /** V A R I A B L E S ********************************************************/
 #pragma udata
-volatile unsigned char timer0;
+volatile unsigned char timer_led;
+volatile unsigned char timer_emi;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
@@ -54,9 +61,15 @@ void MyInterrupt(void){
 		INTCONbits.TMR0IF = 0;
 		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
 									// on est à 180,7 Hz
-		timer0++;
+		timer_led++;
+		timer_emi++;
+		if(timer_emi > NB_MSG_TOTAL)
+			timer_emi=0;
+		
 		// Emission UART
-		TXREG = ID_BALISE;
+		if(timer_emi < NB_MESSAGES){
+			TXREG = ID_BALISE;
+		}
 		
 		
 	}
@@ -79,13 +92,14 @@ void MyInterrupt_L(void){
 
 
 void main(void){
+	char t_diode;
     Init();
     
-    
+    t_diode = F_1HZ;
     while(1){
-		if(timer0 > 180){
+		if(timer_led > t_diode){
 			PORTCbits.RC1 = !PORTCbits.RC1;
-			timer0 = 0;
+			timer_led = 0;
 		}
 
     }
@@ -104,7 +118,8 @@ void Init(){
 				T0_SOURCE_INT & // Source interne (Quartz + PLL)
 				T0_PS_1_32);		// 128 cycle, 1 incrémentation
 	WriteTimer0(0xffff - 2074);
-	timer0 = 0;
+	timer_emi = 0;
+	timer_led = 0;
 	
 	// Initialisation de l'UART
 	TXSTAbits.TX9  = 0; // Mode 8 bits
