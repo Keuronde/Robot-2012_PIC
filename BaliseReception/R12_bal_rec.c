@@ -105,7 +105,7 @@ void MyInterrupt(void){
 			Set_recepteur(id_recepteur);
 			
 			// T4 : Emettre un top pour lancer le calcul
-			if(!(id_reception % NB_MESSAGES)){
+			if(id_reception == 0 || id_reception == NB_MESSAGES || id_reception == 2 * NB_MESSAGES){
 				active_calcul = 1;
 			}
 			
