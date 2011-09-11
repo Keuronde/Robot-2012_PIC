@@ -15,6 +15,7 @@
 /** V A R I A B L E S ********************************************************/
 #pragma udata
 volatile unsigned char timer_led;
+volatile unsigned char timer_emi;
 volatile unsigned char timer_init;
 volatile unsigned char id_recepteur;
 volatile unsigned char tab_reception[NB_MSG_TOTAL];
@@ -72,6 +73,14 @@ void MyInterrupt(void){
 		// incrément des compteurs
 		timer_led++;
 		
+		
+		// Emission UART
+		timer_emi++;
+		if(timer_emi > NB_MSG_TOTAL)
+			timer_emi=0;
+		if(timer_emi < NB_MESSAGES){
+			TXREG = ID_BALISE_1;
+		}
 		
 		if(synchro == 1){
 			
@@ -145,8 +154,8 @@ void main(void){
     
     // P2 Traitement des données.
     while(1){
-		unsigned char amas_taille;
-		unsigned char amas_taille_old;
+		unsigned char amas_taille=0;
+		unsigned char amas_taille_old=0;
 		unsigned char amas_pos;
 		unsigned char amas_balise;
 		unsigned char amas_balise_old;
@@ -227,6 +236,15 @@ void main(void){
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
 			
+			// Si on est sur la balise 1 et qu'on a rien reçu, on panique :
+			if(id_balise == 0){
+				if(amas_taille_old == 0){
+					t_diode = F_5HZ;
+				}else{
+					t_diode = F_1HZ;
+				}
+			}
+			
 			
 		}
 
@@ -259,6 +277,7 @@ void Init(){
   	TRISCbits.TRISC6 = 1;
 	TRISCbits.TRISC7 = 1;
 	RCSTAbits.CREN  = 1; // Activation de la réception
+	TXSTAbits.TXEN = 1; // Activation du module UART de transmission
 	TXSTAbits.BRGH = 0; // Gestion de la base de temps
 	BAUDCONbits.BRG16 = 1; // Gestion de la base de temps
 	SPBRGH = 3; // Gestion de la base de temps => 0x0361 = 829
