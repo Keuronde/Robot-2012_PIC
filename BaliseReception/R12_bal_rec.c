@@ -243,6 +243,18 @@ void Init(){
   	INTCONbits.GIEL = 1; // Activation interruptions basses
   	RCONbits.IPEN=1; // Activation des niveau d'interruptions
   	
+  	
+  	// Configuration des entrées-sorties
+  	TRISAbits.TRISA0=0;
+  	TRISAbits.TRISA1=0;
+  	TRISAbits.TRISA2=0;
+  	TRISAbits.TRISA3=0;
+  	TRISBbits.TRISB0=0;
+  	TRISBbits.TRISB1=0;
+  	TRISBbits.TRISB2=0;
+  	
+  	
+  	
   	// Initialisation de l'UART
   	TRISCbits.TRISC6 = 1;
 	TRISCbits.TRISC7 = 1;
@@ -263,8 +275,12 @@ void Init(){
 	timer_init=0;
 	
 	// P12 : Synchroniser la balise
+	
+	// P121 : Choix du recepteur à écouter
+  	Set_recepteur(13); // Celui en face du détrompeur du PIC
+	
 	while(synchro == 0){
-		// P121 : Recevoir une lecture valide sur le port série
+		// P122 : Recevoir une lecture valide sur le port série
 		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
 			data = RCREG; // Effacement de l'erreur
 			data = 0;
@@ -283,13 +299,13 @@ void Init(){
 				timer_init=0;
 			}
 		}
-		// P123 : Fin du minuteur
+		// P124 : Fin du minuteur
 		if(timer_init > 2){
 			nb_rec=0;
 			timer_init=0;
 		}
 		
-		// P124 : On est bon
+		// P125 : On est bon
 		if(nb_rec == NB_MESSAGES){
 			WriteTimer0(0xffff - 518); // On attend 1/4 de période pour se mettre au milieu du creux entre deux messages
 			id_recepteur = 16;
