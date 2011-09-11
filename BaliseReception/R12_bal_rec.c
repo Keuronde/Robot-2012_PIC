@@ -18,14 +18,14 @@ volatile unsigned char timer_led;
 volatile unsigned char timer_init;
 volatile unsigned char id_recepteur;
 volatile unsigned char tab_reception[NB_MSG_TOTAL];
-volatile unsigned char tab_traitement[NB_MESSAGES * 1.5];
+volatile unsigned char tab_traitement[NB_MESSAGES + NB_MESSAGES/2];
 volatile unsigned char active_calcul;
 volatile unsigned char synchro;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
 void Init(void);
-
+void Set_recepteur(unsigned char);
 
 /** V E C T O R  R E M A P P I N G *******************************************/
 
@@ -105,7 +105,7 @@ void MyInterrupt(void){
 			Set_recepteur(id_recepteur);
 			
 			// T4 : Emettre un top pour lancer le calcul
-			if(id_reception == 0 || id_reception == NB_MESSAGES || id_reception == 2 * NB_MESSAGES){
+			if(id_recepteur == 0 || id_recepteur == NB_MESSAGES || id_recepteur == 2 * NB_MESSAGES){
 				active_calcul = 1;
 			}
 			
@@ -135,7 +135,9 @@ void MyInterrupt_L(void){
 
 
 void main(void){
-	char t_diode;
+	unsigned char t_diode;
+	unsigned char id_balise;
+	unsigned char i;
 	
 	// P1 : Initialisation
     Init();
@@ -143,9 +145,89 @@ void main(void){
     
     // P2 Traitement des données.
     while(1){
+		unsigned char amas_taille;
+		unsigned char amas_taille_old;
+		unsigned char amas_pos;
+		unsigned char amas_balise;
+		unsigned char amas_balise_old;
+		unsigned char mot_balise;
+		// Clognottement LED
 		if(timer_led > t_diode){
 			PORTCbits.RC1 = !PORTCbits.RC1;
 			timer_led = 0;
+		}
+		// P21 : Attendre qu'une balise ait fini d'émettre sa trame.
+		if(active_calcul == 1){
+			active_calcul=0;
+			// P22 : Recopier les données dans l'espace de travail
+			// On trouve la balise qui vient d'être lu :
+			id_balise = id_recepteur / NB_MESSAGES;
+			if(id_balise == 0){
+				id_balise = 3;
+			}
+			id_balise--; // On a un identifiant balise compris entre 0 et 2;
+			for(i=0;i<NB_MESSAGES;i++){
+				tab_traitement[i]=tab_reception[i+id_balise*NB_MESSAGES];
+				if(i<NB_MESSAGES/2){
+					tab_traitement[i+NB_MESSAGES]=tab_reception[i+id_balise*NB_MESSAGES];
+				}
+			}
+			// P23 : Touver l'amas le plus gros
+			amas_pos=0;
+			amas_taille=0;
+			amas_balise=0;
+			for(i=0;i<NB_MESSAGES*1.5;i++){
+				if(tab_traitement[i] != 0){
+					if(amas_taille == 0){
+						amas_taille++;
+						amas_balise = tab_traitement[i];
+					}else{
+						if(amas_balise == tab_traitement[i-1]){
+							amas_taille++;
+						}else{
+							// Comparaison avec l'amas précédent
+							// On garde le plus gros
+							if(amas_taille > amas_taille_old){
+								amas_taille_old = amas_taille;
+								amas_balise_old = amas_balise;
+								amas_pos = 2*i - amas_taille_old;
+							}
+							amas_taille = 1;
+							amas_balise = tab_traitement[i];
+						}
+					}
+				}else if(amas_taille != 0){
+					if(amas_taille > amas_taille_old){
+						amas_taille_old = amas_taille;
+						amas_balise_old = amas_balise;
+						
+					}
+					amas_taille = 0;
+					amas_balise = 0;
+				}
+			}
+			if(amas_taille > amas_taille_old){
+				amas_taille_old = amas_taille;
+				amas_balise_old = amas_balise;
+				amas_pos = 2*i - amas_taille_old;
+			}
+			amas_pos -= 2;
+			
+			// P24 : déduction de l'angle
+			// On a fait notre recherche sur 1 tour et demi,
+			// On veut un angle sur 1 tour
+			// On a un angle qui varie entre 0 et 31,
+			// 1 bit = 11,25 degrés.
+			// Une donnée sur 5 bits.
+			if( amas_pos >= 2*NB_MESSAGES){
+				amas_pos -= 2*NB_MESSAGES;
+			}
+			
+			// P25 : construction du message concernant la balise
+			mot_balise = 0;
+			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
+			
+			
 		}
 
     }
@@ -155,6 +237,7 @@ void main(void){
 void Init(){
 	// P11 Initialisaiton des modules
 	char nb_rec=0;
+	unsigned char data;
 	// Activation des interruptions
    	INTCONbits.GIEH = 1; // Activation interruptions hautes
   	INTCONbits.GIEL = 1; // Activation interruptions basses
@@ -171,12 +254,12 @@ void Init(){
 	RCSTAbits.SPEN=1;
   	
     // Initialisation du Timer 0 pour la base de temps
+    synchro = 0;
 	OpenTimer0(	TIMER_INT_ON &  // interruption ON
 				T0_16BIT &		// Timer 0 en 16 bits
 				T0_SOURCE_INT & // Source interne (Quartz + PLL)
 				T0_PS_1_32);		// 128 cycle, 1 incrémentation
 	WriteTimer0(0xffff - 2074);
-	synchro = 0;
 	timer_init=0;
 	
 	// P12 : Synchroniser la balise
@@ -210,6 +293,7 @@ void Init(){
 		if(nb_rec == NB_MESSAGES){
 			WriteTimer0(0xffff - 518); // On attend 1/4 de période pour se mettre au milieu du creux entre deux messages
 			id_recepteur = 16;
+			synchro=1;
 		}
 		
 	}
@@ -229,7 +313,103 @@ void Init(){
 	
 }
 
-
+void Set_recepteur(unsigned char _recepteur){
+	// Ordre des récepteurs (TSOP)
+	// TSOP 13, 9, 5, 1
+	// TSOP 12, 8, 4, 0
+	// TSOP 15, 11, 7, 3
+	// TSOP 14, 10, 6, 2
+	// Choix Mux
+	if( _recepteur == 2 || _recepteur == 3 ||
+		_recepteur == 6 || _recepteur == 7 ||
+		_recepteur == 10 || _recepteur == 11 ||
+		_recepteur == 14 || _recepteur == 15 ){
+		
+		PORTAbits.RA3 = 0;
+	}else{
+		PORTAbits.RA3 = 1;
+	}
+	// In0
+	if( _recepteur == 11 || _recepteur == 9){
+		PORTAbits.RA0 = 0;
+		PORTAbits.RA1 = 0;
+		PORTAbits.RA2 = 0;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 0;
+		PORTBbits.RB5 = 0;
+	}
+	// In1
+	if( _recepteur == 7 || _recepteur == 5){
+		PORTAbits.RA0 = 0;
+		PORTAbits.RA1 = 0;
+		PORTAbits.RA2 = 1;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 0;
+		PORTBbits.RB5 = 1;
+	}
+	// In2
+	if( _recepteur == 3 || _recepteur == 0){
+		PORTAbits.RA0 = 0;
+		PORTAbits.RA1 = 1;
+		PORTAbits.RA2 = 0;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 1;
+		PORTBbits.RB5 = 0;
+	}
+	// In3
+	if( _recepteur == 1 || _recepteur == 13){
+		PORTAbits.RA0 = 0;
+		PORTAbits.RA1 = 1;
+		PORTAbits.RA2 = 1;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 1;
+		PORTBbits.RB5 = 1;
+	}
+	// In4
+	if( _recepteur == 14 || _recepteur == 12){
+		PORTAbits.RA0 = 1;
+		PORTAbits.RA1 = 0;
+		PORTAbits.RA2 = 0;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 0;
+		PORTBbits.RB5 = 0;
+	}
+	// In5
+	if( _recepteur == 15 || _recepteur == 1){
+		PORTAbits.RA0 = 1;
+		PORTAbits.RA1 = 0;
+		PORTAbits.RA2 = 1;
+		
+		PORTBbits.RB7 = 1;
+		PORTBbits.RB6 = 0;
+		PORTBbits.RB5 = 1;
+	}
+	// In6
+	if( _recepteur == 10 || _recepteur == 8){
+		PORTAbits.RA0 = 1;
+		PORTAbits.RA1 = 1;
+		PORTAbits.RA2 = 0;
+		
+		PORTBbits.RB7 = 0;
+		PORTBbits.RB6 = 1;
+		PORTBbits.RB5 = 1;
+	}
+	// In7
+	if( _recepteur == 6 || _recepteur == 4){
+		PORTAbits.RA0 = 1;
+		PORTAbits.RA1 = 1;
+		PORTAbits.RA2 = 1;
+		
+		PORTBbits.RB7 = 1;
+		PORTBbits.RB6 = 1;
+		PORTBbits.RB5 = 1;
+	}
+}
 
 
 
