@@ -226,7 +226,16 @@ void main(void){
 			// P25 : construction du message concernant la balise
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
-			
+
+			// Si on est sur la balise 1 et qu'on a rien reçu, on passe en mode pannique
+			if(id_balise == 0){
+				if(amas_taille_old == 0){
+					t_diode = F_5HZ;
+				}else{
+					t_diode = F_1HZ;
+				}
+			}
+		
 			
 		}
 
