@@ -145,8 +145,8 @@ void main(void){
     
     // P2 Traitement des données.
     while(1){
-		unsigned char amas_taille;
-		unsigned char amas_taille_old;
+		unsigned char amas_taille=0;
+		unsigned char amas_taille_old=0;
 		unsigned char amas_pos;
 		unsigned char amas_balise;
 		unsigned char amas_balise_old;
