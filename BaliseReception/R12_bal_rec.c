@@ -103,7 +103,7 @@ void MyInterrupt(void){
 			
 			// T3 : Changer le recepteur écouté
 			id_recepteur++;
-			if(id_recepteur > NB_MSG_TOTAL)
+			if(id_recepteur == NB_MSG_TOTAL)
 				id_recepteur = 0;
 			//Set_recepteur(id_recepteur);
 			{
