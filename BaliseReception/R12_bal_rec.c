@@ -109,6 +109,9 @@ void MyInterrupt(void){
 			{
 				unsigned char _recepteur;
 				_recepteur = id_recepteur ;
+				while(_recepteur > NB_MESSAGES){
+    				_recepteur = _recepteur - NB_MESSAGES;
+				}
 				// Ordre des récepteurs (TSOP)
 				// TSOP 13, 9, 5, 1
 				// TSOP 12, 8, 4, 0
@@ -278,7 +281,7 @@ void main(void){
 			amas_pos=0;
 			amas_taille=0;
 			amas_balise=0;
-			for(i=0;i<NB_MESSAGES*1.5;i++){
+			for(i=0;i<(NB_MESSAGES + NB_MESSAGES/2) ;i++){
 				if(tab_traitement[i] != 0){
 					if(amas_taille == 0){
 						amas_taille++;
@@ -410,7 +413,8 @@ void Init(){
 		// P125 : On est bon
 		if(nb_rec == NB_MESSAGES){
 			WriteTimer0(0xffff - 518); // On attend 1/4 de période pour se mettre au milieu du creux entre deux messages
-			id_recepteur = 16;
+			id_recepteur = 15; // On est encore sur le dernier récepteur de la 1ere balise !
+			                   // C'est à l'interuption suivante qu'on commencera la lecture de 1er récepteur de la balise 2
 			synchro=1;
 		}
 		

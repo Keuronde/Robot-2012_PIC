@@ -65,7 +65,7 @@ void MyInterrupt(void){
 		TMR0L=0xE5;
 		timer_led++;
 		timer_emi++;
-		if(timer_emi > NB_MSG_TOTAL)
+		if(timer_emi == NB_MSG_TOTAL)
 			timer_emi=0;
 		
 		// Emission UART
