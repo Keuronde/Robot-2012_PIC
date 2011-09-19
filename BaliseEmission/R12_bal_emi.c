@@ -66,7 +66,7 @@ void MyInterrupt(void){
 		LATBbits.LATB0 = !LATBbits.LATB0;
 		timer_led++;
 		timer_emi++;
-		if(timer_emi > NB_MSG_TOTAL)
+		if(timer_emi == NB_MSG_TOTAL)
 			timer_emi=0;
 		
 		// Emission UART
