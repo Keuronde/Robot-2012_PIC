@@ -59,7 +59,7 @@ void MyInterrupt(void){
 	
 	if(INTCONbits.TMR0IF == 1){
 		INTCONbits.TMR0IF = 0;
-		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
+		//WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
 									// on est à 180,7 Hz
 		TMR0H=0xF7;
 		TMR0L=0xE5;
