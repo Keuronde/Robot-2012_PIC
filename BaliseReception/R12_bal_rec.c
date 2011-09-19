@@ -64,14 +64,17 @@ void MyInterrupt(void){
 
 	
 	if(INTCONbits.TMR0IF == 1){
-		unsigned char data=0;
+		unsigned char data;
 
 		INTCONbits.TMR0IF = 0;
-		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
+		//WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
 									// on est à 180,7 Hz
+		TMR0H=0xF7;
+		TMR0L=0xE5;
+		data =0;
+		LATBbits.LATB0 = !LATBbits.LATB0;
 		// incrément des compteurs
 		timer_led++;
-		
 		
 		if(synchro == 1){
 			
@@ -102,7 +105,111 @@ void MyInterrupt(void){
 			id_recepteur++;
 			if(id_recepteur > NB_MSG_TOTAL)
 				id_recepteur = 0;
-			Set_recepteur(id_recepteur);
+			//Set_recepteur(id_recepteur);
+			{
+				unsigned char _recepteur;
+				_recepteur = id_recepteur ;
+				// Ordre des récepteurs (TSOP)
+				// TSOP 13, 9, 5, 1
+				// TSOP 12, 8, 4, 0
+				// TSOP 15, 11, 7, 3
+				// TSOP 14, 10, 6, 2
+				// Choix Mux
+				if( _recepteur == 2 || _recepteur == 3 ||
+					_recepteur == 6 || _recepteur == 7 ||
+					_recepteur == 10 || _recepteur == 11 ||
+					_recepteur == 14 || _recepteur == 15 ){
+					
+					PORTAbits.RA3 = 0;
+				}else{
+					PORTAbits.RA3 = 1;
+				}
+				// In0
+				if( _recepteur == 11 || _recepteur == 9){
+					PORTAbits.RA0 = 0;
+					PORTAbits.RA1 = 0;
+					PORTAbits.RA2 = 0;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 0;
+					PORTBbits.RB5 = 0;
+				}
+				// In1
+				if( _recepteur == 7 || _recepteur == 5){
+					PORTAbits.RA0 = 0;
+					PORTAbits.RA1 = 0;
+					PORTAbits.RA2 = 1;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 0;
+					PORTBbits.RB5 = 1;
+				}
+				// In2
+				if( _recepteur == 3 || _recepteur == 0){
+					PORTAbits.RA0 = 0;
+					PORTAbits.RA1 = 1;
+					PORTAbits.RA2 = 0;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 1;
+					PORTBbits.RB5 = 0;
+				}
+				// In3
+				if( _recepteur == 1 || _recepteur == 13){
+					PORTAbits.RA0 = 0;
+					PORTAbits.RA1 = 1;
+					PORTAbits.RA2 = 1;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 1;
+					PORTBbits.RB5 = 1;
+				}
+				// In4
+				if( _recepteur == 14 || _recepteur == 12){
+					PORTAbits.RA0 = 1;
+					PORTAbits.RA1 = 0;
+					PORTAbits.RA2 = 0;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 0;
+					PORTBbits.RB5 = 0;
+				}
+				// In5
+				if( _recepteur == 15 || _recepteur == 1){
+					PORTAbits.RA0 = 1;
+					PORTAbits.RA1 = 0;
+					PORTAbits.RA2 = 1;
+					
+					PORTBbits.RB7 = 1;
+					PORTBbits.RB6 = 0;
+					PORTBbits.RB5 = 1;
+				}
+				// In6
+				if( _recepteur == 10 || _recepteur == 8){
+					PORTAbits.RA0 = 1;
+					PORTAbits.RA1 = 1;
+					PORTAbits.RA2 = 0;
+					
+					PORTBbits.RB7 = 0;
+					PORTBbits.RB6 = 1;
+					PORTBbits.RB5 = 1;
+				}
+				// In7
+				if( _recepteur == 6 || _recepteur == 4){
+					PORTAbits.RA0 = 1;
+					PORTAbits.RA1 = 1;
+					PORTAbits.RA2 = 1;
+					
+					PORTBbits.RB7 = 1;
+					PORTBbits.RB6 = 1;
+					PORTBbits.RB5 = 1;
+				}
+			}
+			
+			
+			
+			
+			
 			
 			// T4 : Emettre un top pour lancer le calcul
 			if(id_recepteur == 0 || id_recepteur == NB_MESSAGES || id_recepteur == 2 * NB_MESSAGES){
@@ -142,6 +249,7 @@ void main(void){
 	// P1 : Initialisation
     Init();
     t_diode = F_1HZ;
+    TRISBbits.TRISB0 = 0; //Sortie
     
     // P2 Traitement des données.
     while(1){
