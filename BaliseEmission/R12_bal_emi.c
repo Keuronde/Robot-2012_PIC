@@ -61,6 +61,8 @@ void MyInterrupt(void){
 		INTCONbits.TMR0IF = 0;
 		WriteTimer0(0xffff - 2074); // avec un préscaler de 128,
 									// on est à 180,7 Hz
+		TMR0H=0xF7;
+		TMR0L=0xE5;
 		timer_led++;
 		timer_emi++;
 		if(timer_emi > NB_MSG_TOTAL)
