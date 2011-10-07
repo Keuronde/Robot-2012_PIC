@@ -11,6 +11,9 @@
 // Clignotement LED
 #define F_1HZ 90
 #define F_5HZ 18
+// LED
+#define TRIS_LED TRISBbits.TRISB7
+#define LED LATBbits.LATB7
 /** V A R I A B L E S ********************************************************/
 #pragma udata
 volatile unsigned char timer_led;
@@ -19,7 +22,6 @@ volatile unsigned char timer_emi;
 void MyInterrupt(void);
 void MyInterrupt_L(void);
 void Init(void);
-
 
 /** V E C T O R  R E M A P P I N G *******************************************/
 
@@ -100,7 +102,7 @@ void main(void){
     t_diode = F_1HZ;
     while(1){
 		if(timer_led > t_diode){
-			PORTCbits.RC1 = !PORTCbits.RC1;
+			LED = !LED;
 			timer_led = 0;
 		}
 
@@ -128,6 +130,7 @@ void Init(){
 	TXSTAbits.TXEN = 1; // Activation du module UART de transmission
 	TXSTAbits.BRGH = 0; // Gestion de la base de temps
 	BAUDCONbits.BRG16 = 1; // Gestion de la base de temps
+	BAUDCONbits.TXCKP = 1; // Inversion de la sortie série
 	SPBRGH = 3; // Gestion de la base de temps => 0x0361 = 829
 	SPBRG = 61; // Gestion de la base de temps
 	RCSTAbits.SPEN=1;
@@ -136,14 +139,15 @@ void Init(){
 	
 	// Configuration de la MLI
 	OpenTimer2( TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1 );
-	OpenPWM1(82);
-	SetDCPWM1((unsigned int)164);
+	TRISBbits.TRISB3=0;
+	OpenPWM2(82);
+	SetDCPWM2((unsigned int)164);
 	
 	
 	
 	// On allume la LED
-	TRISCbits.TRISC1 = 0;
-	PORTCbits.RC1 = 1;
+	TRIS_LED = 0;
+	LED = 1;
 	
 }
 
