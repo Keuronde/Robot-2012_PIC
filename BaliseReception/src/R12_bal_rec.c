@@ -1,6 +1,7 @@
 #include <p18cxxx.h>
 #include <timers.h>
 #include <pwm.h>
+#include "../include/i2c_s.h"
 
 /** D E F I N E D ********************************************************/
 // Identifiant balise
@@ -117,6 +118,25 @@ void MyInterrupt(void){
 				// TSOP 12, 8, 4, 0
 				// TSOP 15, 11, 7, 3
 				// TSOP 14, 10, 6, 2
+				// Correspondance entre le numéro du récepteur et sa position géographique
+				switch (_recepteur){
+					case 0  : _recepteur =13;break;
+					case 1  : _recepteur =9 ;break;
+					case 2  : _recepteur =5 ;break;
+					case 3  : _recepteur =1 ;break;
+					case 4  : _recepteur =12;break;
+					case 5  : _recepteur =8 ;break;
+					case 6  : _recepteur =4 ;break;
+					case 7  : _recepteur =0 ;break;
+					case 8  : _recepteur =15;break;
+					case 9  : _recepteur =11;break;
+					case 10 : _recepteur =7 ;break;
+					case 11 : _recepteur =3 ;break;
+					case 12 : _recepteur =14;break;
+					case 13 : _recepteur =10;break;
+					case 14 : _recepteur =6 ;break;
+					case 15 : _recepteur =2 ;break;
+				}
 				// Choix Mux
 				if( _recepteur == 2 || _recepteur == 3 ||
 					_recepteur == 6 || _recepteur == 7 ||
@@ -230,7 +250,8 @@ void MyInterrupt(void){
 
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
-
+	// Communication I2C
+	com_i2c();
 }
 
 
@@ -326,7 +347,10 @@ void main(void){
 			// P25 : construction du message concernant la balise
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
-			
+			if(id_balise == 0){
+				//envoi_i2c(&tab_traitement);
+				envoi_i2c(&tab_reception);
+			}
 			
 		}
 
@@ -374,10 +398,16 @@ void Init(){
 	WriteTimer0(0xffff - 2074);
 	timer_init=0;
 	
+	// Initialisation de l'i2c
+	data = 255;
+	init_i2c(0x41);
+	envoi_i2c(&data);
+	data=0;
+	
 	// P12 : Synchroniser la balise
 	
 	// P121 : Choix du recepteur à écouter
-  	Set_recepteur(13); // Celui en face du détrompeur du PIC
+  	Set_recepteur(0); // Celui en face du détrompeur du PIC
 	
 	while(synchro == 0){
 		// P122 : Recevoir une lecture valide sur le port série
@@ -426,6 +456,24 @@ void Set_recepteur(unsigned char _recepteur){
 	// TSOP 12, 8, 4, 0
 	// TSOP 15, 11, 7, 3
 	// TSOP 14, 10, 6, 2
+	switch (_recepteur){
+		case 0  : _recepteur =13;break;
+		case 1  : _recepteur =9 ;break;
+		case 2  : _recepteur =5 ;break;
+		case 3  : _recepteur =1 ;break;
+		case 4  : _recepteur =12;break;
+		case 5  : _recepteur =8 ;break;
+		case 6  : _recepteur =4 ;break;
+		case 7  : _recepteur =0 ;break;
+		case 8  : _recepteur =15;break;
+		case 9  : _recepteur =11;break;
+		case 10 : _recepteur =7 ;break;
+		case 11 : _recepteur =3 ;break;
+		case 12 : _recepteur =14;break;
+		case 13 : _recepteur =10;break;
+		case 14 : _recepteur =6 ;break;
+		case 15 : _recepteur =2 ;break;
+	}
 	// Choix Mux
 	if( _recepteur == 2 || _recepteur == 3 ||
 		_recepteur == 6 || _recepteur == 7 ||
