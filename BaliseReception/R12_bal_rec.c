@@ -123,89 +123,89 @@ void MyInterrupt(void){
 					_recepteur == 10 || _recepteur == 11 ||
 					_recepteur == 14 || _recepteur == 15 ){
 					
-					PORTAbits.RA3 = 0;
+					LATAbits.LATA3 = 0;
 				}else{
-					PORTAbits.RA3 = 1;
+					LATAbits.LATA3 = 1;
 				}
 				// In0
 				if( _recepteur == 11 || _recepteur == 9){
-					PORTAbits.RA0 = 0;
-					PORTAbits.RA1 = 0;
-					PORTAbits.RA2 = 0;
+					LATAbits.LATA2 = 0;
+					LATAbits.LATA1 = 0;
+					LATAbits.LATA0 = 0;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 0;
-					PORTBbits.RB5 = 0;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 0;
+					LATBbits.LATB5 = 0;
 				}
 				// In1
 				if( _recepteur == 7 || _recepteur == 5){
-					PORTAbits.RA0 = 0;
-					PORTAbits.RA1 = 0;
-					PORTAbits.RA2 = 1;
+					LATAbits.LATA2 = 0;
+					LATAbits.LATA1 = 0;
+					LATAbits.LATA0 = 1;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 0;
-					PORTBbits.RB5 = 1;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 0;
+					LATBbits.LATB5 = 1;
 				}
 				// In2
 				if( _recepteur == 3 || _recepteur == 0){
-					PORTAbits.RA0 = 0;
-					PORTAbits.RA1 = 1;
-					PORTAbits.RA2 = 0;
+					LATAbits.LATA2 = 0;
+					LATAbits.LATA1 = 1;
+					LATAbits.LATA0 = 0;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 1;
-					PORTBbits.RB5 = 0;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 1;
+					LATBbits.LATB5 = 0;
 				}
 				// In3
 				if( _recepteur == 1 || _recepteur == 13){
-					PORTAbits.RA0 = 0;
-					PORTAbits.RA1 = 1;
-					PORTAbits.RA2 = 1;
+					LATAbits.LATA2 = 0;
+					LATAbits.LATA1 = 1;
+					LATAbits.LATA0 = 1;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 1;
-					PORTBbits.RB5 = 1;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 1;
+					LATBbits.LATB5 = 1;
 				}
 				// In4
 				if( _recepteur == 14 || _recepteur == 12){
-					PORTAbits.RA0 = 1;
-					PORTAbits.RA1 = 0;
-					PORTAbits.RA2 = 0;
+					LATAbits.LATA2 = 1;
+					LATAbits.LATA1 = 0;
+					LATAbits.LATA0 = 0;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 0;
-					PORTBbits.RB5 = 0;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 0;
+					LATBbits.LATB5 = 0;
 				}
 				// In5
 				if( _recepteur == 15 || _recepteur == 1){
-					PORTAbits.RA0 = 1;
-					PORTAbits.RA1 = 0;
-					PORTAbits.RA2 = 1;
+					LATAbits.LATA2 = 1;
+					LATAbits.LATA1 = 0;
+					LATAbits.LATA0 = 1;
 					
-					PORTBbits.RB7 = 1;
-					PORTBbits.RB6 = 0;
-					PORTBbits.RB5 = 1;
+					LATBbits.LATB7 = 1;
+					LATBbits.LATB6 = 0;
+					LATBbits.LATB5 = 1;
 				}
 				// In6
 				if( _recepteur == 10 || _recepteur == 8){
-					PORTAbits.RA0 = 1;
-					PORTAbits.RA1 = 1;
-					PORTAbits.RA2 = 0;
+					LATAbits.LATA2 = 1;
+					LATAbits.LATA1 = 1;
+					LATAbits.LATA0 = 0;
 					
-					PORTBbits.RB7 = 0;
-					PORTBbits.RB6 = 1;
-					PORTBbits.RB5 = 1;
+					LATBbits.LATB7 = 0;
+					LATBbits.LATB6 = 1;
+					LATBbits.LATB5 = 1;
 				}
 				// In7
 				if( _recepteur == 6 || _recepteur == 4){
-					PORTAbits.RA0 = 1;
-					PORTAbits.RA1 = 1;
-					PORTAbits.RA2 = 1;
+					LATAbits.LATA2 = 1;
+					LATAbits.LATA1 = 1;
+					LATAbits.LATA0 = 1;
 					
-					PORTBbits.RB7 = 1;
-					PORTBbits.RB6 = 1;
-					PORTBbits.RB5 = 1;
+					LATBbits.LATB7 = 1;
+					LATBbits.LATB6 = 1;
+					LATBbits.LATB5 = 1;
 				}
 			}
 			
@@ -240,13 +240,12 @@ void MyInterrupt_L(void){
 
 
 void main(void){
-	unsigned char t_diode;
 	unsigned char id_balise;
 	unsigned char i;
 	
 	// P1 : Initialisation
     Init();
-    t_diode = F_1HZ;
+
     
     // P2 Traitement des données.
     while(1){
@@ -256,11 +255,7 @@ void main(void){
 		unsigned char amas_balise;
 		unsigned char amas_balise_old;
 		unsigned char mot_balise;
-		// Clognottement LED
-		if(timer_led > t_diode){
-			PORTCbits.RC1 = !PORTCbits.RC1;
-			timer_led = 0;
-		}
+		
 		// P21 : Attendre qu'une balise ait fini d'émettre sa trame.
 		if(active_calcul == 1){
 			active_calcul=0;
@@ -421,17 +416,7 @@ void Init(){
 	}
 	
 	timer_led = 0;
-	
-	
-	
 
-	
-	
-	
-	
-	// On allume la LED
-	TRISCbits.TRISC1 = 0;
-	PORTCbits.RC1 = 1;
 	
 }
 
@@ -447,89 +432,89 @@ void Set_recepteur(unsigned char _recepteur){
 		_recepteur == 10 || _recepteur == 11 ||
 		_recepteur == 14 || _recepteur == 15 ){
 		
-		PORTAbits.RA3 = 0;
+		LATAbits.LATA3 = 0;
 	}else{
-		PORTAbits.RA3 = 1;
+		LATAbits.LATA3 = 1;
 	}
 	// In0
 	if( _recepteur == 11 || _recepteur == 9){
-		PORTAbits.RA0 = 0;
-		PORTAbits.RA1 = 0;
-		PORTAbits.RA2 = 0;
+		LATAbits.LATA0 = 0;
+		LATAbits.LATA1 = 0;
+		LATAbits.LATA2 = 0;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 0;
-		PORTBbits.RB5 = 0;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 0;
+		LATBbits.LATB5 = 0;
 	}
 	// In1
 	if( _recepteur == 7 || _recepteur == 5){
-		PORTAbits.RA0 = 0;
-		PORTAbits.RA1 = 0;
-		PORTAbits.RA2 = 1;
+		LATAbits.LATA0 = 0;
+		LATAbits.LATA1 = 0;
+		LATAbits.LATA2 = 1;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 0;
-		PORTBbits.RB5 = 1;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 0;
+		LATBbits.LATB5 = 1;
 	}
 	// In2
 	if( _recepteur == 3 || _recepteur == 0){
-		PORTAbits.RA0 = 0;
-		PORTAbits.RA1 = 1;
-		PORTAbits.RA2 = 0;
+		LATAbits.LATA0 = 0;
+		LATAbits.LATA1 = 1;
+		LATAbits.LATA2 = 0;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 1;
-		PORTBbits.RB5 = 0;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 1;
+		LATBbits.LATB5 = 0;
 	}
 	// In3
 	if( _recepteur == 1 || _recepteur == 13){
-		PORTAbits.RA0 = 0;
-		PORTAbits.RA1 = 1;
-		PORTAbits.RA2 = 1;
+		LATAbits.LATA0 = 0;
+		LATAbits.LATA1 = 1;
+		LATAbits.LATA2 = 1;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 1;
-		PORTBbits.RB5 = 1;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 1;
+		LATBbits.LATB5 = 1;
 	}
 	// In4
 	if( _recepteur == 14 || _recepteur == 12){
-		PORTAbits.RA0 = 1;
-		PORTAbits.RA1 = 0;
-		PORTAbits.RA2 = 0;
+		LATAbits.LATA0 = 1;
+		LATAbits.LATA1 = 0;
+		LATAbits.LATA2 = 0;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 0;
-		PORTBbits.RB5 = 0;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 0;
+		LATBbits.LATB5 = 0;
 	}
 	// In5
 	if( _recepteur == 15 || _recepteur == 1){
-		PORTAbits.RA0 = 1;
-		PORTAbits.RA1 = 0;
-		PORTAbits.RA2 = 1;
+		LATAbits.LATA0 = 1;
+		LATAbits.LATA1 = 0;
+		LATAbits.LATA2 = 1;
 		
-		PORTBbits.RB7 = 1;
-		PORTBbits.RB6 = 0;
-		PORTBbits.RB5 = 1;
+		LATBbits.LATB7 = 1;
+		LATBbits.LATB6 = 0;
+		LATBbits.LATB5 = 1;
 	}
 	// In6
 	if( _recepteur == 10 || _recepteur == 8){
-		PORTAbits.RA0 = 1;
-		PORTAbits.RA1 = 1;
-		PORTAbits.RA2 = 0;
+		LATAbits.LATA0 = 1;
+		LATAbits.LATA1 = 1;
+		LATAbits.LATA2 = 0;
 		
-		PORTBbits.RB7 = 0;
-		PORTBbits.RB6 = 1;
-		PORTBbits.RB5 = 1;
+		LATBbits.LATB7 = 0;
+		LATBbits.LATB6 = 1;
+		LATBbits.LATB5 = 1;
 	}
 	// In7
 	if( _recepteur == 6 || _recepteur == 4){
-		PORTAbits.RA0 = 1;
-		PORTAbits.RA1 = 1;
-		PORTAbits.RA2 = 1;
+		LATAbits.LATA0 = 1;
+		LATAbits.LATA1 = 1;
+		LATAbits.LATA2 = 1;
 		
-		PORTBbits.RB7 = 1;
-		PORTBbits.RB6 = 1;
-		PORTBbits.RB5 = 1;
+		LATBbits.LATB7 = 1;
+		LATBbits.LATB6 = 1;
+		LATBbits.LATB5 = 1;
 	}
 }
 
