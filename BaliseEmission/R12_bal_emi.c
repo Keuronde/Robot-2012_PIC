@@ -96,6 +96,7 @@ void MyInterrupt_L(void){
 void main(void){
 	char t_diode;
     Init();
+    TRISBbits.TRISB0 = 0;
     
     t_diode = F_1HZ;
     while(1){

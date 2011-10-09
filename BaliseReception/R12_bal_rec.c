@@ -21,6 +21,7 @@ volatile unsigned char tab_reception[NB_MSG_TOTAL];
 volatile unsigned char tab_traitement[NB_MESSAGES + NB_MESSAGES/2];
 volatile unsigned char active_calcul;
 volatile unsigned char synchro;
+volatile unsigned char recu;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
@@ -75,30 +76,19 @@ void MyInterrupt(void){
 		// incrément des compteurs
 		timer_led++;
 		
-		
 		if(synchro == 1){
 			
 			// T1 : Si on recoit une valeur, vérifier que la valeur est fiable
 			tab_reception[id_recepteur] = 0;
-			// T111 : Framing Error
-			if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
-				data = RCREG; // Effacement de l'erreur
-				data = 0;
-			}
-			// T112 : Overun Error
-			if(RCSTAbits.OERR){
-					data=0; // La donnée n'est pas pertinente
-					RCSTAbits.CREN = 0; // Réinitialisation du module
-					RCSTAbits.CREN = 1; // de réception série
-			}
-			if(PIR1bits.RCIF){ // Si on a reçu quelquechose			
-				data = RCREG;  // On lit la donnée
+			
+			if(recu!=0){ // Si on a reçu quelquechose			
 				// T12 : Vérifier que la valeur correspond à un identifiant balise
-				if(data == ID_BALISE_1 || data == ID_BALISE_2){
+				if(recu == ID_BALISE_1 || recu == ID_BALISE_2){
 					// Si on a un identifiant fiable, on le stocke.
 					// T2 : Enregistrement de la valeur reçu
-					tab_reception[id_recepteur] = data;
+					tab_reception[id_recepteur] = recu;
 				}
+				recu=0;
 			}
 			
 			// T3 : Changer le recepteur écouté
@@ -221,6 +211,27 @@ void MyInterrupt(void){
 		
 		
 	}
+	if(PIR1bits.RCIF == 1){
+		recu = RCREG;
+		// T111 : Framing Error
+		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
+			recu = RCREG; // Effacement de l'erreur
+			recu = 0;
+		}
+		// T112 : Overun Error
+		if(RCSTAbits.OERR){
+			recu=0; // La donnée n'est pas pertinente
+			RCSTAbits.CREN = 0; // Réinitialisation du module
+			RCSTAbits.CREN = 1; // de réception série
+		}
+		
+		// Syncronisation permanente
+		if(recu == ID_BALISE_1){
+//			WriteTimer0(0xffff - 518); 
+			TMR0H=0xFD;
+			TMR0L=0xF9;
+		}
+	}
 
 
 	PRODL = sauv1;
@@ -247,6 +258,7 @@ void main(void){
 	// P1 : Initialisation
     Init();
     t_diode = F_1HZ;
+    TRISBbits.TRISB0 = 0; //Sortie
     
     // P2 Traitement des données.
     while(1){
@@ -331,7 +343,16 @@ void main(void){
 			// P25 : construction du message concernant la balise
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
-			
+
+			// Si on est sur la balise 1 et qu'on a rien reçu, on passe en mode pannique
+			if(id_balise == 0){
+				if(amas_taille_old != 24){
+					t_diode = F_5HZ;
+				}else{
+					t_diode = F_1HZ;
+				}
+			}
+		
 			
 		}
 
@@ -419,6 +440,10 @@ void Init(){
 		}
 		
 	}
+	
+	// Activation des interruption pour la liaison série
+	IPR1bits.RCIP = 1; // Interruption haute
+	PIE1bits.RCIE = 1; // Interruption active
 	
 	timer_led = 0;
 	
