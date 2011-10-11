@@ -168,7 +168,7 @@ void MyInterrupt(void){
 					LATBbits.LATB5 = 0;
 				}
 				// In3
-				if( _recepteur == 1 || _recepteur == 13){
+				if( _recepteur == 2 || _recepteur == 13){
 					LATAbits.LATA2 = 0;
 					LATAbits.LATA1 = 1;
 					LATAbits.LATA0 = 1;
@@ -183,7 +183,7 @@ void MyInterrupt(void){
 					LATAbits.LATA1 = 0;
 					LATAbits.LATA0 = 0;
 					
-					LATBbits.LATB7 = 0;
+					LATBbits.LATB7 = 1;
 					LATBbits.LATB6 = 0;
 					LATBbits.LATB5 = 0;
 				}
@@ -203,9 +203,9 @@ void MyInterrupt(void){
 					LATAbits.LATA1 = 1;
 					LATAbits.LATA0 = 0;
 					
-					LATBbits.LATB7 = 0;
+					LATBbits.LATB7 = 1;
 					LATBbits.LATB6 = 1;
-					LATBbits.LATB5 = 1;
+					LATBbits.LATB5 = 0;
 				}
 				// In7
 				if( _recepteur == 6 || _recepteur == 4){
@@ -274,6 +274,7 @@ void MyInterrupt_L(void){
 void main(void){
 	unsigned char id_balise;
 	unsigned char i;
+	char envoi[2];
 	
 	// P1 : Initialisation
     Init();
@@ -281,7 +282,7 @@ void main(void){
     // P2 Traitement des données.
     while(1){
 		unsigned char amas_taille=0;
-		unsigned char amas_taille_old=0;
+		unsigned char amas_taille_old;
 		unsigned char amas_pos;
 		unsigned char amas_balise;
 		unsigned char amas_balise_old;
@@ -300,22 +301,31 @@ void main(void){
 			for(i=0;i<NB_MESSAGES;i++){
 				tab_traitement[i]=tab_reception[i+id_balise*NB_MESSAGES];
 				if(i<NB_MESSAGES/2){
-					tab_traitement[i+NB_MESSAGES]=tab_reception[i+id_balise*NB_MESSAGES];
+					tab_traitement[i+NB_MESSAGES]=tab_traitement[i];
 				}
 			}
 			// P23 : Touver l'amas le plus gros
 			amas_pos=0;
 			amas_taille=0;
+			amas_taille_old=0;
 			amas_balise=0;
 			for(i=0;i<(NB_MESSAGES + NB_MESSAGES/2) ;i++){
+				// On parcourt le tableau
 				if(tab_traitement[i] != 0){
+					// Si on a reçu une valeur valide
 					if(amas_taille == 0){
+						// Si aucun amas n'était commencé
+						// On commence un nouvel amas
 						amas_taille++;
 						amas_balise = tab_traitement[i];
 					}else{
-						if(amas_balise == tab_traitement[i-1]){
+						// Si un amas était commencé
+						if(amas_balise == tab_traitement[i]){
+							// Si on reçoit la même balise
+							// On grossit l'amas
 							amas_taille++;
 						}else{
+							// Sinon, l'amas est terminé
 							// Comparaison avec l'amas précédent
 							// On garde le plus gros
 							if(amas_taille > amas_taille_old){
@@ -323,20 +333,26 @@ void main(void){
 								amas_balise_old = amas_balise;
 								amas_pos = 2*i - amas_taille_old;
 							}
+							// On commence un nouvel amas
 							amas_taille = 1;
 							amas_balise = tab_traitement[i];
 						}
 					}
 				}else if(amas_taille != 0){
+					// Si on n'a rien reçu de valide, l'amas est terminé
+					// Comparaison avec l'amas précédent
+					// On garde le plus gros
 					if(amas_taille > amas_taille_old){
 						amas_taille_old = amas_taille;
 						amas_balise_old = amas_balise;
-						
+						amas_pos = 2*i - amas_taille_old;
 					}
+					// On n'a plus d'amas
 					amas_taille = 0;
 					amas_balise = 0;
 				}
 			}
+			
 			if(amas_taille > amas_taille_old){
 				amas_taille_old = amas_taille;
 				amas_balise_old = amas_balise;
@@ -358,8 +374,13 @@ void main(void){
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
 			if(id_balise == 0){
+			  envoi[0] = amas_taille_old;
+			  envoi[1] = amas_pos;
+			  envoi_i2c(envoi);
 				//envoi_i2c(&tab_traitement);
-				envoi_i2c(&tab_reception);
+				//envoi_i2c(&tab_reception);
+				//envoi_i2c(&amas_taille_old);
+				//envoi_i2c(&amas_pos);
 			}
 			
 		}
@@ -383,9 +404,9 @@ void Init(){
   	TRISAbits.TRISA1=0;
   	TRISAbits.TRISA2=0;
   	TRISAbits.TRISA3=0;
-  	TRISBbits.TRISB0=0;
-  	TRISBbits.TRISB1=0;
-  	TRISBbits.TRISB2=0;
+  	TRISBbits.TRISB7=0;
+  	TRISBbits.TRISB6=0;
+  	TRISBbits.TRISB5=0;
   	
   	
   	
@@ -529,7 +550,7 @@ void Set_recepteur(unsigned char _recepteur){
 		LATBbits.LATB5 = 0;
 	}
 	// In3
-	if( _recepteur == 1 || _recepteur == 13){
+	if( _recepteur == 2 || _recepteur == 13){
 		LATAbits.LATA0 = 0;
 		LATAbits.LATA1 = 1;
 		LATAbits.LATA2 = 1;
@@ -544,7 +565,7 @@ void Set_recepteur(unsigned char _recepteur){
 		LATAbits.LATA1 = 0;
 		LATAbits.LATA2 = 0;
 		
-		LATBbits.LATB7 = 0;
+		LATBbits.LATB7 = 1;
 		LATBbits.LATB6 = 0;
 		LATBbits.LATB5 = 0;
 	}
@@ -564,9 +585,9 @@ void Set_recepteur(unsigned char _recepteur){
 		LATAbits.LATA1 = 1;
 		LATAbits.LATA2 = 0;
 		
-		LATBbits.LATB7 = 0;
+		LATBbits.LATB7 = 1;
 		LATBbits.LATB6 = 1;
-		LATBbits.LATB5 = 1;
+		LATBbits.LATB5 = 0;
 	}
 	// In7
 	if( _recepteur == 6 || _recepteur == 4){
