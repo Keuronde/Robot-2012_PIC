@@ -1,0 +1,12 @@
+
+enum i2c_m_flag {
+    I2C_START=0,
+    I2C_ENV_ADRESSE,
+    I2C_ENV_DONNEE,
+    I2C_RESTART,
+    I2C_REC_ADRESSE,
+    I2C_REC_DONNEE,
+    I2C_REC_ACK,
+    I2C_STOP,
+    I2C_LIBRE
+};

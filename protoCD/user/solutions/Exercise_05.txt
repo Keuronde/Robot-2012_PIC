@@ -1,0 +1,26 @@
+void Exercise_05(void)
+{
+    static word ex05_count;
+    
+    if(ex05_count == 0)
+    {
+        #if defined(PIC18F4550_PICDEM_FS_USB)
+        AcquireTemperature();               // Read temperature from sensor
+        #endif
+        UpdateCelsiusASCII();               // Convert to ASCII, stored in
+                                            // "tempString", See temperature.c
+
+        /* Modify the code below - 3 lines */
+        
+        if(mUSBUSARTIsTxTrfReady())
+        {
+            putsUSBUSART(tempString);
+            ex05_count = 10000;
+        }
+        
+        /* End */
+    }
+    else
+        ex05_count--;
+    
+}//end Exercise_05
