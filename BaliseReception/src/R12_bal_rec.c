@@ -274,7 +274,7 @@ void MyInterrupt_L(void){
 void main(void){
 	unsigned char id_balise;
 	unsigned char i;
-	char envoi[2];
+	char envoi[6];
 	
 	// P1 : Initialisation
     Init();
@@ -373,15 +373,15 @@ void main(void){
 			// P25 : construction du message concernant la balise
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
-			if(id_balise == 0){
-			  envoi[0] = amas_taille_old;
-			  envoi[1] = amas_pos;
+			//if(id_balise == 0){
+			  envoi[0 + id_balise *2] = amas_taille_old;
+			  envoi[1 + id_balise *2] = amas_pos;
 			  envoi_i2c(envoi);
 				//envoi_i2c(&tab_traitement);
 				//envoi_i2c(&tab_reception);
 				//envoi_i2c(&amas_taille_old);
 				//envoi_i2c(&amas_pos);
-			}
+			//}
 			
 		}
 

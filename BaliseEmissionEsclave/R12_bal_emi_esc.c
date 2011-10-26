@@ -19,6 +19,7 @@
 #pragma udata
 volatile unsigned char timer_led;
 volatile unsigned char timer_emi;
+volatile unsigned char timer_init;
 volatile unsigned char synchro;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
@@ -183,7 +184,7 @@ void Init(){
 		// P125 : On est bon
 		if(nb_rec == NB_MESSAGES){
 			WriteTimer0(0xffff - 1036); // On attend 1/2 période pour se mettre au début du message suivant
-			timer_emi = NB_MESSAGE_TOTAL - 1; // On est encore sur le dernier récepteur de la 1ere balise !
+			timer_emi = NB_MSG_TOTAL - 1; // On est encore sur le dernier récepteur de la 1ere balise !
 			                          // On veut émettre notre premier message à la prochaine interruption
 			                
 			synchro=1;
