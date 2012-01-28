@@ -9,6 +9,8 @@
 // Emission IR
 #define NB_MESSAGES 16
 #define NB_MSG_TOTAL 48
+// Durée de vie (10 secondes)
+#define T_MAX ((unsigned int) 1807)
 // Clignotement LED
 #define F_1HZ 90
 #define F_5HZ 18
@@ -20,10 +22,13 @@
 volatile unsigned char timer_led;
 volatile unsigned char timer_emi;
 volatile unsigned char timer_init;
+volatile unsigned int  timer_desynchro;
 volatile unsigned char synchro;
+unsigned char nb_rec;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
+unsigned char estSynchro(void);
 void Init(void);
 
 /** V E C T O R  R E M A P P I N G *******************************************/
@@ -69,6 +74,11 @@ void MyInterrupt(void){
 		TMR0H=0xF7;
 		TMR0L=0xE5;
 		timer_led++;
+		timer_init++;
+    timer_emi++;
+    if(timer_desynchro > 0){
+      timer_desynchro--;
+    }
 		if(synchro == 1){
 		  // Si on est synchronisé
 		  timer_emi++;
@@ -109,7 +119,16 @@ void main(void){
     
     t_diode = F_1HZ;
     while(1){
-		  if(timer_led > t_diode){
+      if (timer_desynchro == 0){
+        synchro = 0;
+        LED=0;
+      }
+      if (estSynchro() == 1){
+        synchro = 1;
+      	timer_desynchro = T_MAX;
+      }
+      // Clignotement DEL
+		  if( (timer_led > t_diode) && (synchro == 1) ){
 			  LED = !LED;
 			  timer_led = 0;
 		  }
@@ -120,9 +139,10 @@ void main(void){
 
 void Init(){
   unsigned char data;
-  char nb_rec=0;
+  
   // Initialisation des variables
   synchro = 0;
+  nb_rec=0;
   timer_init=0;
   
   // Activation des interruptions
@@ -156,6 +176,25 @@ void Init(){
 	
 	
 	while(synchro == 0){
+		synchro = estSynchro();
+	}
+	timer_desynchro = T_MAX;
+	// Configuration de la MLI
+	OpenTimer2( TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1 );
+	TRISBbits.TRISB3=0;
+	OpenPWM2(82);
+	SetDCPWM2((unsigned int)164);
+	
+	
+	
+	// On allume la LED
+	TRIS_LED = 0;
+	LED = 1;
+	
+}
+
+unsigned char estSynchro(void){
+    unsigned char data;
 		// P122 : Recevoir une lecture valide sur le port série
 		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
 			data = RCREG; // Effacement de l'erreur
@@ -186,26 +225,11 @@ void Init(){
 			WriteTimer0(0xffff - 1036); // On attend 1/2 période pour se mettre au début du message suivant
 			timer_emi = NB_MSG_TOTAL - 1; // On est encore sur le dernier récepteur de la 1ere balise !
 			                          // On veut émettre notre premier message à la prochaine interruption
-			                
-			synchro=1;
+      nb_rec = 0;              
+			return 1;
 		}
-		
-	}
-	
-	// Configuration de la MLI
-	OpenTimer2( TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1 );
-	TRISBbits.TRISB3=0;
-	OpenPWM2(82);
-	SetDCPWM2((unsigned int)164);
-	
-	
-	
-	// On allume la LED
-	TRIS_LED = 0;
-	LED = 1;
-	
+		return 0;
 }
-
 
 
 
