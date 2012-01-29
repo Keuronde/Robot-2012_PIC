@@ -37,6 +37,7 @@ Fonction permettant d'initialiser l'i2c en mode esclave
 
 */
 void init_i2c(unsigned char _adresse){
+  unsigned char i;
 	// I2C INIT
 	// Initialisation de l'I2C
 	// Les pattes concernée avec TRIS à 1
@@ -47,12 +48,19 @@ void init_i2c(unsigned char _adresse){
 	SSPCON2 = 0; // Pas de masque d'adresse (pour l'instant)
 	SSPADD = _adresse << 1;
 
+	for (i=0; i<NB_ENV; i++){
+	  data_out[i]=0;
+	}
+
+
 	// Activation du SSP, module dont dépend l'I2C
 	SSPCON1bits.SSPEN = 1;
 
     // Activation des interruptions I2C
+ 	IPR1bits.SSPIP=0; // Priorité basse
 	PIE1bits.SSPIE=1; // Interruption I2C activée
-	IPR1bits.SSPIP=0; // Priorité basse
+
+	
 
 }
 

@@ -10,6 +10,8 @@
 // Emission IR
 #define NB_MESSAGES 16
 #define NB_MSG_TOTAL 48
+// Durée de vie (10 secondes) // 1807
+#define T_MAX ((unsigned int) 1807)
 // Clignotement LED
 #define F_1HZ 90
 #define F_5HZ 18
@@ -21,11 +23,14 @@ volatile unsigned char id_recepteur;
 volatile unsigned char tab_reception[NB_MSG_TOTAL];
 volatile unsigned char tab_traitement[NB_MESSAGES + NB_MESSAGES/2];
 volatile unsigned char active_calcul;
+volatile unsigned int  timer_desynchro;
 volatile unsigned char synchro;
 volatile unsigned char recu;
+unsigned char nb_rec;
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
+unsigned char estSynchro(void);
 void Init(void);
 void Set_recepteur(unsigned char);
 
@@ -55,6 +60,7 @@ void _low_ISR (void)
 
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void){
+
 	// code de "Rustre Corner"
 	// Adapté et modifié par S. KAY
 	unsigned char sauv1;
@@ -74,6 +80,10 @@ void MyInterrupt(void){
 		TMR0H=0xF7;
 		TMR0L=0xE5;
 		data =0;
+		if(timer_desynchro > 0){
+			timer_desynchro--;
+		}
+		
 		// incrément des compteurs
 		timer_led++;
 		
@@ -246,10 +256,11 @@ void MyInterrupt(void){
 		}
 		
 		// Syncronisation permanente
-		if(recu == ID_BALISE_1){
+		if ( (recu == ID_BALISE_1) ){
 //			WriteTimer0(0xffff - 518); 
 			TMR0H=0xFD;
 			TMR0L=0xF9;
+			timer_desynchro = T_MAX;
 		}
 	}
 
@@ -275,18 +286,40 @@ void main(void){
 	unsigned char id_balise;
 	unsigned char i;
 	char envoi[6];
+
 	
 	// P1 : Initialisation
     Init();
-    
     // P2 Traitement des données.
-    while(1){
+	while(1){
 		unsigned char amas_taille=0;
 		unsigned char amas_taille_old;
 		unsigned char amas_pos;
 		unsigned char amas_balise;
 		unsigned char amas_balise_old;
 		unsigned char mot_balise;
+		
+		if ( (timer_desynchro == 0) /*&& (synchro == 1)*/ ){
+			synchro = 0;
+			active_calcul = 0;
+			for (i=0;i<6;i++){
+				envoi[i]=88;
+			}
+			envoi_i2c(envoi);
+		}
+		
+		if (synchro == 0){
+			// Cas déespéré ! 
+			Set_recepteur(0); // Celui en face du détrompeur du PIC
+			// Désactivation des interruptions pour la liaison série
+			PIE1bits.RCIE = 0; // Interruption inactive
+			while (synchro == 0){
+				synchro = estSynchro();
+			}
+			timer_desynchro = T_MAX;
+			PIE1bits.RCIE = 1; // Interruption active
+		}
+		
 		
 		// P21 : Attendre qu'une balise ait fini d'émettre sa trame.
 		if(active_calcul == 1){
@@ -359,7 +392,6 @@ void main(void){
 				amas_pos = 2*i - amas_taille_old;
 			}
 			amas_pos -= 2;
-			
 			// P24 : déduction de l'angle
 			// On a fait notre recherche sur 1 tour et demi,
 			// On veut un angle sur 1 tour
@@ -369,19 +401,16 @@ void main(void){
 			if( amas_pos >= 2*NB_MESSAGES){
 				amas_pos -= 2*NB_MESSAGES;
 			}
+			if(amas_pos > 2*NB_MESSAGES){
+				amas_pos=0;			
+			}
 			
 			// P25 : construction du message concernant la balise
 			mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
-			//if(id_balise == 0){
-			  envoi[0 + id_balise *2] = amas_taille_old;
-			  envoi[1 + id_balise *2] = amas_pos;
-			  envoi_i2c(envoi);
-				//envoi_i2c(&tab_traitement);
-				//envoi_i2c(&tab_reception);
-				//envoi_i2c(&amas_taille_old);
-				//envoi_i2c(&amas_pos);
-			//}
+			envoi[0 + id_balise *2] = amas_taille_old;
+			envoi[1 + id_balise *2] = amas_pos;
+			envoi_i2c(envoi);
 			
 		}
 
@@ -391,14 +420,27 @@ void main(void){
 
 void Init(){
 	// P11 Initialisaiton des modules
-	char nb_rec=0;
 	unsigned char data;
+	char envoi[6];
+	unsigned char i;
+	nb_rec=0;
+  
+
+
 	// Activation des interruptions
    	INTCONbits.GIEH = 1; // Activation interruptions hautes
   	INTCONbits.GIEL = 1; // Activation interruptions basses
   	RCONbits.IPEN=1; // Activation des niveau d'interruptions
-  	
-  	
+
+
+ 	// Initialisation de l'i2c
+	init_i2c(0x41);
+	for (i=0;i<6;i++){
+		envoi[i]=0;
+	}
+
+	while(!envoi_i2c(envoi));
+	
   	// Configuration des entrées-sorties
   	TRISAbits.TRISA0=0;
   	TRISAbits.TRISA1=0;
@@ -407,7 +449,6 @@ void Init(){
   	TRISBbits.TRISB7=0;
   	TRISBbits.TRISB6=0;
   	TRISBbits.TRISB5=0;
-  	
   	
   	
   	// Initialisation de l'UART
@@ -421,7 +462,7 @@ void Init(){
 	RCSTAbits.SPEN=1;
   	
     // Initialisation du Timer 0 pour la base de temps
-    synchro = 0;
+	synchro = 0;
 	OpenTimer0(	TIMER_INT_ON &  // interruption ON
 				T0_16BIT &		// Timer 0 en 16 bits
 				T0_SOURCE_INT & // Source interne (Quartz + PLL)
@@ -429,10 +470,7 @@ void Init(){
 	WriteTimer0(0xffff - 2074);
 	timer_init=0;
 	
-	// Initialisation de l'i2c
-	data = 255;
-	init_i2c(0x41);
-	envoi_i2c(&data);
+
 	data=0;
 	
 	// P12 : Synchroniser la balise
@@ -441,41 +479,9 @@ void Init(){
   	Set_recepteur(0); // Celui en face du détrompeur du PIC
 	
 	while(synchro == 0){
-		// P122 : Recevoir une lecture valide sur le port série
-		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
-			data = RCREG; // Effacement de l'erreur
-			data = 0;
-		}
-		// Overun Error
-		if(RCSTAbits.OERR){
-				data=0; // La donnée n'est pas pertinente
-				RCSTAbits.CREN = 0; // Réinitialisation du module
-				RCSTAbits.CREN = 1; // de réception série
-		}
-		if(PIR1bits.RCIF){ // Si on a reçu quelquechose			
-			data = RCREG;  // On lit la donnée
-			// Vérifier que la valeur correspond à un identifiant balise
-			if(data == ID_BALISE_1){
-				nb_rec++;
-				timer_init=0;
-			}
-		}
-		// P124 : Fin du minuteur
-		if(timer_init > 2){
-			nb_rec=0;
-			timer_init=0;
-		}
-		
-		// P125 : On est bon
-		if(nb_rec == NB_MESSAGES){
-			WriteTimer0(0xffff - 518); // On attend 1/4 de période pour se mettre au milieu du creux entre deux messages
-			id_recepteur = 15; // On est encore sur le dernier récepteur de la 1ere balise !
-			                   // C'est à l'interuption suivante qu'on commencera la lecture de 1er récepteur de la balise 2
-			synchro=1;
-		}
-		
+		synchro = estSynchro();
 	}
-	
+	timer_desynchro = T_MAX;
 	// Activation des interruption pour la liaison série
 	IPR1bits.RCIP = 1; // Interruption haute
 	PIE1bits.RCIE = 1; // Interruption active
@@ -601,6 +607,43 @@ void Set_recepteur(unsigned char _recepteur){
 	}
 }
 
+unsigned char estSynchro(void){
+    unsigned char data;
+		// P122 : Recevoir une lecture valide sur le port série
+		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
+			data = RCREG; // Effacement de l'erreur
+			data = 0;
+		}
+		// Overun Error
+		if(RCSTAbits.OERR){
+				data=0; // La donnée n'est pas pertinente
+				RCSTAbits.CREN = 0; // Réinitialisation du module
+				RCSTAbits.CREN = 1; // de réception série
+		}
+		if(PIR1bits.RCIF){ // Si on a reçu quelquechose			
+			data = RCREG;  // On lit la donnée
+			// Vérifier que la valeur correspond à un identifiant balise
+			if(data == ID_BALISE_1){
+				nb_rec++;
+				timer_init=0;
+			}
+		}
+		// P124 : Fin du minuteur
+		if(timer_init > 2){
+			nb_rec=0;
+			timer_init=0;
+		}
+		
+		// P125 : On est bon
+		if(nb_rec == NB_MESSAGES){
+			WriteTimer0(0xffff - 1036); // On attend 1/2 période pour se mettre au début du message suivant
+			id_recepteur = NB_MESSAGES - 1; // On est encore sur le dernier récepteur de la 1ere balise !
+			                          // On veut recevoir la deuxième balise dès la prochaine interruption
+      nb_rec = 0;              
+			return 1;
+		}
+		return 0;
+}
 
 
 

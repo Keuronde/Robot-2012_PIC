@@ -81,7 +81,7 @@ void MyInterrupt(void){
     }
 		if(synchro == 1){
 		  // Si on est synchronisé
-		  timer_emi++;
+//		  timer_emi++;
 		  if(timer_emi == NB_MSG_TOTAL)
 			  timer_emi=0;
 		
@@ -90,10 +90,33 @@ void MyInterrupt(void){
 			  TXREG = ID_BALISE;
 		  }
 		}else{
-		  timer_init++;
+//		  timer_init++;
 		}
 		
 		
+	}
+	
+	if(PIR1bits.RCIF == 1){
+	  char recu;
+  	recu = RCREG;
+		// T111 : Framing Error
+		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
+			recu = RCREG; // Effacement de l'erreur
+			recu = 0;
+		}
+		// T112 : Overun Error
+		if(RCSTAbits.OERR){
+			recu=0; // La donnée n'est pas pertinente
+			RCSTAbits.CREN = 0; // Réinitialisation du module
+			RCSTAbits.CREN = 1; // de réception série
+		}
+		// Syncronisation permanente
+		if ( (recu == ID_BALISE_1) ){
+//			WriteTimer0(0xffff - 518); 
+			TMR0H=0xFD;
+			TMR0L=0xF9;
+			timer_desynchro = T_MAX;
+		}
 	}
 
 
@@ -123,10 +146,16 @@ void main(void){
         synchro = 0;
         LED=0;
       }
-      if (estSynchro() == 1){
-        synchro = 1;
-      	timer_desynchro = T_MAX;
-      }
+      if (synchro == 0){
+        //Désactivation de l'interruption RCIE
+      	PIE1bits.RCIE = 0; // Interruption active
+        while(synchro == 0){
+		      synchro = estSynchro();
+	      }
+	    	timer_desynchro = T_MAX;
+	    	PIE1bits.RCIE = 1; // Interruption active
+	    }
+
       // Clignotement DEL
 		  if( (timer_led > t_diode) && (synchro == 1) ){
 			  LED = !LED;
@@ -139,10 +168,9 @@ void main(void){
 
 void Init(){
   unsigned char data;
-  
+  nb_rec=0;
   // Initialisation des variables
   synchro = 0;
-  nb_rec=0;
   timer_init=0;
   
   // Activation des interruptions
@@ -179,23 +207,30 @@ void Init(){
 		synchro = estSynchro();
 	}
 	timer_desynchro = T_MAX;
+	
 	// Configuration de la MLI
 	OpenTimer2( TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1 );
 	TRISBbits.TRISB3=0;
 	OpenPWM2(82);
 	SetDCPWM2((unsigned int)164);
 	
-	
+	// Activation des interruption pour la liaison série
+	IPR1bits.RCIP = 1; // Interruption haute
+	PIE1bits.RCIE = 1; // Interruption active
 	
 	// On allume la LED
 	TRIS_LED = 0;
 	LED = 1;
 	
+	
 }
+
+
+
 
 unsigned char estSynchro(void){
     unsigned char data;
-		// P122 : Recevoir une lecture valide sur le port série
+// P122 : Recevoir une lecture valide sur le port série
 		if(RCSTAbits.FERR){ // Gestion des erreur de trame série.
 			data = RCREG; // Effacement de l'erreur
 			data = 0;
@@ -225,14 +260,11 @@ unsigned char estSynchro(void){
 			WriteTimer0(0xffff - 1036); // On attend 1/2 période pour se mettre au début du message suivant
 			timer_emi = NB_MSG_TOTAL - 1; // On est encore sur le dernier récepteur de la 1ere balise !
 			                          // On veut émettre notre premier message à la prochaine interruption
-      nb_rec = 0;              
+			                
 			return 1;
 		}
 		return 0;
 }
-
-
-
 
 
 
