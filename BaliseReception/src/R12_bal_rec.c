@@ -285,7 +285,7 @@ void MyInterrupt_L(void){
 void main(void){
 	unsigned char id_balise;
 	unsigned char i;
-	char envoi[6];
+	char envoi[32];
 
 	
 	// P1 : Initialisation
@@ -335,6 +335,25 @@ void main(void){
 				tab_traitement[i]=tab_reception[i+id_balise*NB_MESSAGES];
 				if(i<NB_MESSAGES/2){
 					tab_traitement[i+NB_MESSAGES]=tab_traitement[i];
+				}
+			}
+			// Pré-traitement
+			// Si un récepteur un récepteur ne reçoit pas de signal alors que les deux encadrant reçoivent,
+			// C'est une anomalie qu'il faut corriger.
+			for(i=0;i<(NB_MESSAGES + NB_MESSAGES/2) ;i++){
+				unsigned char prec, suiv;
+				if(i == 0){
+					prec = NB_MESSAGES-1;
+				}else{
+					prec = i - 1;
+				}
+				if (i == (NB_MESSAGES + NB_MESSAGES/2)){
+					suiv = NB_MESSAGES/2 +1;
+				}else{
+					suiv = i+1;
+				}
+				if  (tab_traitement[prec] == tab_traitement[suiv]){
+					tab_traitement[i] = tab_traitement[prec];
 				}
 			}
 			// P23 : Touver l'amas le plus gros
@@ -406,10 +425,27 @@ void main(void){
 			}
 			
 			// P25 : construction du message concernant la balise
-			mot_balise = 0;
+			/*mot_balise = 0;
 			mot_balise = (amas_pos & 0x1F) | ((amas_taille_old & 0x0F)<<3);
 			envoi[0 + id_balise *2] = amas_taille_old;
-			envoi[1 + id_balise *2] = amas_pos;
+			envoi[1 + id_balise *2] = amas_pos;*/
+			if (id_balise == 0){
+				for (i=0;i<16;i++){
+					if (tab_traitement[i] == ID_BALISE_1){
+						envoi[i] = 1;
+					}else{
+						envoi[i] = 0;
+					}
+				}
+			}else if(id_balise == 1){
+				for (i=16;i<32;i++){
+					if (tab_traitement[i-16] == ID_BALISE_2){
+						envoi[i] = 2;
+					}else{
+						envoi[i] = 0;
+					}
+				}
+			}
 			envoi_i2c(envoi);
 			
 		}
