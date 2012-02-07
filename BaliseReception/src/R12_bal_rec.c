@@ -337,6 +337,25 @@ void main(void){
 					tab_traitement[i+NB_MESSAGES]=tab_traitement[i];
 				}
 			}
+			// Pré-traitement
+			// Si un récepteur un récepteur ne reçoit pas de signal alors que les deux encadrant reçoivent,
+			// C'est une anomalie qu'il faut corriger.
+			for(i=0;i<(NB_MESSAGES + NB_MESSAGES/2) ;i++){
+				unsigned char prec, suiv;
+				if(i == 0){
+					prec = NB_MESSAGES-1;
+				}else{
+					prec = i - 1;
+				}
+				if (i == (NB_MESSAGES + NB_MESSAGES/2)){
+					suiv = NB_MESSAGES/2 +1;
+				}else{
+					suiv = i+1;
+				}
+				if  (tab_traitement[prec] == tab_traitement[suiv]){
+					tab_traitement[i] = tab_traitement[prec];
+				}
+			}
 			// P23 : Touver l'amas le plus gros
 			amas_pos=0;
 			amas_taille=0;
