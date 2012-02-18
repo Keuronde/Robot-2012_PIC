@@ -410,7 +410,7 @@ void main(void){
 				amas_balise_old = amas_balise;
 				amas_pos = 2*i - amas_taille_old;
 			}
-			amas_pos -= 2;
+			amas_pos -= 1;
 			// P24 : déduction de l'angle
 			// On a fait notre recherche sur 1 tour et demi,
 			// On veut un angle sur 1 tour
