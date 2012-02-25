@@ -79,8 +79,13 @@ void MyInterrupt_L(void){
 
 
 void main(void){
-
+	int servopos = SERVO_MIN;
+	int pas = 0x0040;
+	char ok =1;
     Init();
+    Servo_Set(servopos,1);
+	Servo_Set(servopos,0);
+
 
     M1_ENABLE = 1;
     M1_SENS = 1;
@@ -103,6 +108,22 @@ void main(void){
 			// Recule
 			M1_SENS = 0;
 		}
+		if((BOUTON == 0) && (ok ==1)) {
+			servopos += pas;
+			if (servopos ==  (SERVO_MAX +pas)){
+				servopos = SERVO_MIN;
+			}else if (servopos > SERVO_MAX){
+				servopos = SERVO_MAX;
+			}
+			Servo_Set(servopos,1);
+			Servo_Set(servopos,0);
+			Delay10KTCYx(0);
+			ok = 0;
+		}
+		if(BOUTON ==1){
+			ok = 1;
+		}
+		
     }
 
 }

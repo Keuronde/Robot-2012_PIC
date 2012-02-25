@@ -1,8 +1,8 @@
 #include "config.h"
 /** D E F I N E **************************************************************/
 // Constantes
-#define SERVO_MIN 0x220
-#define SERVO_MAX 0x850
+#define SERVO_MIN 0x02D0 
+#define SERVO_MAX 0x07C0
 #define NB_SERVO 2
 
 // Ok 
