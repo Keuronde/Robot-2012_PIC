@@ -20,7 +20,7 @@
 #define TRIS_LED TRISBbits.TRISB7
 #define LED LATBbits.LATB7
 // TEMPO (en centisecondes)
-#define TEMPO_SERVO_CS 50
+#define TEMPO_SERVO_CS (unsigned int) 50
 /** V A R I A B L E S ********************************************************/
 #pragma udata
 volatile unsigned char timer_led;
@@ -111,7 +111,8 @@ void MyInterrupt_L(void){
 void main(void){
 	enum etat_bras_t e_bras_gauche=REPLIE;
 	enum etat_bras_t e_bras_droit =REPLIE;
-	unsigned int tempo_cs;
+	char i=0;
+	unsigned int temps_cs, tempo_cs;
     Init();
     
 
@@ -125,15 +126,49 @@ void main(void){
   
 	// Test algo bras gauche
 	e_bras_gauche = OUVRE_DOIGT;
+	//Servo_Set(DOIGT_G_OUVERT);
     while(1){
+		// On récupère l'heure 
+		if(temps_cs != getTemps_s()){
+			temps_cs = getTemps_s();
+			i++;
+			if (i>4){
+				i=1;
+			}
+		}
+		
+		switch (i){
+			case 1:
+				CT7  =0;
+				CT10 =1;
+				break;
+			case 2:
+				CT10 = 0;
+				CT9  = 1;
+				break;
+			case 3:
+				CT9 = 0;
+				CT8 = 1;
+				break;
+			case 4:
+				CT8 =0;
+				CT7 =1;
+				break;
+			default:
+				break;
+		}
+		
+		//Machine à état de gestion des bras
+		/*
 		switch (e_bras_gauche){
 			case REPLIE:
-				M1_Stop();
 				if (CT_M1_AR == 1){
 					M1_Avance();
+				}else{
+					M1_Stop();
 				}
 				break;
-			/* Attraper le lingo */
+			// Attraper le lingo 
 			case OUVRE_DOIGT:
 				e_bras_gauche = AVANCE_BRAS;
 				break;
@@ -141,7 +176,6 @@ void main(void){
 				M1_Avance();
 				if (CT_M1_AV == 0){
 					e_bras_gauche = FERME_DOIGT;
-					tempo_cs = getTemps_cs() + TEMPO_SERVO_CS;
 				}
 				break;
 			case FERME_DOIGT:
@@ -150,11 +184,10 @@ void main(void){
 				}else{
 					M1_Stop();
 				}
-				if(tempo_cs <= getTemps_cs()){
-					e_bras_gauche = RECULE_BRAS;
-				}
+				e_bras_gauche = RECULE_BRAS;
 				break;
 			case RECULE_BRAS:
+				
 				M1_Recule();
 				if (CT_M1_AR == 1){
 					M1_Stop();
@@ -164,14 +197,18 @@ void main(void){
 			case RENTRE_LINGOT:
 				e_bras_gauche = REPLIE;
 				break;
-			/* Deposer le lingo */
+			// Deposer le lingo 
 			case ROUVRE_DOIGT:
 				break;
 			case POUSSE_LINGOT:
 				break;
 			case RENTRE_BRAS:
 				break;
+			default:
+				break;
 		}
+
+		*/
     }
 
 }
@@ -184,8 +221,8 @@ void Init(){
 	TRIS_CT2 = 1;
 	TRIS_CT3 = 1;
 	TRIS_CT4 = 1;
-	TRIS_CT7 = 1;
-	TRIS_CT8 = 1;
+	TRIS_CT7 = 0;
+	TRIS_CT8 = 0;
 	TRIS_CT9 = 0;
 	TRIS_CT10 = 0;
 	

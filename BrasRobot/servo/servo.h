@@ -5,18 +5,12 @@
 #define SERVO_MAX 0x07C0
 #define NB_SERVO 2
 
-// Ok 
-// SERVO 4
-#define POUSSOIR_AR_G_HAUT 0x480,3
-#define POUSSOIR_AR_G_BAS  0x710,3
-// SERVO 3
-#define POUSSOIR_AR_D_HAUT 0x670,2
-#define POUSSOIR_AR_D_BAS  0x400,2
 
-// A définir
-// SERVO 1 (marqué servo 2 sur la carte réelle)
-#define POUSSOIR_AV_HAUT 0x630,0
-#define POUSSOIR_AV_BAS 0x770,0
+// SERVO 1 
+#define DOIGT_G_OUVERT 0x2D0,0
+#define DOIGT_G_TIRE   0x4D0,0
+#define DOIGT_G_RABAT  0x5D0,0
+#define DOIGT_G_FERME  0x710,0
 // SERVO 2 (marqué servo 1 sur la carte réelle)
 #define CMUCAM_HAUT 0x3D0,1
 #define CMUCAM_BAS  0x4D0,1

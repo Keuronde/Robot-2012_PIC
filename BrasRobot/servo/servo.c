@@ -18,17 +18,15 @@ void Servo_Init(){
 	INTCONbits.PEIE = 1;
 	// On active les priorité d'interruption
 	RCONbits.IPEN = 1;
-	// Ouverture du timer
-	OpenTimer2( TIMER_INT_ON & T2_PS_1_16 & T2_POST_1_1);
 	WriteTimer2(0);
 	TRIS_SERVO1 = 0;
 	TRIS_SERVO2 = 0;
 	for(i=0;i<NB_SERVO;i++){
 		pos_servo[i]=0x0400;
 	}
-    Servo_Set(POUSSOIR_AR_G_HAUT);
-    Servo_Set(POUSSOIR_AR_D_HAUT);
-    Servo_Set(POUSSOIR_AV_HAUT);
+	// Ouverture du timer
+	OpenTimer2( TIMER_INT_ON & T2_PS_1_16 & T2_POST_1_1);
+    
 }
 void Servo_Set(int unsigned position, char num_servo){
 	if(position > SERVO_MAX)
