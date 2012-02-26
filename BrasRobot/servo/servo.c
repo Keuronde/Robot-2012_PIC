@@ -16,6 +16,8 @@ void Servo_Init(){
 	// On active toutes les interruptions
 	INTCONbits.GIE = 1;
 	INTCONbits.PEIE = 1;
+	// On active les priorité d'interruption
+	RCONbits.IPEN = 1;
 	// Ouverture du timer
 	OpenTimer2( TIMER_INT_ON & T2_PS_1_16 & T2_POST_1_1);
 	WriteTimer2(0);

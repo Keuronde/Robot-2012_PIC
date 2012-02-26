@@ -4,24 +4,26 @@
 #define TRIS_CT2 TRISAbits.TRISA1
 #define TRIS_CT3 TRISAbits.TRISA2
 #define TRIS_CT4 TRISAbits.TRISA3
-#define TRIS_CT5 TRISAbits.TRISA4
-#define TRIS_CT6 TRISAbits.TRISA5
 #define TRIS_CT7 TRISCbits.TRISC0
 #define TRIS_CT8 TRISBbits.TRISB7
 #define TRIS_CT9 TRISBbits.TRISB6
 #define TRIS_CT10 TRISBbits.TRISB5
+
+#define TRIS_CT_M1_AV TRISAbits.TRISA4
+#define TRIS_CT_M1_AR TRISAbits.TRISA5
 
 // PORT
 #define CT1 PORTAbits.RA0
 #define CT2 PORTAbits.RA1
 #define CT3 PORTAbits.RA2
 #define CT4 PORTAbits.RA3
-#define CT5 PORTAbits.RA4
-#define CT6 PORTAbits.RA5
 #define CT7 PORTCbits.RC0
 #define CT8 PORTBbits.RB7
 #define CT9 PORTBbits.RB6
 #define CT10 PORTBbits.RB5
+
+#define CT_M1_AV PORTAbits.RA4
+#define CT_M1_AR PORTAbits.RA5
 
 
 // Moteur

@@ -4,6 +4,8 @@
 #include <pwm.h>
 #include "config.h"
 #include "servo/servo.h"
+#include "moteurs/moteurs.h"
+#include "temps/temps.h"
 
 /** D E F I N E D ********************************************************/
 // Identifiant balise
@@ -17,10 +19,36 @@
 // LED
 #define TRIS_LED TRISBbits.TRISB7
 #define LED LATBbits.LATB7
+// TEMPO (en centisecondes)
+#define TEMPO_SERVO_CS 50
 /** V A R I A B L E S ********************************************************/
 #pragma udata
 volatile unsigned char timer_led;
 volatile unsigned char timer_emi;
+
+
+enum etat_cre_t {
+/* Attraper le lingo */
+    CRE_RENTREE=0,
+    CRE_AVANCE,
+    CRE_SORTIE,
+    CRE_RECULE
+};
+
+enum etat_bras_t {
+/* Attraper le lingo */
+    REPLIE=0,
+    OUVRE_DOIGT,
+    AVANCE_BRAS,
+    FERME_DOIGT,
+    RECULE_BRAS,
+    RENTRE_LINGOT,
+/* Deposer le lingo */
+	ROUVRE_DOIGT,
+	POUSSE_LINGOT,
+	RENTRE_BRAS
+};
+
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
@@ -69,6 +97,8 @@ void MyInterrupt(void){
 
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
+	
+	Temps_Int();
 
 }
 
@@ -79,13 +109,11 @@ void MyInterrupt_L(void){
 
 
 void main(void){
-	int servopos = SERVO_MIN;
-	int pas = 0x0040;
-	char ok =1;
+	enum etat_bras_t e_bras_gauche=REPLIE;
+	enum etat_bras_t e_bras_droit =REPLIE;
+	unsigned int tempo_cs;
     Init();
-    Servo_Set(servopos,1);
-	Servo_Set(servopos,0);
-
+    
 
     M1_ENABLE = 1;
     M1_SENS = 1;
@@ -94,36 +122,56 @@ void main(void){
     M2_SENS = 1;
     
   
+  
+	// Test algo bras gauche
+	e_bras_gauche = OUVRE_DOIGT;
     while(1){
-		if(CT6 == 1){ // CT arriere
-			// Avance
-			M1_SENS = 1;
-			CT10 = 1;
-			CT9 = 0;
-		}else{
-			CT9 = 1;
-			CT10 = 0;
+		switch (e_bras_gauche){
+			case REPLIE:
+				M1_Stop();
+				if (CT_M1_AR == 1){
+					M1_Avance();
+				}
+				break;
+			/* Attraper le lingo */
+			case OUVRE_DOIGT:
+				e_bras_gauche = AVANCE_BRAS;
+				break;
+			case AVANCE_BRAS:
+				M1_Avance();
+				if (CT_M1_AV == 0){
+					e_bras_gauche = FERME_DOIGT;
+					tempo_cs = getTemps_cs() + TEMPO_SERVO_CS;
+				}
+				break;
+			case FERME_DOIGT:
+				if (CT_M1_AV == 0){
+					M1_Recule();
+				}else{
+					M1_Stop();
+				}
+				if(tempo_cs <= getTemps_cs()){
+					e_bras_gauche = RECULE_BRAS;
+				}
+				break;
+			case RECULE_BRAS:
+				M1_Recule();
+				if (CT_M1_AR == 1){
+					M1_Stop();
+					e_bras_gauche = RENTRE_LINGOT;
+				}
+				break;
+			case RENTRE_LINGOT:
+				e_bras_gauche = REPLIE;
+				break;
+			/* Deposer le lingo */
+			case ROUVRE_DOIGT:
+				break;
+			case POUSSE_LINGOT:
+				break;
+			case RENTRE_BRAS:
+				break;
 		}
-		if(CT5 == 0){ // CT avant
-			// Recule
-			M1_SENS = 0;
-		}
-		if((BOUTON == 0) && (ok ==1)) {
-			servopos += pas;
-			if (servopos ==  (SERVO_MAX +pas)){
-				servopos = SERVO_MIN;
-			}else if (servopos > SERVO_MAX){
-				servopos = SERVO_MAX;
-			}
-			Servo_Set(servopos,1);
-			Servo_Set(servopos,0);
-			Delay10KTCYx(0);
-			ok = 0;
-		}
-		if(BOUTON ==1){
-			ok = 1;
-		}
-		
     }
 
 }
@@ -136,12 +184,14 @@ void Init(){
 	TRIS_CT2 = 1;
 	TRIS_CT3 = 1;
 	TRIS_CT4 = 1;
-	TRIS_CT5 = 1;
-	TRIS_CT6 = 1;
 	TRIS_CT7 = 1;
 	TRIS_CT8 = 1;
 	TRIS_CT9 = 0;
 	TRIS_CT10 = 0;
+	
+	// Contacteurs crémaillère
+	TRIS_CT_M1_AV = 1;
+	TRIS_CT_M1_AR = 1;
 	
 	CT10 = 1;
 	Delay10KTCYx(0);
@@ -152,20 +202,16 @@ void Init(){
 	Delay10KTCYx(0);
 
 	
-	TRIS_M1_ENABLE = 0;
-	TRIS_M2_ENABLE = 0;
-	TRIS_M1_SENS = 0;
-	TRIS_M2_SENS = 0;
+	
 	
 	TRIB_BOUTON = 1;
 	OpenTimer2(TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1);
-	OpenPWM1(0xff);
-//	OpenPWM2(0xff);
-	SetDCPWM1(0x0320);
-//	SetDCPWM2(0x02AA);
+	
 
 
 	Servo_Init();
+	Moteurs_Init();
+	Temps_Init();
 
 	
 }
