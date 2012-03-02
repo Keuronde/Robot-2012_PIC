@@ -13,11 +13,11 @@ static int pos_servo[NB_SERVO]; 		// Tableau qui contient les valeurs
 
 void Servo_Init(){
 	char i;
-	// On active toutes les interruptions
+	/*// On active toutes les interruptions
 	INTCONbits.GIE = 1;
 	INTCONbits.PEIE = 1;
 	// On active les priorité d'interruption
-	RCONbits.IPEN = 1;
+	RCONbits.IPEN = 1;*/
 	WriteTimer2(0);
 	TRIS_SERVO1 = 0;
 	TRIS_SERVO2 = 0;
@@ -26,7 +26,7 @@ void Servo_Init(){
 	}
 	// Ouverture du timer
 	OpenTimer2( TIMER_INT_ON & T2_PS_1_16 & T2_POST_1_1);
-    
+    IPR1bits.TMR2IP = 1;
 }
 void Servo_Set(int unsigned position, char num_servo){
 	if(position > SERVO_MAX)
@@ -79,7 +79,7 @@ void Servo_Int(){
 				SERVO2=0;
 				timer_servo = 25;//25 - (pos_servo[servo_courant] >> 8);
 			}
-		}		
+		}
 	}
 	
 }

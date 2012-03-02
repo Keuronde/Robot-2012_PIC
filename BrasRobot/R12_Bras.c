@@ -1,58 +1,22 @@
 #include <p18cxxx.h>
-#include <timers.h>
-#include <delays.h>
-#include <pwm.h>
-#include "config.h"
 #include "servo/servo.h"
 #include "moteurs/moteurs.h"
 #include "temps/temps.h"
 
-/** D E F I N E D ********************************************************/
-// Identifiant balise
-#define ID_BALISE 0x44
-// Emission IR
-#define NB_MESSAGES 16
-#define NB_MSG_TOTAL 48
-// Clignotement LED
-#define F_1HZ 90
-#define F_5HZ 18
-// LED
-#define TRIS_LED TRISBbits.TRISB7
-#define LED LATBbits.LATB7
-// TEMPO (en centisecondes)
-#define TEMPO_SERVO_CS (unsigned int) 50
+
+#define TIMER_L    0x68
+#define TIMER_H    0xC5
+
 /** V A R I A B L E S ********************************************************/
-#pragma udata
-volatile unsigned char timer_led;
-volatile unsigned char timer_emi;
+#pragma idata
+volatile unsigned char timer_test=0;
+volatile unsigned char T3_test_H=0;
+volatile unsigned char T3_test_L=0;
 
-
-enum etat_cre_t {
-/* Attraper le lingo */
-    CRE_RENTREE=0,
-    CRE_AVANCE,
-    CRE_SORTIE,
-    CRE_RECULE
-};
-
-enum etat_bras_t {
-/* Attraper le lingo */
-    REPLIE=0,
-    OUVRE_DOIGT,
-    AVANCE_BRAS,
-    FERME_DOIGT,
-    RECULE_BRAS,
-    RENTRE_LINGOT,
-/* Deposer le lingo */
-	ROUVRE_DOIGT,
-	POUSSE_LINGOT,
-	RENTRE_BRAS
-};
 
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
 void MyInterrupt_L(void);
-void Init(void);
 
 /** V E C T O R  R E M A P P I N G *******************************************/
 
@@ -80,177 +44,122 @@ void _low_ISR (void)
 
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void){
-	// code de "Rustre Corner"
-	// Adapté et modifié par S. KAY
-	unsigned char sauv1;
-	unsigned char sauv2;
-
-	sauv1 = PRODL;
-	sauv2 = PRODH;
-	
+	// Timer 2 en interruption haute
+	/*if (PIR1bits.TMR2IF)
+	{
+		PIR1bits.TMR2IF = 0;
+	}*/
 	Servo_Int();
-
-	PRODL = sauv1;
-	PRODH = sauv2;		
-
+	T3_test_L++;
 }
 
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
+	// Timer 3 en interruption basse
 	
-	Temps_Int();
+	if(PIR2bits.TMR3IF){
+		PIR2bits.TMR3IF = 0; // On réarme le Timer3
+		T3_test_H++;
+		// Code déclenchant le problème.
+		INTCONbits.GIEH = 0;
+		INTCONbits.GIEL = 0;
+		TMR3H = TIMER_H;
+		TMR3L = TIMER_L;
+		INTCONbits.GIEH = 1;
+		INTCONbits.GIEL = 1;
 
+		centisecondes++;
+	}
+	//Temps_Int();
+	
 }
 
 
 #pragma code
-
-
-
-
 void main(void){
-	enum etat_bras_t e_bras_gauche=REPLIE;
-	enum etat_bras_t e_bras_droit =REPLIE;
 	char i=0;
-	unsigned int temps_cs, tempo_cs;
-    Init();
-    
+	unsigned int temps_cs=0;
+	unsigned char tmp=0,tmp1=0,tmp_old = 0;
+	
+    /* Initialisation **************************************/
+    // Sorties
+    TRISA = 0xF0;
+    TRISB = 0x1F; // RB5, RB6, RB7 en sortie
 
-    M1_ENABLE = 1;
-    M1_SENS = 1;
-    
-    M2_ENABLE = 1;
-    M2_SENS = 1;
-    
-  
-  
-	// Test algo bras gauche
-	e_bras_gauche = OUVRE_DOIGT;
-	//Servo_Set(DOIGT_G_OUVERT);
+    // Timer 3
+    T3CON = 0xB1; // sans préscaler, Timer On
+    T1CONbits.RD16 = 1;
+    IPR2bits.TMR3IP = 0; // Interruption basse
+	PIR2bits.TMR3IF = 0; // On enlève le drapeau
+	PIE2bits.TMR3IE = 1; // On active l'interruption.
+	
+    // Timer 2
+    T2CON = 0x7C; // Préscaler 1:16, Timer ON
+    IPR1bits.TMR2IP = 1; // Interruption haute
+	PIR1bits.TMR2IF = 0; // On enlève le drapeau
+	PIE1bits.TMR2IE = 1; // On active l'interruption.
+	
+    // On active toutes les interruptions
+	INTCONbits.GIE = 1;		// Hautes
+	INTCONbits.PEIE = 1;	// Basses
+	// On active les priorité d'interruption
+	RCONbits.IPEN = 1;		// Priorites
+	
+	Servo_Init();
+	Temps_Init();
+	tmp = timer_test;
+	tmp_old = tmp;
+
+
     while(1){
 		// On récupère l'heure 
-		if(temps_cs != getTemps_s()){
-			temps_cs = getTemps_s();
+		//tmp = timer_test;
+		tmp = centisecondes;
+		if( (tmp != tmp_old) ){
+			if(tmp != (unsigned char) (tmp_old+1)){
+				LATA |= 0x03;
+			}
+			tmp_old = tmp;
+			tmp1 = (tmp_old>>4);
+		}
+		
+		if(temps_cs != tmp1)		
+		{
+			temps_cs = tmp1;
 			i++;
-			if (i>4){
+			if (i>3){
 				i=1;
 			}
 		}
+		// Reset debug 
+		if (PORTBbits.RB4 == 0){
+			LATA = 0;
+		}
 		
+		// Validaiton écriture Timer
+		if(T3_test_H != TIMER_H){
+			LATA |= 0x04;
+		}
+		if(T3_test_L != TIMER_L){
+			LATA |= 0x08;
+		}
+		
+		
+		// Allumage LEDs
 		switch (i){
 			case 1:
-				CT7  =0;
-				CT10 =1;
+				LATB = 0x20;
 				break;
 			case 2:
-				CT10 = 0;
-				CT9  = 1;
+				LATB = 0x40;
 				break;
 			case 3:
-				CT9 = 0;
-				CT8 = 1;
-				break;
-			case 4:
-				CT8 =0;
-				CT7 =1;
+				LATB = 0x80;
 				break;
 			default:
 				break;
 		}
-		
-		//Machine à état de gestion des bras
-		/*
-		switch (e_bras_gauche){
-			case REPLIE:
-				if (CT_M1_AR == 1){
-					M1_Avance();
-				}else{
-					M1_Stop();
-				}
-				break;
-			// Attraper le lingo 
-			case OUVRE_DOIGT:
-				e_bras_gauche = AVANCE_BRAS;
-				break;
-			case AVANCE_BRAS:
-				M1_Avance();
-				if (CT_M1_AV == 0){
-					e_bras_gauche = FERME_DOIGT;
-				}
-				break;
-			case FERME_DOIGT:
-				if (CT_M1_AV == 0){
-					M1_Recule();
-				}else{
-					M1_Stop();
-				}
-				e_bras_gauche = RECULE_BRAS;
-				break;
-			case RECULE_BRAS:
-				
-				M1_Recule();
-				if (CT_M1_AR == 1){
-					M1_Stop();
-					e_bras_gauche = RENTRE_LINGOT;
-				}
-				break;
-			case RENTRE_LINGOT:
-				e_bras_gauche = REPLIE;
-				break;
-			// Deposer le lingo 
-			case ROUVRE_DOIGT:
-				break;
-			case POUSSE_LINGOT:
-				break;
-			case RENTRE_BRAS:
-				break;
-			default:
-				break;
-		}
-
-		*/
     }
-
-}
-
-void Init(){
-	// Toutes les pattes en digital (pas d'analogique)
-    ADCON1 |= 0x0F;
-    // Contacteur en sortie (pour le test)
-	TRIS_CT1 = 1;
-	TRIS_CT2 = 1;
-	TRIS_CT3 = 1;
-	TRIS_CT4 = 1;
-	TRIS_CT7 = 0;
-	TRIS_CT8 = 0;
-	TRIS_CT9 = 0;
-	TRIS_CT10 = 0;
-	
-	// Contacteurs crémaillère
-	TRIS_CT_M1_AV = 1;
-	TRIS_CT_M1_AR = 1;
-	
-	CT10 = 1;
-	Delay10KTCYx(0);
-	Delay10KTCYx(0);
-
-	CT10 = 0;
-	Delay10KTCYx(0);
-	Delay10KTCYx(0);
-
-	
-	
-	
-	TRIB_BOUTON = 1;
-	OpenTimer2(TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1);
-	
-
-
-	Servo_Init();
-	Moteurs_Init();
-	Temps_Init();
-
-	
 }
 
 
