@@ -1,4 +1,4 @@
-extern volatile unsigned char centisecondes;
+extern volatile unsigned int centisecondes;
 
 void Temps_Init(void);
 unsigned int getTemps(void);

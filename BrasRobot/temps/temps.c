@@ -8,7 +8,7 @@
 #define TIMER_L    0x68
 #define TIMER_H    0xC5
 
-volatile unsigned char centisecondes;
+volatile unsigned int centisecondes;
 
 
 
@@ -29,19 +29,20 @@ void Temps_Init(){
 	IPR2bits.TMR3IP = 0; // Interruption basse
 	PIR2bits.TMR3IF = 0; // On enlève le drapeau
 	PIE2bits.TMR3IE = 1; // On active l'interruption.
-	T3CON = 0x31;	// Ecriture/lecture en mode 8 bits
+	T3CON = 0xB1;	// Ecriture/lecture en mode 8 bits
 					// Prescaler = 1:8
 					// Horloge interne
 	
 }
-
+// A ne pas utiliser - Do not use
+// Copier le code en interruption
+// Copy this code into the interrupt
 void Temps_Int(void){
 	if(PIR2bits.TMR3IF){
 		PIR2bits.TMR3IF = 0; // On réarme le Timer3
 		// Desactivation des interruptions
 		INTCONbits.GIEH = 0;
 		INTCONbits.GIEL = 0;
-		//WriteTimer3(TIMER_INIT);
 		// Ecriture du timer
 		TMR3H = TIMER_H;
 		TMR3L = TIMER_L;
@@ -57,11 +58,7 @@ void Temps_Int(void){
 unsigned int getTemps_cs(){
 	unsigned int a;
 	PIE2bits.TMR3IE = 0;
-	INTCONbits.GIE = 0;
-	INTCONbits.PEIE = 0;
 	a = centisecondes;
-	INTCONbits.GIE = 1;
-	INTCONbits.PEIE = 1;
 	PIE2bits.TMR3IE = 1;
 	return a;
 }

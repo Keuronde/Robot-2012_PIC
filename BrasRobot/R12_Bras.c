@@ -44,13 +44,8 @@ void _low_ISR (void)
 
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void){
-	// Timer 2 en interruption haute
-	/*if (PIR1bits.TMR2IF)
-	{
-		PIR1bits.TMR2IF = 0;
-	}*/
+	
 	Servo_Int();
-	T3_test_L++;
 }
 
 #pragma interrupt MyInterrupt_L
@@ -59,14 +54,9 @@ void MyInterrupt_L(void){
 	
 	if(PIR2bits.TMR3IF){
 		PIR2bits.TMR3IF = 0; // On réarme le Timer3
-		T3_test_H++;
-		// Code déclenchant le problème.
-		INTCONbits.GIEH = 0;
-		INTCONbits.GIEL = 0;
+
 		TMR3H = TIMER_H;
 		TMR3L = TIMER_L;
-		INTCONbits.GIEH = 1;
-		INTCONbits.GIEL = 1;
 
 		centisecondes++;
 	}
@@ -79,19 +69,19 @@ void MyInterrupt_L(void){
 void main(void){
 	char i=0;
 	unsigned int temps_cs=0;
-	unsigned char tmp=0,tmp1=0,tmp_old = 0;
+	unsigned int tmp=0,tmp1=0,tmp_old = 0;
 	
     /* Initialisation **************************************/
     // Sorties
     TRISA = 0xF0;
     TRISB = 0x1F; // RB5, RB6, RB7 en sortie
 
-    // Timer 3
+    /*// Timer 3
     T3CON = 0xB1; // sans préscaler, Timer On
     T1CONbits.RD16 = 1;
     IPR2bits.TMR3IP = 0; // Interruption basse
 	PIR2bits.TMR3IF = 0; // On enlève le drapeau
-	PIE2bits.TMR3IE = 1; // On active l'interruption.
+	PIE2bits.TMR3IE = 1; // On active l'interruption.*/
 	
     // Timer 2
     T2CON = 0x7C; // Préscaler 1:16, Timer ON
@@ -114,9 +104,9 @@ void main(void){
     while(1){
 		// On récupère l'heure 
 		//tmp = timer_test;
-		tmp = centisecondes;
+		tmp = getTemps_cs();
 		if( (tmp != tmp_old) ){
-			if(tmp != (unsigned char) (tmp_old+1)){
+			if(tmp != (unsigned int) (tmp_old+1)){
 				LATA |= 0x03;
 			}
 			tmp_old = tmp;
@@ -136,13 +126,6 @@ void main(void){
 			LATA = 0;
 		}
 		
-		// Validaiton écriture Timer
-		if(T3_test_H != TIMER_H){
-			LATA |= 0x04;
-		}
-		if(T3_test_L != TIMER_L){
-			LATA |= 0x08;
-		}
 		
 		
 		// Allumage LEDs
