@@ -21,6 +21,8 @@
 #define LED LATBbits.LATB7
 // TEMPO (en centisecondes)
 #define TEMPO_SERVO_CS (unsigned int) 50
+// 50536 = 0xC568
+
 /** V A R I A B L E S ********************************************************/
 #pragma udata
 volatile unsigned char timer_led;
@@ -82,23 +84,21 @@ void _low_ISR (void)
 void MyInterrupt(void){
 	// code de "Rustre Corner"
 	// Adapté et modifié par S. KAY
-	unsigned char sauv1;
-	unsigned char sauv2;
-
-	sauv1 = PRODL;
-	sauv2 = PRODH;
-	
 	Servo_Int();
 
-	PRODL = sauv1;
-	PRODH = sauv2;		
 
 }
 
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
 	
-	Temps_Int();
+	if(PIR2bits.TMR3IF){
+		PIR2bits.TMR3IF = 0; // On réarme le Timer3
+		//WriteTimer3(TIMER_INIT);
+		TMR3H = TIMER_H;
+		TMR3L = TIMER_L;
+		centisecondes++;
+	}
 
 }
 
@@ -112,9 +112,8 @@ void main(void){
 	enum etat_bras_t e_bras_gauche=REPLIE;
 	enum etat_bras_t e_bras_droit =REPLIE;
 	char i=0;
-	unsigned int temps_cs, tempo_cs;
+	unsigned int temps, temps_old;
     Init();
-    
 
     M1_ENABLE = 1;
     M1_SENS = 1;
@@ -127,14 +126,23 @@ void main(void){
 	// Test algo bras gauche
 	e_bras_gauche = OUVRE_DOIGT;
 	//Servo_Set(DOIGT_G_OUVERT);
+	temps = getTemps_s();
+	temps_old = temps;
     while(1){
 		// On récupère l'heure 
-		if(temps_cs != getTemps_s()){
-			temps_cs = getTemps_s();
+		temps = getTemps_s();
+		if(temps != temps_old){
+			if(temps != (unsigned int)(temps_old+1)){
+				LATA |= 0x0F;
+			}
+			temps_old = temps;
 			i++;
 			if (i>4){
 				i=1;
 			}
+		}
+		if(PORTBbits.RB4 == 0){
+			LATA = 0;
 		}
 		
 		switch (i){
@@ -159,7 +167,7 @@ void main(void){
 		}
 		
 		//Machine à état de gestion des bras
-		/*
+		
 		switch (e_bras_gauche){
 			case REPLIE:
 				if (CT_M1_AR == 1){
@@ -208,7 +216,7 @@ void main(void){
 				break;
 		}
 
-		*/
+		
     }
 
 }
@@ -217,6 +225,9 @@ void Init(){
 	// Toutes les pattes en digital (pas d'analogique)
     ADCON1 |= 0x0F;
     // Contacteur en sortie (pour le test)
+        
+	TRISA = 0xF0;
+	
 	TRIS_CT1 = 1;
 	TRIS_CT2 = 1;
 	TRIS_CT3 = 1;
@@ -242,13 +253,20 @@ void Init(){
 	
 	
 	TRIB_BOUTON = 1;
-	OpenTimer2(TIMER_INT_OFF & T2_PS_1_4 & T2_POST_1_1);
 	
 
 
 	Servo_Init();
 	Moteurs_Init();
 	Temps_Init();
+	
+	// On active toutes les interruptions
+	INTCONbits.GIE = 1;
+	INTCONbits.PEIE = 1;
+	// On active les priorité d'interruption
+	RCONbits.IPEN = 1;
+	
+	T1CONbits.RD16 = 1;
 
 	
 }
