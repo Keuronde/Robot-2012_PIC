@@ -51,7 +51,7 @@ void M1_Stop(void){
 // Moteur 2
 void M2_Avance(void){
 	if(e_moteur_2 != M_AVANCE){
-		M2_SENS = 1;
+		M2_SENS = 0;
 		SetDCPWM2(V_MOTEUR);
 		e_moteur_2 = M_AVANCE;
 	}
@@ -59,7 +59,7 @@ void M2_Avance(void){
 
 void M2_Recule(void){
 	if(e_moteur_2 != M_RECULE){
-		M2_SENS = 0;
+		M2_SENS = 1;
 		SetDCPWM2(V_MOTEUR);
 		e_moteur_2 = M_RECULE;
 	}

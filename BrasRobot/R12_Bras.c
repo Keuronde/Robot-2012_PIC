@@ -112,7 +112,7 @@ void main(void){
 	enum etat_bras_t e_bras_gauche=REPLIE;
 	enum etat_bras_t e_bras_droit =REPLIE;
 	char i=0;
-	unsigned char delai_sg = 0;
+	unsigned char delai_sg = 0,delai_sd = 0;
 	unsigned int temps, temps_old;
     Init();
 
@@ -139,17 +139,78 @@ void main(void){
 			if(	delai_sg > 0){
 				delai_sg--;
 			}
+			if(	delai_sd > 0){
+				delai_sd--;
+			}
 		}
 		
 		if(PORTBbits.RB4 == 0){
 			e_bras_gauche = OUVRE_DOIGT;
+			e_bras_droit = OUVRE_DOIGT;
 			Servo_Set(DOIGT_G_OUVERT);
 			delai_sg = TEMPO_SERVO_CS;
 		}
 		
 		
 		//Machine à état de gestion des bras
+		// Bras Droit
+		switch (e_bras_droit){
+			case REPLIE:
+				if (CT_M2_AR == 1){
+					M2_Avance();
+				}else{
+					M2_Stop();
+				}
+				break;
+			// Attraper le lingo 
+			case OUVRE_DOIGT:
+				if (delai_sd == 0){
+					e_bras_droit = AVANCE_BRAS;
+				}
+				break;
+			case AVANCE_BRAS:
+				M2_Avance();
+				if (CT_M2_AV == 0){
+					e_bras_droit = FERME_DOIGT;
+					delai_sd = TEMPO_SERVO_CS;
+					Servo_Set(DOIGT_D_TIRE);
+				}
+				break;
+			case FERME_DOIGT:
+				if (CT_M2_AV == 0){
+					M2_Recule();
+				}else{
+					M2_Stop();
+				}
+				if(delai_sd == 0){
+					e_bras_droit = RECULE_BRAS;
+				}
+				break;
+			case RECULE_BRAS:
+				
+				M2_Recule();
+				if (CT_M2_AR == 1){
+					M2_Stop();
+					e_bras_droit = RENTRE_LINGOT;
+					Servo_Set(DOIGT_D_RABAT);
+				}
+				break;
+			case RENTRE_LINGOT:
+				e_bras_droit = REPLIE;
+				break;
+			// Deposer le lingo 
+			case ROUVRE_DOIGT:
+				break;
+			case POUSSE_LINGOT:
+				break;
+			case RENTRE_BRAS:
+				break;
+			default:
+				break;
+		}
 		
+		
+		// Bras Gauche
 		switch (e_bras_gauche){
 			case REPLIE:
 				if (CT_M1_AR == 1){
@@ -220,8 +281,6 @@ void Init(){
 	TRIS_CT1 = 1;
 	TRIS_CT2 = 1;
 	TRIS_CT3 = 1;
-	TRIS_CT4 = 1;
-	TRIS_CT7 = 0;
 	TRIS_CT8 = 0;
 	TRIS_CT9 = 0;
 	TRIS_CT10 = 0;
@@ -229,6 +288,8 @@ void Init(){
 	// Contacteurs crémaillère
 	TRIS_CT_M1_AV = 1;
 	TRIS_CT_M1_AR = 1;
+	TRIS_CT_M2_AV = 1;
+	TRIS_CT_M2_AR = 1;
 	
 	CT10 = 1;
 	Delay10KTCYx(0);

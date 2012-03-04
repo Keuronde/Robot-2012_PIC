@@ -12,9 +12,10 @@
 #define DOIGT_G_RABAT  0x5D0,0
 #define DOIGT_G_FERME  0x710,0
 // SERVO 2 (marqué servo 1 sur la carte réelle)
-#define CMUCAM_HAUT 0x3D0,1
-#define CMUCAM_BAS  0x4D0,1
-
+#define DOIGT_D_OUVERT 0x2D0,1
+#define DOIGT_D_TIRE   0x4D0,1
+#define DOIGT_D_RABAT  0x5D0,1
+#define DOIGT_D_FERME  0x710,1
 
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void Servo_Set(unsigned int,char);
