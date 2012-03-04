@@ -20,7 +20,7 @@
 #define TRIS_LED TRISBbits.TRISB7
 #define LED LATBbits.LATB7
 // TEMPO (en centisecondes)
-#define TEMPO_SERVO_CS (unsigned int) 50
+#define TEMPO_SERVO_CS (unsigned char) 40
 // 50536 = 0xC568
 
 /** V A R I A B L E S ********************************************************/
@@ -112,6 +112,7 @@ void main(void){
 	enum etat_bras_t e_bras_gauche=REPLIE;
 	enum etat_bras_t e_bras_droit =REPLIE;
 	char i=0;
+	unsigned char delai_sg = 0;
 	unsigned int temps, temps_old;
     Init();
 
@@ -124,47 +125,28 @@ void main(void){
   
   
 	// Test algo bras gauche
-	e_bras_gauche = OUVRE_DOIGT;
-	//Servo_Set(DOIGT_G_OUVERT);
+	e_bras_gauche = REPLIE;
+	Servo_Set(DOIGT_G_OUVERT);
 	temps = getTemps_s();
 	temps_old = temps;
     while(1){
 		// On récupère l'heure 
-		temps = getTemps_s();
+		temps = getTemps_cs();
 		if(temps != temps_old){
-			if(temps != (unsigned int)(temps_old+1)){
-				LATA |= 0x0F;
-			}
 			temps_old = temps;
-			i++;
-			if (i>4){
-				i=1;
+			
+			// gestion des délais
+			if(	delai_sg > 0){
+				delai_sg--;
 			}
-		}
-		if(PORTBbits.RB4 == 0){
-			LATA = 0;
 		}
 		
-		switch (i){
-			case 1:
-				CT7  =0;
-				CT10 =1;
-				break;
-			case 2:
-				CT10 = 0;
-				CT9  = 1;
-				break;
-			case 3:
-				CT9 = 0;
-				CT8 = 1;
-				break;
-			case 4:
-				CT8 =0;
-				CT7 =1;
-				break;
-			default:
-				break;
+		if(PORTBbits.RB4 == 0){
+			e_bras_gauche = OUVRE_DOIGT;
+			Servo_Set(DOIGT_G_OUVERT);
+			delai_sg = TEMPO_SERVO_CS;
 		}
+		
 		
 		//Machine à état de gestion des bras
 		
@@ -178,12 +160,16 @@ void main(void){
 				break;
 			// Attraper le lingo 
 			case OUVRE_DOIGT:
-				e_bras_gauche = AVANCE_BRAS;
+				if (delai_sg == 0){
+					e_bras_gauche = AVANCE_BRAS;
+				}
 				break;
 			case AVANCE_BRAS:
 				M1_Avance();
 				if (CT_M1_AV == 0){
 					e_bras_gauche = FERME_DOIGT;
+					delai_sg = TEMPO_SERVO_CS;
+					Servo_Set(DOIGT_G_TIRE);
 				}
 				break;
 			case FERME_DOIGT:
@@ -192,7 +178,9 @@ void main(void){
 				}else{
 					M1_Stop();
 				}
-				e_bras_gauche = RECULE_BRAS;
+				if(delai_sg == 0){
+					e_bras_gauche = RECULE_BRAS;
+				}
 				break;
 			case RECULE_BRAS:
 				
@@ -200,6 +188,7 @@ void main(void){
 				if (CT_M1_AR == 1){
 					M1_Stop();
 					e_bras_gauche = RENTRE_LINGOT;
+					Servo_Set(DOIGT_G_RABAT);
 				}
 				break;
 			case RENTRE_LINGOT:
