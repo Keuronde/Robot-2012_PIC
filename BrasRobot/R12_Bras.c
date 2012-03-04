@@ -127,6 +127,7 @@ void main(void){
 	// Test algo bras gauche
 	e_bras_gauche = REPLIE;
 	Servo_Set(DOIGT_G_OUVERT);
+	Servo_Set(DOIGT_D_OUVERT);
 	temps = getTemps_s();
 	temps_old = temps;
     while(1){
@@ -148,7 +149,9 @@ void main(void){
 			e_bras_gauche = OUVRE_DOIGT;
 			e_bras_droit = OUVRE_DOIGT;
 			Servo_Set(DOIGT_G_OUVERT);
+			Servo_Set(DOIGT_D_OUVERT);
 			delai_sg = TEMPO_SERVO_CS;
+			delai_sd = TEMPO_SERVO_CS;
 		}
 		
 		
