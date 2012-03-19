@@ -44,24 +44,13 @@ void _low_ISR (void)
 
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void){
-	
-	Servo_Int();
+	Servo_Int()
 }
 
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
 	// Timer 3 en interruption basse
-	
-	if(PIR2bits.TMR3IF){
-		PIR2bits.TMR3IF = 0; // On réarme le Timer3
-
-		TMR3H = TIMER_H;
-		TMR3L = TIMER_L;
-
-		centisecondes++;
-	}
-	//Temps_Int();
-	
+	Temps_Int()
 }
 
 

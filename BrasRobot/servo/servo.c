@@ -5,9 +5,9 @@
 
 
 /** V A R I A B L E S ********************************************************/
-static char timer_servo = 1; // Compteur qui permet d'avoir une periode de 10 ms.
-static char servo_courant = 0; // Compteur qui sauvegarde le servo courant.
-static int pos_servo[NB_SERVO]; 		// Tableau qui contient les valeurs 
+volatile char timer_servo = 1; // Compteur qui permet d'avoir une periode de 10 ms.
+volatile char servo_courant = 0; // Compteur qui sauvegarde le servo courant.
+volatile int pos_servo[NB_SERVO]; 		// Tableau qui contient les valeurs 
 
 
 
@@ -41,45 +41,4 @@ int Servo_Get(char num){
 	return pos_servo[num];
 }
 
-void Servo_Int(){
-	/* timer qui se charge de l'impulsion */
-	// On prend le timer deux qui ne sert à rien sinon.
-	if (PIR1bits.TMR2IF)
-	{
-		// On réarme le timer
-		PIR1bits.TMR2IF = 0;
-		WriteTimer2(0);
-		timer_servo--;
-		if(timer_servo <= 0){
-			if(servo_courant == 0){
-				SERVO1=1;
-				timer_servo = pos_servo[0] >> 8;
-				if((pos_servo[servo_courant] & 0x00FF) != 0){
-					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
-				}else{
-					WriteTimer2(0);
-					timer_servo--;
-				}
-				
-				servo_courant = 1;
-			}else if(servo_courant == 1){
-    			SERVO1=0;
-				SERVO2=1;
-				timer_servo = pos_servo[1] >> 8;
-				if((pos_servo[servo_courant] & 0x00FF) != 0){
-					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
-				}else{
-					WriteTimer2(0);
-					timer_servo--;
-				}
-				
-				servo_courant = 2;
-			}else{
-				servo_courant = 0;
-				SERVO2=0;
-				timer_servo = 25;//25 - (pos_servo[servo_courant] >> 8);
-			}
-		}
-	}
-	
-}
+
