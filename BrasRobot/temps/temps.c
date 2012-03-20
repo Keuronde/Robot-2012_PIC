@@ -33,7 +33,25 @@ void Temps_Init(){
 					// Horloge interne
 	
 }
-
+// A ne pas utiliser - Do not use
+// Copier le code en interruption
+// Copy this code into the interrupt
+void Temps_Int(void){
+	if(PIR2bits.TMR3IF){
+		PIR2bits.TMR3IF = 0; // On réarme le Timer3
+		// Desactivation des interruptions
+		INTCONbits.GIEH = 0;
+		INTCONbits.GIEL = 0;
+		// Ecriture du timer
+		TMR3H = TIMER_H;
+		TMR3L = TIMER_L;
+		// Réactivation des interruptions
+		INTCONbits.GIEH = 1;
+		INTCONbits.GIEL = 1;
+		centisecondes++;
+		
+	}
+}
 
 
 unsigned int getTemps_cs(){

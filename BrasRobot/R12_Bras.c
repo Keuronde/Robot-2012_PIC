@@ -84,7 +84,7 @@ void _low_ISR (void)
 void MyInterrupt(void){
 	// code de "Rustre Corner"
 	// Adapté et modifié par S. KAY
-	Servo_Int()
+	Servo_Int();
 
 
 }
@@ -92,7 +92,13 @@ void MyInterrupt(void){
 #pragma interrupt MyInterrupt_L
 void MyInterrupt_L(void){
 	
-	Temps_Int()
+	if(PIR2bits.TMR3IF){
+		PIR2bits.TMR3IF = 0; // On réarme le Timer3
+		//WriteTimer3(TIMER_INIT);
+		TMR3H = TIMER_H;
+		TMR3L = TIMER_L;
+		centisecondes++;
+	}
 
 }
 
