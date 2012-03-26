@@ -1,7 +1,8 @@
 BIN	:=	ProtoCD
 
 SRCS	:=	src/servo.c \
-			src/protoCD.c
+			src/protoCD.c\
+			src/carte_servo.c
 
 ## Information concernant le compilateur
 include ../../build/commun.mk

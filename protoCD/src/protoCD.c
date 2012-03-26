@@ -1,6 +1,7 @@
 #include <p18cxxx.h>
 #include <delays.h>
 #include <timers.h>
+#include "../include/carte_servo.h"
 #include "../include/servo.h"
 
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
@@ -59,8 +60,44 @@ void MyInterrupt(void)
 				
 				servo_courant++;
 			}else if(servo_courant == 1){
-			  SERVO1=0;
+				SERVO1=0;
 				SERVO2=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 2){
+				SERVO2=0;
+				SERVO3=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 3){
+				SERVO3=0;
+				SERVO4=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 4){
+				SERVO4=0;
+				SERVO5=1;
 				timer_servo = pos_servo[servo_courant] >> 8;
 				if((pos_servo[servo_courant] & 0x00FF) != 0){
 					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
@@ -72,7 +109,7 @@ void MyInterrupt(void)
 				servo_courant++;
 			}else{
 				servo_courant = 0;
-				SERVO2=0;
+				SERVO5=0;
 				timer_servo = 25;//25 - (pos_servo[servo_courant] >> 8);
 			}
 		}		

@@ -2,7 +2,9 @@
 #include <timers.h>
 	
 #include <p18f2550.h>
+#include "../include/carte_servo.h"
 #include "../include/servo.h"
+
 
 /** V A R I A B L E S ********************************************************/
 volatile char timer_servo = 1; // Compteur qui permet d'avoir une periode de 10 ms.
@@ -21,10 +23,13 @@ void Servo_Init(){
 	WriteTimer2(0);
 	TRIS_SERVO1 = 0;
 	TRIS_SERVO2 = 0;
+	TRIS_SERVO3 = 0;
+	TRIS_SERVO4 = 0;
+	TRIS_SERVO5 = 0;
+	
 	for(i=0;i<10;i++){
 		pos_servo[i]=0x0460;
 	}
-	pos_servo[0]=0x0460;
 }
 void Servo_Set(int unsigned position, char num_servo){
 	if(position > SERVO_MAX)
@@ -61,8 +66,44 @@ void Servo_Int(){
 				
 				servo_courant++;
 			}else if(servo_courant == 1){
-			  SERVO1=0;
+				SERVO1=0;
 				SERVO2=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 2){
+				SERVO2=0;
+				SERVO3=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 3){
+				SERVO3=0;
+				SERVO4=1;
+				timer_servo = pos_servo[servo_courant] >> 8;
+				if((pos_servo[servo_courant] & 0x00FF) != 0){
+					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
+				}else{
+					WriteTimer2(0);
+					timer_servo--;
+				}
+				
+				servo_courant++;
+			}else if(servo_courant == 4){
+				SERVO4=0;
+				SERVO5=1;
 				timer_servo = pos_servo[servo_courant] >> 8;
 				if((pos_servo[servo_courant] & 0x00FF) != 0){
 					WriteTimer2((unsigned char)(0x100 - (pos_servo[servo_courant] & 0x00FF)));
@@ -74,7 +115,7 @@ void Servo_Int(){
 				servo_courant++;
 			}else{
 				servo_courant = 0;
-				SERVO2=0;
+				SERVO5=0;
 				timer_servo = 25;//25 - (pos_servo[servo_courant] >> 8);
 			}
 		}		
