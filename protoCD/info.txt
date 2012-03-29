@@ -1,0 +1,5 @@
+
+Programme de test pour la compilation sous linux. 
+Ce programme établi une connexion USB et répond à l'appuis d'une touche.
+Après une séquence d'initialisation (envoi de "i" puis "l" via l'USB /dev/ttyACM0 ou COMx) le pic renvoie la valeur de l'angle mesuré grâce au wii Motion plus. Le Wii Motion Plus se branche sur l'I2C et alim (GND, +5V). Les nombres ne sont pas formatés en ascii.
+L'interface graphique des capteurs de couleurs permet d'afficher le nombre reçu. (GuiPic/CapteurCouleur) 
