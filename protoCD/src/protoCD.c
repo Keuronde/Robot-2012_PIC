@@ -45,14 +45,6 @@ void _low_ISR (void)
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void)
 {
-	// code de "Rustre Corner"
-	// Adapté et modifié par S. KAY
-	/*unsigned char sauv1;
-	unsigned char sauv2;
-
-	sauv1 = PRODL;
-	sauv2 = PRODH;	*/
-
 
 	if (PIR1bits.TMR2IF)
 	{
@@ -127,12 +119,7 @@ void MyInterrupt(void)
 			}
 		}		
 	}
-	// Gestion de l'I2C
-	//com_i2c();
 
-/*
-	PRODL = sauv1;
-	PRODH = sauv2;		*/
 }
 
 
