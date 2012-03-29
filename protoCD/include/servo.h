@@ -9,6 +9,7 @@
 
 // Positions
 // Pince
+<<<<<<< HEAD
 #define PINCE_OUVERT 0x6FE,3
 #define PINCE_FERMEE 0x4EF,3
 #define PINCE_LACHE  0x54F,3
@@ -16,6 +17,17 @@
 #define BRAS_HAUT    0x6AE,4
 #define BRAS_BAS     0x393,4
 #define BRAS_BASCULE 0x7FE,4
+=======
+//#define PINCE_OUVERT (unsigned int)0x4EF,(char)3
+#define PINCE_OUVERT (unsigned int)0x510,(char)3
+#define PINCE_FERMEE (unsigned int)0x6FE,(char)3
+#define PINCE_LACHE  (unsigned int)0x6A0,(char)3
+// Bras
+#define BRAS_HAUT    (unsigned int)0x6AE,(char)4
+//#define BRAS_BAS     0x393,4
+#define BRAS_BAS     (unsigned int)0x3B3,(char)4
+#define BRAS_BASCULE (unsigned int)0x7FE,(char)4
+>>>>>>> Carte prête pour l'homologation
 
 
 // Variables globales

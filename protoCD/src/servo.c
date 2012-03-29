@@ -37,8 +37,11 @@ void Servo_Set(int unsigned position, char num_servo){
 
 	if(position < SERVO_MIN)
 		position = SERVO_MIN;
+		
 
+	PIE1bits.TMR2IE =0;
 	pos_servo[num_servo] = position;
+	PIE1bits.TMR2IE =1;
 }
 int Servo_Get(char num){
 	return pos_servo[num];
