@@ -1,7 +1,7 @@
 
 BIN	:=	Strategie
 
-SRCS	:=	src/JapExpo.c \
+SRCS	:=	src/Strategie.c \
             src/carte_strategie.c \
             src/i2c_m.c \
             src/i2c_moteurs.c \

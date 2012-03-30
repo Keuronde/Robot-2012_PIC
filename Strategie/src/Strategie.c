@@ -311,128 +311,11 @@ void main(void){
 	    char i,j;
 
 	    while(mTimer == getTimer());
-        /***************************
-	    *                          *
-	    * Gestion de la manette    *
-	    *                          *
-	    ***************************/
-	    
-		if(WiiClassic_Read()){
-			
-			// Allumer ou eteindre le RELAIS LED CMUCam
-			if (tempo_relay != 0){
-				tempo_relay--;
-			}
-
-			if(WCC_get_A()){
-				//LED_CMUCAM = 1;
-				if (tempo_relay == 0){
-					LED_CMUCAM =!LED_CMUCAM;
-					tempo_relay = 100;
-				}
-			}else{
-				//LED_CMUCAM = 0;
-			}
-			RELAIS = LED_CMUCAM;
-			
-			// Moteur propulsion
-			if(WCC_get_GY() >= -2 && WCC_get_GY() <= 2){
-				prop_stop();
-			}else if(WCC_get_GY() > 0){
-				Avance();
-				if(WCC_get_GY() > 8){
-					prop_set_vitesse(1);
-				}else{
-					prop_set_vitesse(0);
-				}
-			}else if(WCC_get_GY() < 0){
-				Recule();
-				if(WCC_get_GY() < -8){
-					prop_set_vitesse(1);
-				}else{
-					prop_set_vitesse(0);
-				}
-			}
-			
-			// Moteur pas à pas
-			{
-				int pos_pap;
-				pos_pap = (int)WCC_get_GX() * (int)8;
-				if( pos_pap > PAP_MAX_ROT ){
-					pos_pap = PAP_MAX_ROT;
-				}
-				
-				if(WCC_get_ZL()){
-					pos_pap_offset_new = pos_pap  + pos_pap_offset;
-				}
-				if(!WCC_get_ZL()){
-					pos_pap_offset = pos_pap_offset_new;
-				}
-				pap_set_pos(pos_pap + pos_pap_offset);
-			}
-			
-			// Poussoirs
-			if(WCC_get_B()){
-				etat_poussoirs = LEVES_AVANT_PION;
-			}
-			
-			// Crémaillère
-			if(WCC_get_Y()){
-				SetCremaillere(BAS);
-			}
-			if(WCC_get_X()){
-				SetCremaillere(HAUT);
-			}
-			
-			
-			
-		}
-		
-		/************************
-        *                       *
-        * Gestion des poussoirs *
-        *                       *
-        ************************/
+        // Calculer et récupérer l'angle du gyroscope (A22)
+        mTimer =getTimer(); // On récupère le numéro (0 à 255) du pas de temps pour le gyroscope
         
-        switch (etat_poussoirs){
-			case INIT:
-				SetServoPArD(BAS);
-				SetServoPArG(BAS);
-				SetServoPAv(HAUT);
-				if(!ABSENCE_PION){
-					etat_poussoirs=BAISSES;
-				}
-				break;
-			case BAISSES:
-				SetServoPArD(BAS);
-				SetServoPArG(BAS);
-				SetServoPAv(BAS);
-				break;
-			case LEVES_AVANT_PION:
-				SetServoPArD(HAUT);
-				SetServoPArG(HAUT);
-				SetServoPAv(HAUT);
-				if(!ABSENCE_PION){
-					etat_poussoirs=LEVES_SUR_PION;
-				}
-				break;
-			case LEVES_SUR_PION:
-				SetServoPArD(HAUT);
-				SetServoPArG(HAUT);
-				SetServoPAv(HAUT);
-				if(ABSENCE_PION){
-					etat_poussoirs=LEVES_APRES_PION;
-					tempo_p=250;
-				}
-				break;	
-			case LEVES_APRES_PION:
-				tempo_p--;
-				if(tempo_p == 0){
-					etat_poussoirs=INIT;
-					tempo_p=0;
-				}
-				break;
-		}
+        WMP_calcul(mTimer); // On actualise l'angle
+        angle = WMP_get_Angle(); // Récupérer l'angle du gyrosocpe
 		
         /**************************
         *                         *
@@ -443,9 +326,11 @@ void main(void){
         
         switch (etat_strategie){
         	case INIT :
+				active_asser(ASSER_AVANCE,0);
+				etat_strategie = TEST_SERVO_1;
 				break;
             case TEST_SERVO_1:
-                GetDonneesServo();
+                /*GetDonneesServo();
                 SetServoPArG(BAS);
                 SetServoPArD(BAS);
                 if(get_CC_Droit() == 1){
@@ -457,7 +342,7 @@ void main(void){
                     LED_ROUGE=1;
                 }else{
                     LED_ROUGE=0;
-                }
+                }*/
                 break;
             case TEST_SERVO_2_1 :
                 LED_ROUGE =1;
@@ -1099,7 +984,7 @@ void main(void){
 
 
 void Init(){
-// Pas d'init du WMP pour l'instant, on ne travaille qu'avec la manette...
+
     init_io();
     init_i2c(); // Active les interruptions
     
@@ -1118,23 +1003,25 @@ void Init(){
     Delay10KTCYx(0);
     LED_OK = 0;
     LED_OK1 = 1;
-    RELAIS = 0;
     Delay10KTCYx(0);
     LED_OK1 = 0;
     
-	LED_ROUGE=0;
-	RELAIS = 1;
+	LED_ROUGE=1;
 	
     LED_OK1 = 0;
 
     CMUcam_Init();
 
-	if(!WiiClassic_Init()){
-		//LED_ROUGE=0;
-	}else{
-		LED_ROUGE=0;
-	}
+
     
+    // WMP
+	if(WMP_init()){
+        LED_OK = 1;
+    }else{
+        LED_OK = 0;
+    }
+    Delay10KTCYx(0);
+    Delay10KTCYx(0);
     
     // Notre compteur qui va nous rythmer notre robot sur un cycle de 3 ms.
     // Les interruptions doivent être activées pour que le compteur foncitonne "tout seul"
@@ -1147,11 +1034,25 @@ void Init(){
 	WriteTimer0(65535 - 48000); // dt * 4ms
     
 
-    
+    // SUITE WMP
+    LED_OK1 = 0;
+    mTimer = getTimer();
+    while(WMP_calibration()){           // Tant que la calibration est en cours
+        while(mTimer == getTimer());
+        mTimer = getTimer();
+    }
+
+    // A décommenter pour avoir un WMP stable
+	WMP_init_2();
+   
+    while(WMP_calibration()){           // Tant que la calibration est en cours
+        while(mTimer == getTimer());
+        mTimer = getTimer();
+    }
     
     LED_OK1 = 0;
     LED_OK=0;
-	
+	LED_ROUGE=0;
 	LED_CMUCAM=1;
 	
 
@@ -1162,19 +1063,12 @@ void Init(){
 
 	pap_set_pos(0);
 	transmission_moteur();
-	
 	Delay10KTCYx(0);
-	
-	SetServoPArD(BAS);
-	SetServoPArG(BAS);
-	SetServoPAv(HAUT);
+	Delay10KTCYx(0);
+	Delay10KTCYx(0);
 	SetCremaillere(HAUT);
-	transmission_servo();
-	
-	Delay10KTCYx(0);
-	Delay10KTCYx(0);
-	
-    desactive_asser();
+    
+   	WMP_init_timer(getTimer());
 	mTimer = getTimer();
 }
 
