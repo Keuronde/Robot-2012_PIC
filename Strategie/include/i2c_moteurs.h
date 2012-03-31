@@ -1,6 +1,6 @@
 #define ADRESSE_PAP 0x31
-#define PAP_MAX_ROT 116
-#define PAP_MIN_ROT (int)-285
+#define PAP_MAX_ROT 200
+#define PAP_MIN_ROT (int)-200
 #define PAP_DROIT 0
 
 void Avance(void);

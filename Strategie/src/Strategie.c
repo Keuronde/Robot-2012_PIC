@@ -326,32 +326,25 @@ void main(void){
         
         switch (etat_strategie){
         	case INIT :
-				active_asser(ASSER_AVANCE,0);
+				setCouleur('W');
+				cmucam_active=1;
 				etat_strategie = TEST_SERVO_1;
 				break;
             case TEST_SERVO_1:
-                /*GetDonneesServo();
-                SetServoPArG(BAS);
-                SetServoPArD(BAS);
-                if(get_CC_Droit() == 1){
-                    LED_BLEUE=1;
-                }else{
-                    LED_BLEUE=0;
-                }
-                if(get_CC_Droit() == 3){
-                    LED_ROUGE=1;
-                }else{
-                    LED_ROUGE=0;
-                }*/
+				if ((etat_cmucam == TRACKING) || (etat_cmucam == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					active_asser(ASSER_TOURNE,0);
+					etat_strategie =TEST_SERVO_2_1;
+				}
                 break;
             case TEST_SERVO_2_1 :
-                LED_ROUGE =1;
+                /*LED_ROUGE =1;
                 SetServoPArG(HAUT);
                 SetServoPArD(HAUT);
                 SetServoPAv(HAUT);
 				RELAIS=1;
                 etat_strategie = TEST_SERVO_2_2;
-                tempo_s = 0;
+                tempo_s = 0;*/
                 break;
             case TEST_SERVO_2_2 :
                 LED_BLEUE =1;
