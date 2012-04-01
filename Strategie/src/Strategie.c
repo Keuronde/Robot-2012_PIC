@@ -279,10 +279,15 @@ void main(void){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
 					active_asser(ASSER_TOURNE,0,&consigne_angle);
-					etat_strategie =TEST_SERVO_2_1;
+					etat_strategie =TEST_SERVO_1;
 				}
                 break;
             case TEST_SERVO_1:
+				if( fin_asser() ) {
+					CMUcam_attrapeCDGauche();
+					active_asser(ASSER_TOURNE,0,&consigne_angle);
+					etat_strategie =TEST_SERVO_2_1;
+				}
 				break;
             case TEST_SERVO_2_1 :
                 /*LED_ROUGE =1;

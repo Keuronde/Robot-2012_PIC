@@ -8,10 +8,14 @@
 #define CMUCAM_MILIEU_X (int) 176
 #define FACTEUR_CMUCAM_ANGLE (int) 2800
 
-/** P R I V A T E   P R O T O T Y P E S *******************************/
-long figureToConsigne(long * angle);
+int erreur_angle(void);
 
-/** P R I V A T E   V A R I A B L E S *********************************/
+enum repere_t {
+    R_MILIEU=0,
+    R_DROIT,
+    R_GAUCHE
+};
+
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
 volatile char CMUcam_out[NB_DATA_OUT]; // 3 chiffre plus le caractère de fin.
 volatile char CMUcam_in_index;
@@ -27,6 +31,7 @@ char cmucam_active=0;
 char nb_essai_cmucam;
 char tempo_cmucam=0;
 enum etat_cmucam_t etat_cmucam=INIT;
+enum repere_t mRepere;
 char chaine[NB_DATA_IN]; // Reception CMUcam
 figure_t mFigure;
 unsigned char id_forme;
@@ -110,8 +115,6 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 		            if(chaine[0]=='t'){
 		            	chaine_to_figure(chaine,&mFigure);
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
-				    		int milieu;
-				    		
 				    		if(mFigure.y1 <= 68){
 								etat_cmucam = TRACKING_PROCHE;
 							}
@@ -119,8 +122,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				    		
 				    		asser_actif=1;
 					        LED_CMUCAM =1;
-					        milieu = mFigure.x1/2 + mFigure.x0/2;
-					        *consigne_angle = figureToConsigne(angle);// + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE);
+					        *consigne_angle = (long)*angle + ((long)(erreur_angle()) * (long)FACTEUR_CMUCAM_ANGLE);
 					        
 					        cmucam_perdu=0;
 				        }else{
@@ -143,13 +145,28 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
         	}
         }
 	}
-
-
-long figureToConsigne(long * angle){
-	char milieu;
-	milieu = mFigure.x1/2 + mFigure.x0/2;
-	return ((long)*angle + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE));
+	
+int erreur_angle(void){
+	int cRepere;
+	switch(mRepere){
+		case R_DROIT:
+			cRepere = mFigure.x1;
+			break;
+		case R_GAUCHE:
+			cRepere = mFigure.x0;
+			break;
+		case R_MILIEU:
+		default:
+			cRepere =mFigure.x1/2 + mFigure.x0/2;
+			break;
+	}
+	return ((int)cRepere - CMUCAM_MILIEU_X);
 }
+
+void CMUcam_attrapeCDGauche(void){
+	mRepere = R_DROIT;
+}
+
 
 // Initialisation
 void CMUcam_Init(void){
@@ -173,6 +190,8 @@ void CMUcam_Init(void){
 	CMUcam_out_index = 0;
 	_nouvelle_reception = NON;
 	_donnees_envoyees = NON;
+	
+	mRepere = R_MILIEU;
 	
 	CMUcam_TX_libre=OUI;
 	CMUcam_RX_libre=OUI;

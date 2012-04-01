@@ -60,6 +60,8 @@ char get_erreur_RC(void);
 void setCouleur(char _c);
 char cherche_couleur(void);
 
+void CMUcam_attrapeCDGauche(void);
+
 void CMUcam_active(void);
 void CMUcam_desactive(void);
 enum etat_cmucam_t CMUcam_get_Etat(void);
