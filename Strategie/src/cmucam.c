@@ -8,7 +8,10 @@
 #define CMUCAM_MILIEU_X (int) 176
 #define FACTEUR_CMUCAM_ANGLE (int) 2800
 
+/** P R I V A T E   P R O T O T Y P E S *******************************/
+long figureToConsigne(long * angle);
 
+/** P R I V A T E   V A R I A B L E S *********************************/
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
 volatile char CMUcam_out[NB_DATA_OUT]; // 3 chiffre plus le caractère de fin.
 volatile char CMUcam_in_index;
@@ -117,7 +120,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				    		asser_actif=1;
 					        LED_CMUCAM =1;
 					        milieu = mFigure.x1/2 + mFigure.x0/2;
-					        *consigne_angle = (long)*angle + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE);
+					        *consigne_angle = figureToConsigne(angle);// + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE);
 					        
 					        cmucam_perdu=0;
 				        }else{
@@ -141,6 +144,12 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
         }
 	}
 
+
+long figureToConsigne(long * angle){
+	char milieu;
+	milieu = mFigure.x1/2 + mFigure.x0/2;
+	return ((long)*angle + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE));
+}
 
 // Initialisation
 void CMUcam_Init(void){
