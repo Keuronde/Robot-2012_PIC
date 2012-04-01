@@ -1,7 +1,6 @@
 #include <p18cxxx.h>
 #include <delays.h>
 #include <timers.h>
-#include "../include/Strategie.h"
 #include "../include/asservissement.h"
 #include "../include/carte_strategie.h"
 #include "../include/i2c_m.h"
@@ -15,46 +14,10 @@
 
 enum etat_strategie_t {
     INIT=0,
-    INIT_1,
-    SORTIR_DEPART_INIT,
-    SORTIR_DEPART,
-    RECHERCHE_PION_INIT,
-    RECHERCHE_PION_1_OU_2_INIT,
-    RECHERCHE_PION_ATTENTE,
-    AVANCE_CASE_1,
-    AVANCE_CASE_2,
-    AVANCE_CASE_3,
-    POINT_FIXE_1,
-    POINT_FIXE_2,
-    POINT_FIXE_3,
-    POINT_FIXE_4,
-    POINT_FIXE_5,
-    _45DEGRES,
-    ATTENTE_45DEGRES,
-    TEMPO_45,
-    ALLER_VERS_PION,
-    TOURNER,
-    ALLER_VERS_CASE,
-    ALLER_VERS_CASE_1,
-    ALLER_VERS_CASE_2,
-    ALLER_VERS_CASE_3,
-    ALLER_VERS_CASE_4,
-    ALLER_VERS_CASE_5,
-    ALLER_VERS_CASE_6,
-    PARTIR_CASE_1,
-    PARTIR_CASE_2,
-    PARTIR_CASE_3,
-    PARTIR_CASE_4,
-    PARTIR_CASE_5,
-    PARTIR_CASE_6,
-    PION2,
-    VERS_HAUT_1,
-    VERS_HAUT_2,
-    VERS_HAUT_3,
-    RECULE_1,
-    VERS_MAISON_1,
-    VERS_MAISON_2,
     SORTIR_CASE,
+    VERS_CD_1,
+    ATTRAPE_CD_1,
+    ATTRAPE_CD_2,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -164,6 +127,7 @@ char getTimer(void);
 #define PION_2_XMAX (unsigned int)194
 #define PION_2_YMIN (unsigned int)242
 #define PION_2_YMAX (unsigned int)284
+
 
 
 /** V E C T O R  R E M A P P I N G *******************************************/
@@ -292,17 +256,34 @@ void main(void){
         
         switch (etat_strategie){
         	case INIT :
-				setCouleur('W');
-				CMUcam_active();
-				etat_strategie = TEST_SERVO_1;
+				active_asser(ASSER_AVANCE,0,&consigne_angle);
+				tempo_s = 250;
+				etat_strategie = SORTIR_CASE;
 				break;
-            case TEST_SERVO_1:
+			case SORTIR_CASE:
+				tempo_s--;
+				if(tempo_s == 0){
+					active_asser(ASSER_TOURNE,900000,&consigne_angle);
+					etat_strategie = ATTRAPE_CD_1;
+				}
+				break;
+			case ATTRAPE_CD_1 :
+				if (fin_asser()){
+					setCouleur('W');
+					CMUcam_active();
+					etat_strategie = ATTRAPE_CD_2;
+				}
+				break;
+			case ATTRAPE_CD_2:
 				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
 					LED_ROUGE =1;
+					LED_BLEUE =1;
 					active_asser(ASSER_TOURNE,0,&consigne_angle);
 					etat_strategie =TEST_SERVO_2_1;
 				}
                 break;
+            case TEST_SERVO_1:
+				break;
             case TEST_SERVO_2_1 :
                 /*LED_ROUGE =1;
                 SetServoPArG(HAUT);
