@@ -1,8 +1,12 @@
 #include "../include/carte_strategie.h"
+#include "../include/Strategie.h"
 #include "../include/CMUcam.h"
 #include <p18f2550.h>
 #include <string.h>
 
+
+#define CMUCAM_MILIEU_X (int) 176
+#define FACTEUR_CMUCAM_ANGLE (int) 2800
 
 
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
@@ -14,7 +18,128 @@ volatile enum booleen CMUcam_TX_libre;
 volatile enum booleen _nouvelle_reception = NON;
 volatile enum booleen _donnees_envoyees = NON;
 volatile char _erreur_RC = 0;
+
 char couleur_cmucam='P';
+char cmucam_active=0;
+char nb_essai_cmucam;
+char tempo_cmucam=0;
+enum etat_cmucam_t etat_cmucam=INIT;
+char chaine[NB_DATA_IN]; // Reception CMUcam
+figure_t mFigure;
+unsigned char id_forme;
+extern enum etat_asser_t etat_asser; // Pour l'asservissement
+char cmucam_perdu=0;
+
+// Gestion CMUcam
+void CMUcam_gestion(long * consigne_angle,long * angle){
+	if(cmucam_active){
+        	switch(etat_cmucam){
+            case INIT:
+                if(cherche_couleur()){
+                    etat_cmucam=RECUP_ID_1;
+                    tempo_cmucam=200;
+                    nb_essai_cmucam = 10;
+                }
+                break;
+            case RECUP_ID_1:
+            	tempo_cmucam--;
+                if(rec_cmucam(chaine)){
+                	tempo_cmucam=200;
+                	if(get_erreur_RC()){
+                		etat_cmucam=RE_RECUP_ID_1;
+		        		break;
+		        	}else{
+			            if(chaine[0]=='g'){
+					        chaine_to_figure(chaine,&mFigure);
+					        etat_cmucam=TEST_ID;
+		                }
+                    }
+                }
+                if(tempo_cmucam==0){
+                	etat_cmucam=RE_RECUP_ID_1;
+                }
+                break;
+            case TEST_ID:
+            	if(mFigure.y1==0 && mFigure.x1==0){
+					etat_cmucam=RE_RECUP_ID_1;
+					
+            	}else{
+            		etat_cmucam = ENVOI_ID;
+            		id_forme=mFigure.id;
+            	}
+                break;
+            case RE_RECUP_ID_1:
+            	if(nouvelle_recherche()){
+            		etat_cmucam=RE_RECUP_ID_2;
+            		tempo_cmucam=200;
+            	}
+            	break;
+            case RE_RECUP_ID_2:
+            	tempo_cmucam--;
+            	if(rec_cmucam(chaine)){
+	            	tempo_cmucam=200;
+            		if(get_erreur_RC()){
+		        		etat_cmucam=RE_RECUP_ID_1;
+		        		break;
+		        	}else{
+			        	if(chaine[0]=='g'){
+				    		chaine_to_figure(chaine,&mFigure);
+				    		etat_cmucam=TEST_ID;
+		        		}
+            		}
+            	}
+            	if(tempo_cmucam == 0){
+            		etat_cmucam=RE_RECUP_ID_1;
+            	}
+            	break;
+            case ENVOI_ID:
+            	if(TX_libre()){
+            		if(select_figure(id_forme)){
+            			etat_asser=0;
+	            		etat_cmucam=TRACKING;
+            		}
+            	}
+            	break;
+            case TRACKING:
+            case TRACKING_PROCHE:
+            	get_erreur_RC();
+	            if(rec_cmucam(chaine)){
+		            if(chaine[0]=='t'){
+		            	chaine_to_figure(chaine,&mFigure);
+				    	if(mFigure.x1!=0 && mFigure.y1!=0){
+				    		int milieu;
+				    		
+				    		if(mFigure.y1 <= 68){
+								etat_cmucam = TRACKING_PROCHE;
+							}
+
+				    		
+				    		asser_actif=1;
+					        LED_CMUCAM =1;
+					        milieu = mFigure.x1/2 + mFigure.x0/2;
+					        *consigne_angle = (long)*angle + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE);
+					        
+					        cmucam_perdu=0;
+				        }else{
+				        	cmucam_perdu++;
+				        	if(cmucam_perdu>4){
+				        		etat_cmucam=PERDU;
+				        	}
+				            LED_CMUCAM =0;
+				        }
+                	}
+               	}
+               	break;
+           case CMUCAM_RESET:
+		    	if(TX_libre()){
+		    		if(cmucam_reset()){
+			    		cmucam_active=0;
+		    		}
+		    	}
+		    	break;
+        	}
+        }
+	}
 
 
 // Initialisation
@@ -42,7 +167,27 @@ void CMUcam_Init(void){
 	
 	CMUcam_TX_libre=OUI;
 	CMUcam_RX_libre=OUI;
+	
+	chaine[0]=0;
+    chaine[1]=0;
+    chaine[2]=0;
+    chaine[3]=0;
+    chaine[4]=0;
+    chaine[5]=0;
+    chaine[6]=0;
+    chaine[7]=0;
 
+}
+
+void CMUcam_active(){
+	cmucam_active=1;
+	etat_cmucam=INIT;
+}
+void CMUcam_desactive(){
+	cmucam_active=0;
+}
+enum etat_cmucam_t CMUcam_get_Etat(){
+	return etat_cmucam;
 }
 
 void setCouleur(char _c){

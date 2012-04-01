@@ -1,6 +1,7 @@
 #include <p18cxxx.h>
 #include <delays.h>
 #include <timers.h>
+#include "../include/Strategie.h"
 #include "../include/carte_strategie.h"
 #include "../include/i2c_m.h"
 #include "../include/i2c_moteurs.h"
@@ -102,19 +103,7 @@ enum etat_strategie_t {
 	TEST_ALLERRETOUR_4
 };
 
-enum etat_asser_t {
-	AVANCE_DROIT_INIT=0,
-	AVANCE_DROIT=2,
-	AVANCE_DROIT_TEMPO,
-	TOURNE_INIT,
-	TOURNE_TEMPO,
-	TOURNE,
-	FIN_TOURNE,
-	TOURNE_VERS_AVANCE,
-	TOURNE_VERS_AVANCE_2,
-	AVANCE_VERS_TOURNE,
-	FIN_ASSER
-};
+
 
 enum etat_poussoirs_t {
 	INIT=0,
@@ -178,8 +167,7 @@ char fin_asser(void);
 #define PION_2_YMIN (unsigned int)242
 #define PION_2_YMAX (unsigned int)284
 
-#define CMUCAM_MILIEU_X (int) 176
-#define FACTEUR_CMUCAM_ANGLE (int) 2800
+
 
 // 5 degrés
 #define SEUIL_ANGLE_LENT  (long) 100000
@@ -252,12 +240,12 @@ void MyInterrupt(void){
 
 
 void main(void){
-    char chaine[NB_DATA_IN]; // Reception CMUcam
+    
     char etat =0;
     
     char tempo=0;
     char tempo_p=0;
-    char cmucam_active=0;
+    
     
     char sens =1;
     unsigned char id_pion_1=255;
@@ -274,32 +262,24 @@ void main(void){
     char DernierEnvoi=0;
 	char couleur;
 	char essai_cmucam;
-	char nb_essai_cmucam;
-	char tempo_cmucam=0;
+	
 	char ignore_pion = 0;
-	unsigned char id_forme;
-	char cmucam_perdu=0;
+	
+	
 	char a_lacher=0;
 	char evitement =0;
 	char tempo_e=20,tempo_relay=0;
 
-    figure_t mFigure;
+    
     
 	
-    enum etat_cmucam_t etat_cmucam=INIT;
+    
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
 //    enum etat_strategie_t etat_strategie=PARTIR_CASE_1, old_etat_strategie;
     
     
-    chaine[0]=0;
-    chaine[1]=0;
-    chaine[2]=0;
-    chaine[3]=0;
-    chaine[4]=0;
-    chaine[5]=0;
-    chaine[6]=0;
-    chaine[7]=0;
+    
     
 
     Init();
@@ -327,11 +307,11 @@ void main(void){
         switch (etat_strategie){
         	case INIT :
 				setCouleur('W');
-				cmucam_active=1;
+				CMUcam_active();
 				etat_strategie = TEST_SERVO_1;
 				break;
             case TEST_SERVO_1:
-				if ((etat_cmucam == TRACKING) || (etat_cmucam == TRACKING_PROCHE)){
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
 					LED_ROUGE =1;
 					active_asser(ASSER_TOURNE,0);
 					etat_strategie =TEST_SERVO_2_1;
@@ -501,8 +481,7 @@ void main(void){
 				break;
 				
 			case TEST_CMUCAM_1:
-				etat_cmucam=INIT;
-				cmucam_active=1;
+				CMUcam_active();
 				etat_strategie = TEST_CMUCAM_2;
 				break;
 			case TEST_ABSENCE_PION:
@@ -698,120 +677,7 @@ void main(void){
         *                      *
         ***********************/
 
-        
-        if(cmucam_active){
-        	switch(etat_cmucam){
-            case INIT:
-                if(cherche_couleur()){
-                    etat_cmucam=RECUP_ID_1;
-                    tempo_cmucam=200;
-                    nb_essai_cmucam = 10;
-                }
-                break;
-            case RECUP_ID_1:
-            	tempo_cmucam--;
-                if(rec_cmucam(chaine)){
-                	tempo_cmucam=200;
-                	if(get_erreur_RC()){
-                		etat_cmucam=RE_RECUP_ID_1;
-		        		break;
-		        	}else{
-			            if(chaine[0]=='g'){
-					        chaine_to_figure(chaine,&mFigure);
-					        etat_cmucam=TEST_ID;
-		                }
-                    }
-                }
-                if(tempo_cmucam==0){
-                	etat_cmucam=RE_RECUP_ID_1;
-                }
-                break;
-            case TEST_ID:
-            	if(mFigure.y1==0 && mFigure.x1==0){
-					etat_cmucam=RE_RECUP_ID_1;
-					
-            	}else{
-            		etat_cmucam = ENVOI_ID;
-            		id_forme=mFigure.id;
-            	}
-                break;
-            case RE_RECUP_ID_1:
-            	if(nouvelle_recherche()){
-            		etat_cmucam=RE_RECUP_ID_2;
-            		tempo_cmucam=200;
-            	}
-            	break;
-            case RE_RECUP_ID_2:
-            	tempo_cmucam--;
-            	if(rec_cmucam(chaine)){
-	            	tempo_cmucam=200;
-            		if(get_erreur_RC()){
-		        		etat_cmucam=RE_RECUP_ID_1;
-		        		break;
-		        	}else{
-			        	if(chaine[0]=='g'){
-				    		chaine_to_figure(chaine,&mFigure);
-				    		etat_cmucam=TEST_ID;
-		        		}
-            		}
-            	}
-            	if(tempo_cmucam == 0){
-            		etat_cmucam=RE_RECUP_ID_1;
-            	}
-            	break;
-            case ENVOI_ID:
-            	if(TX_libre()){
-            		if(select_figure(id_forme)){
-            			etat_asser=0;
-	            		etat_cmucam=TRACKING;
-            		}
-            	}
-            	break;
-            case TRACKING:
-            case TRACKING_PROCHE:
-            	get_erreur_RC();
-	            if(rec_cmucam(chaine)){
-		            if(chaine[0]=='t'){
-		            	chaine_to_figure(chaine,&mFigure);
-				    	if(mFigure.x1!=0 && mFigure.y1!=0){
-				    		int milieu;
-				    		
-				    		if(mFigure.y1 <= 68){
-								etat_cmucam = TRACKING_PROCHE;
-							}
-
-				    		
-				    		asser_actif=1;
-					        LED_CMUCAM =1;
-					        milieu = mFigure.x1/2 + mFigure.x0/2;
-					        consigne_angle = (long)angle + ((long)(CMUCAM_MILIEU_X - milieu) * (long)FACTEUR_CMUCAM_ANGLE);
-					        /*
-					        if(a_lacher==1){
-							    if((mFigure.x1 +mFigure.x0) < (176+200)*2 && (mFigure.x1 +mFigure.x0) > (176-20)*2){
-									etat_cmucam=EN_FACE;
-									consigne_angle = (long)angle;
-								}
-				    		}*/
-					        cmucam_perdu=0;
-				        }else{
-				        	cmucam_perdu++;
-				        	if(cmucam_perdu>4){
-				        		etat_cmucam=PERDU;
-				        	}
-				            LED_CMUCAM =0;
-				        }
-                	}
-               	}
-               	break;
-           case CMUCAM_RESET:
-		    	if(TX_libre()){
-		    		if(cmucam_reset()){
-			    		cmucam_active=0;
-		    		}
-		    	}
-		    	break;
-        	}
-        }
+		CMUcam_gestion(&consigne_angle,&angle);
         
         
         /******************************
@@ -1095,5 +961,3 @@ char fin_asser(){
 	}
 	return 0;
 }
-
-
