@@ -8,6 +8,7 @@ SRCS	:=	src/Strategie.c \
             src/i2c_servo.c \
             src/WMP.c \
             src/cmucam.c \
+            src/asservissement.c \
             src/WCC.c
 
 

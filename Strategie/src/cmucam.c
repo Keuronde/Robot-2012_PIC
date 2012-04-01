@@ -1,5 +1,5 @@
 #include "../include/carte_strategie.h"
-#include "../include/Strategie.h"
+#include "../include/asservissement.h"
 #include "../include/CMUcam.h"
 #include <p18f2550.h>
 #include <string.h>

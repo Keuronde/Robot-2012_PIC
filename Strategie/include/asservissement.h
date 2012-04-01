@@ -1,3 +1,8 @@
+
+#define ASSER_TOURNE 0
+#define ASSER_AVANCE 1
+
+
 enum etat_asser_t {
 	AVANCE_DROIT_INIT=0,
 	AVANCE_DROIT=2,
@@ -13,3 +18,9 @@ enum etat_asser_t {
 };
 
 extern char asser_actif;
+
+void Asser_gestion(long * consigne_angle,long * angle);
+void active_asser(char avance_droit, long _angle, long * consigne_angle);
+void desactive_asser(void);
+char fin_asser(void);
+
