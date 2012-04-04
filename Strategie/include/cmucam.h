@@ -21,7 +21,6 @@ enum etat_cmucam_t {
     TEST_ID,
     RECUP_ID_0,
     RE_RECUP_ID_1,
-    RE_RECUP_ID_2,
     ENVOI_ID,
     TRACKING,
     TRACKING_PROCHE,

@@ -70,26 +70,8 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
                 break;
             case RE_RECUP_ID_1:
             	if(nouvelle_recherche()){
-            		etat_cmucam=RE_RECUP_ID_2;
+            		etat_cmucam=RECUP_ID_1;
             		tempo_cmucam=200;
-            	}
-            	break;
-            case RE_RECUP_ID_2:
-            	tempo_cmucam--;
-            	if(rec_cmucam(chaine)){
-	            	tempo_cmucam=200;
-            		if(get_erreur_RC()){
-		        		etat_cmucam=RE_RECUP_ID_1;
-		        		break;
-		        	}else{
-			        	if(chaine[0]=='g'){
-				    		chaine_to_figure(chaine,&mFigure);
-				    		etat_cmucam=TEST_ID;
-		        		}
-            		}
-            	}
-            	if(tempo_cmucam == 0){
-            		etat_cmucam=RE_RECUP_ID_1;
             	}
             	break;
             case ENVOI_ID:
