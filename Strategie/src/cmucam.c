@@ -7,7 +7,10 @@
 
 #define CMUCAM_MILIEU_X (int) 176
 #define FACTEUR_CMUCAM_ANGLE (int) 2800
+#define ID_INVALIDE 0XFF
 
+// FONCTIONS PRIVEES
+unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure);
 
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
 volatile char CMUcam_out[NB_DATA_OUT]; // 3 chiffre plus le caractère de fin.
@@ -21,7 +24,6 @@ volatile char _erreur_RC = 0;
 
 char couleur_cmucam='P';
 char cmucam_active=0;
-char nb_essai_cmucam;
 char tempo_cmucam=0;
 enum etat_cmucam_t etat_cmucam=INIT;
 char chaine[NB_DATA_IN]; // Reception CMUcam
@@ -29,6 +31,7 @@ figure_t mFigure;
 unsigned char id_forme;
 extern enum etat_asser_t etat_asser; // Pour l'asservissement
 char cmucam_perdu=0;
+int critere_figure;
 
 // Gestion CMUcam
 void CMUcam_gestion(long * consigne_angle,long * angle){
@@ -36,51 +39,58 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
         	switch(etat_cmucam){
             case INIT:
                 if(cherche_couleur()){
-                    etat_cmucam=RECUP_ID_1;
+                    etat_cmucam=RECEPTION_FORME;
+                    id_forme = ID_INVALIDE;
                     tempo_cmucam=200;
-                    nb_essai_cmucam = 10;
                 }
                 break;
-            case RECUP_ID_1:
+             case NOUVELLE_RECHERCHE:
+            	if(nouvelle_recherche()){
+            		etat_cmucam=RECEPTION_FORME;
+            		id_forme = ID_INVALIDE;
+            		tempo_cmucam=200;
+            	}
+            	break;
+            case RECEPTION_FORME:
             	tempo_cmucam--;
                 if(rec_cmucam(chaine)){
                 	tempo_cmucam=200;
                 	if(get_erreur_RC()){
-                		etat_cmucam=RE_RECUP_ID_1;
+                		etat_cmucam=NOUVELLE_RECHERCHE;
 		        		break;
 		        	}else{
 			            if(chaine[0]=='g'){
 					        chaine_to_figure(chaine,&mFigure);
-					        etat_cmucam=TEST_ID;
+					        etat_cmucam=TEST_FORME;
 		                }
                     }
                 }
                 if(tempo_cmucam==0){
-                	etat_cmucam=RE_RECUP_ID_1;
+                	etat_cmucam=NOUVELLE_RECHERCHE;
                 }
                 break;
-            case TEST_ID:
+            case TEST_FORME:
             	if(mFigure.y1==0 && mFigure.x1==0){
-					etat_cmucam=RE_RECUP_ID_1;
-					
+					etat_cmucam=ENVOI_ID;
             	}else{
-            		etat_cmucam = ENVOI_ID;
-            		id_forme=mFigure.id;
+					id_forme = test_figure(id_forme, &critere_figure, &mFigure);
+					if(ask_figure()){
+						etat_cmucam = RECEPTION_FORME;
+						id_forme=mFigure.id;
+					}
             	}
                 break;
-            case RE_RECUP_ID_1:
-            	if(nouvelle_recherche()){
-            		etat_cmucam=RECUP_ID_1;
-            		tempo_cmucam=200;
-            	}
-            	break;
             case ENVOI_ID:
-            	if(TX_libre()){
-            		if(select_figure(id_forme)){
-            			etat_asser=0;
-	            		etat_cmucam=TRACKING;
-            		}
-            	}
+				if (id_forme == ID_INVALIDE){
+				    etat_cmucam=NOUVELLE_RECHERCHE;
+				}else{
+					if(TX_libre()){
+						if(select_figure(id_forme)){
+							etat_asser=0;
+							etat_cmucam=TRACKING;
+						}
+					}
+				}
             	break;
             case TRACKING:
             case TRACKING_PROCHE:
@@ -159,6 +169,13 @@ void CMUcam_Init(void){
     chaine[6]=0;
     chaine[7]=0;
 
+}
+
+unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure){
+	if( id_forme == ID_INVALIDE){
+	    id_forme = mFigure->id;
+	}
+	return id_forme;
 }
 
 void CMUcam_active(){

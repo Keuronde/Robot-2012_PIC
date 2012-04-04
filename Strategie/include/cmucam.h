@@ -16,20 +16,14 @@ enum booleen {
 
 enum etat_cmucam_t {
     INIT=0,
-    INIT_CASE,
-    RECUP_ID_1,
-    TEST_ID,
-    RECUP_ID_0,
-    RE_RECUP_ID_1,
+    RECEPTION_FORME,
+    NOUVELLE_RECHERCHE,
+    TEST_FORME,
     ENVOI_ID,
     TRACKING,
     TRACKING_PROCHE,
     CMUCAM_RESET,
-    PERDU,
-    EN_FACE,
-    RECUP_ID_ALL,
-    RECUP_ID_ALL_SEND,
-    RECUP_ID_ALL_RETRY
+    PERDU
 };
 
 typedef struct  {
