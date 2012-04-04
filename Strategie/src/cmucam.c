@@ -76,7 +76,6 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					id_forme = test_figure(id_forme, &critere_figure, &mFigure);
 					if(ask_figure()){
 						etat_cmucam = RECEPTION_FORME;
-						id_forme=mFigure.id;
 					}
             	}
                 break;
@@ -172,8 +171,19 @@ void CMUcam_Init(void){
 }
 
 unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure){
-	if( id_forme == ID_INVALIDE){
-	    id_forme = mFigure->id;
+	switch (couleur_cmucam){
+		case 'W':
+			if( mFigure->y0 < 250){
+				if( (id_forme == ID_INVALIDE) || (mFigure->y1 > *critere_figure) ) {
+					*critere_figure = mFigure->y1;
+					id_forme = mFigure->id;
+				}
+			}
+			break;
+		default:
+			if(id_forme == ID_INVALIDE){
+				id_forme = mFigure->id;
+			}
 	}
 	return id_forme;
 }
