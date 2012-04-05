@@ -23,9 +23,16 @@ void Asser_gestion(long * consigne_angle,long * angle){
 
 		// Donner l'ordre d'avancer au robot. (A241)
 		case AVANCE_DROIT_INIT:
-			Avance();			// Commencer à avancer
+			pap_set_pos(0); // On remet le moteur droit
 			consigne_pap_I=0;	// On remet l'intégrateur à 0
-			etat_asser = AVANCE_DROIT; // Passe à la correction
+			etat_asser = DROIT_TEMPO; // Passe à la correction
+			break;
+		case DROIT_TEMPO:
+			tempo ++;
+			if(tempo > 100){
+				etat_asser = AVANCE_DROIT;
+				Avance();			// Commencer à avancer
+			}
 			break;
 
 		case AVANCE_DROIT:

@@ -18,6 +18,7 @@ enum etat_strategie_t {
     VERS_CD_1,
     ATTRAPE_CD_1,
     ATTRAPE_CD_2,
+    ATTRAPE_CD_3,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -279,9 +280,15 @@ void main(void){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
 					active_asser(ASSER_TOURNE,0,&consigne_angle);
-					etat_strategie =TEST_SERVO_2_1;
+					etat_strategie = ATTRAPE_CD_3;
 				}
                 break;
+            case ATTRAPE_CD_3:
+				if (fin_asser()){
+					active_asser(ASSER_AVANCE,0,&consigne_angle);
+					etat_strategie = TEST_SERVO_1;
+				}
+				break;
             case TEST_SERVO_1:
 				break;
             case TEST_SERVO_2_1 :

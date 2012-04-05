@@ -8,9 +8,17 @@
 #define CMUCAM_MILIEU_X (int) 176
 #define FACTEUR_CMUCAM_ANGLE (int) 2800
 #define ID_INVALIDE 0XFF
+#define CONSIGNE_MAX 176
 
 // FONCTIONS PRIVEES
 unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure);
+int erreur_angle(figure_t * _mFigure);
+
+enum repere_t {
+    R_MILIEU=0,
+    R_DROIT,
+    R_GAUCHE
+};
 
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
 volatile char CMUcam_out[NB_DATA_OUT]; // 3 chiffre plus le caractère de fin.
@@ -30,8 +38,10 @@ char chaine[NB_DATA_IN]; // Reception CMUcam
 figure_t mFigure;
 unsigned char id_forme;
 extern enum etat_asser_t etat_asser; // Pour l'asservissement
+enum repere_t mRepere;
 char cmucam_perdu=0;
 int critere_figure;
+int cmucam_cible;
 
 // Gestion CMUcam
 void CMUcam_gestion(long * consigne_angle,long * angle){
@@ -108,7 +118,8 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				    		asser_actif=1;
 					        LED_CMUCAM =1;
 					        milieu = mFigure.x1/2 + mFigure.x0/2;
-					        *consigne_angle = (long)*angle + ((long)(milieu - CMUCAM_MILIEU_X) * (long)FACTEUR_CMUCAM_ANGLE);
+					        *consigne_angle = (long)*angle + ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE);
+					        //*consigne_angle = (long)*angle + ((long)( milieu - CMUCAM_MILIEU_X ) * (long)FACTEUR_CMUCAM_ANGLE);
 					        
 					        cmucam_perdu=0;
 				        }else{
@@ -167,13 +178,17 @@ void CMUcam_Init(void){
     chaine[5]=0;
     chaine[6]=0;
     chaine[7]=0;
+    
+    mRepere = R_DROIT;
+    cmucam_cible = CMUCAM_MILIEU_X;
+    cmucam_cible = (int)112;
 
 }
 
 unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure){
 	switch (couleur_cmucam){
 		case 'W':
-			if( mFigure->y0 < 250){
+			if( mFigure->y0 < 225){
 				if( (id_forme == ID_INVALIDE) || (mFigure->y1 > *critere_figure) ) {
 					*critere_figure = mFigure->y1;
 					id_forme = mFigure->id;
@@ -186,6 +201,24 @@ unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t
 			}
 	}
 	return id_forme;
+}
+
+int erreur_angle(figure_t * _mFigure){
+	int iRepere,consigne;
+	switch (mRepere){
+		case R_DROIT:
+			iRepere = _mFigure->x1;
+			break;
+		case R_GAUCHE:
+			iRepere = _mFigure->x0;
+			break;
+		case R_MILIEU:
+		default:
+			iRepere = _mFigure->x1/2 + _mFigure->x0/2;
+			break;
+	}
+	consigne = iRepere - cmucam_cible; 
+	return consigne;
 }
 
 void CMUcam_active(){
