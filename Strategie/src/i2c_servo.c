@@ -1,6 +1,7 @@
 #include "../include/i2c_m.h"
 #include "../include/i2c_servo.h"
-
+#include <p18cxxx.h>
+#include "../include/carte_strategie.h"
 
 unsigned char envoi_servo;
 unsigned char a_envoyer=0;
@@ -66,7 +67,9 @@ char transmission_servo(void){
         unsigned char chaine;
         if(transmission_i2c(ADRESSE_SERVO,1,1,&envoi_servo)){
             a_envoyer =0;
+            LED_ROUGE=0;
             while(i2c_en_cours());
+            LED_ROUGE=1;
 			if(!get_erreur_i2c()){
 				get_i2c_data(&chaine);
 				CC_gauche = chaine & 0x03;

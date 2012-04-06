@@ -253,12 +253,12 @@ void main(void){
         * Gestion de la stratégie *
         *                         *
         **************************/
-        GetDonneesServo();
+        //GetDonneesServo();
         
         switch (etat_strategie){
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
-				tempo_s = 250;
+				tempo_s = 350;
 				etat_strategie = SORTIR_CASE;
 				break;
 			case SORTIR_CASE:
@@ -728,7 +728,16 @@ void Init(){
 	if(WMP_init()){
         LED_OK = 1;
     }else{
-        LED_OK = 0;
+		while(1){
+			LED_BLEUE = 1;
+			LED_ROUGE = 1;
+			LED_OK = 1;
+			Delay10KTCYx(100);
+			LED_BLEUE = 0;
+			LED_ROUGE = 0;
+			LED_OK = 0;
+			Delay10KTCYx(100);
+		}
     }
     Delay10KTCYx(0);
     Delay10KTCYx(0);

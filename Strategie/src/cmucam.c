@@ -35,7 +35,7 @@ char cmucam_active=0;
 char tempo_cmucam=0;
 enum etat_cmucam_t etat_cmucam=INIT;
 char chaine[NB_DATA_IN]; // Reception CMUcam
-figure_t mFigure;
+volatile figure_t mFigure;
 unsigned char id_forme;
 extern enum etat_asser_t etat_asser; // Pour l'asservissement
 enum repere_t mRepere;
@@ -124,8 +124,9 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					        cmucam_perdu=0;
 				        }else{
 				        	cmucam_perdu++;
-				        	if(cmucam_perdu>4){
-				        		etat_cmucam=PERDU;
+				        	if(cmucam_perdu>2){
+				        		etat_cmucam=NOUVELLE_RECHERCHE;
+				        		LED_BLEUE = 0;
 				        	}
 				            LED_CMUCAM =0;
 				        }
@@ -218,6 +219,7 @@ int erreur_angle(figure_t * _mFigure){
 			break;
 	}
 	consigne = iRepere - cmucam_cible; 
+	
 	return consigne;
 }
 

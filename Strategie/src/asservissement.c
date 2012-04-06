@@ -4,7 +4,9 @@
 
 
 // 5 degrés
-#define SEUIL_ANGLE_LENT  (long) 100000
+//#define SEUIL_ANGLE_LENT  (long) 100000
+// 1 degrés
+#define SEUIL_ANGLE_LENT  (long)  20000
 // 1 degrés
 #define SEUIL_ANGLE_ARRET (long)  20000
 
