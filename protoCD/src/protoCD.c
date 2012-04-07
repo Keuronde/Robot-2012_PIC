@@ -8,11 +8,12 @@
 
 
 /** D E F I N E **************************************************************/
-#define TEMPO_FERME_DOIGT 50
+// Tempo en centiseconde
+#define TEMPO_FERME_DOIGT 100
 #define TEMPO_LEVE_BRAS 100
 #define TEMPO_DEPOSE_BRAS 100
 #define TEMPO_LACHE_PIECE 100
-#define TEMPO_ATTRAPE_PIECE 100
+#define TEMPO_ATTRAPE_PIECE 10
 #define TEMPO_CALE_PIECE 100
 #define TEMPO_V1   50
 #define TEMPO_V2   100
@@ -131,20 +132,21 @@ void MyInterrupt(void)
 
 enum etat_bras_t {
 	E_BRAS_INIT=0,
-	E_BRAS_BAS_OUVERT,
-	E_BRAS_BAS_FERME,
+	E_BRAS_BAS_OUVERT=1,
+	E_BRAS_ATTENTE_PIECE=2,
+	E_BRAS_BAS_FERME=3,
 	E_BRAS_HAUT_FERME,
 	E_BRAS_HAUT_LACHE,
 	E_BRAS_HAUT_RESSERRE,
 	E_BRAS_DEPOSE_FERME,
 	E_BRAS_DEPOSE_OUVERT,
-	E_BRAS_ATTENTE_PLEIN,
-	E_BRAS_ATTENTE_PIECE
+	E_BRAS_ATTENTE_PLEIN
 } etat_bras_gauche,etat_bras_droit;
 
 void main(void){
 	char tempo_bg,tempo_vitale=0;
-	unsigned char recu[10],envoi[2];
+	unsigned char recu[10];
+	char envoi[NB_ENV];
 	unsigned int temps, temps_old;
 	
 	envoi[0]=3;
@@ -313,6 +315,18 @@ void main(void){
 				break;
 			
 		}
+		
+		
+		
+		// Préparation de l'envoi I2C
+		envoi[0] = etat_bras_gauche;
+		envoi[1] = etat_bras_droit;
+		envoi[2] = 0;
+		if (IS_GAUCHE){
+			envoi[2] |= 0x01;
+		}
+		
+		envoi_i2c(envoi);
 	
 	
 	}

@@ -20,7 +20,7 @@ void com_i2c(void); // à mettre en interruption
 
 /* P A R A M E T R E S *******************************************************/
 #define NB_REC 1
-#define NB_ENV 1
+#define NB_ENV 3
 
 enum booleen {
     NON=0,

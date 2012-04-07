@@ -19,6 +19,7 @@ enum etat_strategie_t {
     ATTRAPE_CD_1,
     ATTRAPE_CD_2,
     ATTRAPE_CD_3,
+    ATTRAPE_CD_4,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -227,7 +228,7 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=PARTIR_CASE_1, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=TEST_SERVO_1, old_etat_strategie;
     
     
     
@@ -280,16 +281,36 @@ void main(void){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
 					active_asser(ASSER_TOURNE,0,&consigne_angle);
+					SetServoPArG(1);
 					etat_strategie = ATTRAPE_CD_3;
 				}
                 break;
             case ATTRAPE_CD_3:
 				if (fin_asser()){
 					active_asser(ASSER_AVANCE,0,&consigne_angle);
-					etat_strategie = TEST_SERVO_1;
+					etat_strategie = ATTRAPE_CD_4;
+				}
+				break;
+			case ATTRAPE_CD_4:
+				GetDonneesServo();
+				if(get_Etat_Gauche() >= 2){
+					tempo_s++;
+					if (tempo_s > 20){
+						desactive_asser();
+						prop_stop();
+						etat_strategie = TEST_SERVO_1;
+					}
+				}else{
+					tempo_s=0;
 				}
 				break;
             case TEST_SERVO_1:
+				GetDonneesServo();
+				if(get_IS_Gauche()){
+					LED_BLEUE=1;
+				}else{
+					LED_BLEUE=0;
+				}
 				break;
             case TEST_SERVO_2_1 :
                 /*LED_ROUGE =1;
@@ -560,57 +581,6 @@ void main(void){
 					LED_OK1 =1;
 				}else{
 					LED_OK1 =0;
-				}
-			}
-
-			if(DEBUG_CC_DROIT){
-				if(get_CC_Droit() == 1){
-					LED_BLEUE=1;
-				}else{
-					LED_BLEUE=0;
-				}
-				if(get_CC_Droit() == 3){
-					LED_ROUGE=1;
-				}else{
-					LED_ROUGE=0;
-				}
-			}
-
-
-			if(DEBUG_CC_GAUCHE){
-				if(get_CC_Gauche() == 1){
-					LED_BLEUE=1;
-				}else{
-					LED_BLEUE=0;
-				}
-				if(get_CC_Gauche() == 3){
-					LED_ROUGE=1;
-				}else{
-					LED_ROUGE=0;
-				}
-			}
-			if(DEBUG_CC_AVANT){
-				if(get_CC_Avant() == 1){
-					LED_BLEUE=1;
-				}else{
-					LED_BLEUE=0;
-				}
-				if(get_CC_Avant() == 3){
-					LED_ROUGE=1;
-				}else{
-					LED_ROUGE=0;
-				}
-			}
-			if(DEBUG_CC_DEUX){
-				if(get_CC_Gauche() == BLEU){
-					LED_BLEUE=1;
-				}else{
-					LED_BLEUE=0;
-				}
-				if(get_CC_Droit() == BLEU){
-					LED_ROUGE=1;
-				}else{
-					LED_ROUGE=0;
 				}
 			}
 

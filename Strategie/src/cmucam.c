@@ -35,7 +35,7 @@ char cmucam_active=0;
 char tempo_cmucam=0;
 enum etat_cmucam_t etat_cmucam=INIT;
 char chaine[NB_DATA_IN]; // Reception CMUcam
-volatile figure_t mFigure;
+figure_t mFigure;
 unsigned char id_forme;
 extern enum etat_asser_t etat_asser; // Pour l'asservissement
 enum repere_t mRepere;
@@ -45,6 +45,7 @@ int cmucam_cible;
 
 // Gestion CMUcam
 void CMUcam_gestion(long * consigne_angle,long * angle){
+	static char tempo_tracking=0;
 	if(cmucam_active){
         	switch(etat_cmucam){
             case INIT:
@@ -96,6 +97,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					if(TX_libre()){
 						if(select_figure(id_forme)){
 							etat_asser=0;
+							tempo_tracking=0;
 							etat_cmucam=TRACKING;
 						}
 					}
@@ -105,6 +107,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
             case TRACKING_PROCHE:
             	get_erreur_RC();
 	            if(rec_cmucam(chaine)){
+					tempo_tracking=0;
 		            if(chaine[0]=='t'){
 		            	chaine_to_figure(chaine,&mFigure);
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
@@ -124,14 +127,20 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					        cmucam_perdu=0;
 				        }else{
 				        	cmucam_perdu++;
-				        	if(cmucam_perdu>2){
+				        	if(cmucam_perdu>4){
 				        		etat_cmucam=NOUVELLE_RECHERCHE;
 				        		LED_BLEUE = 0;
 				        	}
 				            LED_CMUCAM =0;
 				        }
                 	}
-               	}
+               	}else{
+					tempo_tracking++;
+					if (tempo_tracking > 80){
+						tempo_tracking=0;
+						LED_BLEUE = !LED_BLEUE;
+					}
+				}
                	break;
            case CMUCAM_RESET:
 		    	if(TX_libre()){

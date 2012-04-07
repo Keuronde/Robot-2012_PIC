@@ -5,7 +5,7 @@
 
 unsigned char envoi_servo;
 unsigned char a_envoyer=0;
-unsigned char CC_droit=0,CC_gauche=0,CC_avant=0;
+unsigned char IS_Droit=0,IS_Gauche=0,Etat_Gauche=0,Etat_Droit=0;
 unsigned char presence_pion;
 
 
@@ -64,17 +64,20 @@ char GetEnvoiServo(void){
 char transmission_servo(void){
 
     if(a_envoyer == 1){
-        unsigned char chaine;
-        if(transmission_i2c(ADRESSE_SERVO,1,1,&envoi_servo)){
+        unsigned char _chaine[3];
+        if(transmission_i2c(ADRESSE_SERVO,1,3,&envoi_servo)){
             a_envoyer =0;
             LED_ROUGE=0;
             while(i2c_en_cours());
             LED_ROUGE=1;
 			if(!get_erreur_i2c()){
-				get_i2c_data(&chaine);
-				CC_gauche = chaine & 0x03;
-				CC_droit = (chaine & 0x0C) >> 2;
-				CC_avant = (chaine & 0x30) >> 4;
+				get_i2c_data( _chaine );
+				Etat_Gauche = _chaine[0];
+				Etat_Droit = _chaine[1];
+				IS_Gauche = _chaine[2] & 0x01;
+				IS_Droit = _chaine[2] & 0x02;
+				envoi_servo=0;
+				
 			}
             return 1;
         }
@@ -82,12 +85,17 @@ char transmission_servo(void){
     return 0;
 }
 
-char get_CC_Droit(void){
-    return CC_droit;
+char get_IS_Droit(void){
+    return IS_Droit;
 } 
-char get_CC_Gauche(void){
-    return CC_gauche;
+char get_IS_Gauche(void){
+    return IS_Gauche;
 } 
-char get_CC_Avant(void){
-    return CC_avant;
-}
+
+
+char get_Etat_Droit(void){
+    return Etat_Droit;
+} 
+char get_Etat_Gauche(void){
+    return Etat_Gauche;
+} 

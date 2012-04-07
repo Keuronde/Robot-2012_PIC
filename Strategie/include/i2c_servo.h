@@ -13,9 +13,10 @@ void SetCremaillere(char haut);
 void GetDonneesServo(void);
 char GetEnvoiServo(void);
 
-char get_CC_Droit(void);
-char get_CC_Gauche(void);
-char get_CC_Avant(void);
+char get_IS_Droit(void);
+char get_IS_Gauche(void);
+char get_Etat_Droit(void);
+char get_Etat_Gauche(void);
 char get_Presence_Pion(void);
 
 
