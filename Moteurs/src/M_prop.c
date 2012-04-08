@@ -20,7 +20,7 @@ void M_prop_init(void){
 	Stop();
 }
 void V_lent(){
-    SetDCPWM1((int)900);
+    SetDCPWM1((int)800);
 }
 void V_rapide(){
     SetDCPWM1(0x03FF);

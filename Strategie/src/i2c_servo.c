@@ -3,7 +3,7 @@
 #include <p18cxxx.h>
 #include "../include/carte_strategie.h"
 
-unsigned char envoi_servo;
+unsigned char envoi_servo=0;
 unsigned char a_envoyer=0;
 unsigned char IS_Droit=0,IS_Gauche=0,Etat_Gauche=0,Etat_Droit=0;
 unsigned char presence_pion;

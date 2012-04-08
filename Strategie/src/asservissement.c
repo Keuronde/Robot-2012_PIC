@@ -3,16 +3,16 @@
 
 
 
-// 5 degrés
-//#define SEUIL_ANGLE_LENT  (long) 100000
+// 10 degrés
+#define SEUIL_ANGLE_LENT  (long) 200000
 // 1 degrés
-#define SEUIL_ANGLE_LENT  (long)  20000
-// 1 degrés
-#define SEUIL_ANGLE_ARRET (long)  20000
+//#define SEUIL_ANGLE_LENT  (long)  20000
+// 3 degrés
+#define SEUIL_ANGLE_ARRET (long)  60000
 
 // Variable du module
 char asser_actif=0; 					// Pour l'asservissement
-char tempo=0;
+char tempo=0,tempo_lent=0;
 enum etat_asser_t etat_asser=FIN_ASSER; // Pour l'asservissement
 int consigne_pap=0;
 int consigne_pap_I=0;
@@ -96,6 +96,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			prop_stop();
 			pap_set_pos(PAP_MAX_ROT);
 			etat_asser = TOURNE_TEMPO;
+			tempo=0;
 			break;
 		case TOURNE_TEMPO:
 			tempo ++;
@@ -106,18 +107,39 @@ void Asser_gestion(long * consigne_angle,long * angle){
 					Recule();
 				}
 				etat_asser = TOURNE;
+				tempo = 100;
+				tempo_lent = 400;
 			}
 			break;
 		case TOURNE:
+	
+			if((*consigne_angle-*angle) > 0){
+				Avance();
+			}else{
+				Recule();
+			}
+	
+		
 			if((*consigne_angle-*angle) < SEUIL_ANGLE_LENT && (*consigne_angle-*angle) > -SEUIL_ANGLE_LENT){
 				prop_set_vitesse(0);
+				tempo_lent--;
+				if(tempo_lent == 0){
+					prop_stop();
+					etat_asser = FIN_TOURNE;
+				}
 			}else{
 				prop_set_vitesse(1);
+				tempo_lent=400;
 			}
 			if((*consigne_angle-*angle) < SEUIL_ANGLE_ARRET && (*consigne_angle-*angle) > -SEUIL_ANGLE_ARRET){
-				prop_stop();
-				etat_asser = FIN_TOURNE;
-				tempo=0;
+				tempo--;
+				if(tempo == 0){
+					prop_stop();
+					etat_asser = FIN_TOURNE;
+				}
+
+			}else{
+				tempo=100;				
 			}
 			// Penser à ignorer le capteur sonique
 			if( prop_get_sens_avant() ){
@@ -167,7 +189,7 @@ void desactive_asser(void){
 }
 
 char fin_asser(){
-	if(etat_asser == FIN_ASSER || etat_asser == FIN_TOURNE){
+	if( (etat_asser == FIN_ASSER) || (etat_asser == FIN_TOURNE) ){
 		return 1;
 	}
 	return 0;

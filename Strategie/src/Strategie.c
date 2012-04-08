@@ -10,6 +10,9 @@
 #include "../include/WCC.h"
 #include "../include/cmucam.h"
 
+/* M A C R O **********************************************************/
+#define ANGLE_DEGRES(X) (long)((long)(X) * (long)20000)
+
 /** T Y P E   P R I V E S ****************************************************/
 
 enum etat_strategie_t {
@@ -18,8 +21,10 @@ enum etat_strategie_t {
     VERS_CD_1,
     ATTRAPE_CD_1,
     ATTRAPE_CD_2,
+    ATTRAPE_CD_2_1,
     ATTRAPE_CD_3,
     ATTRAPE_CD_4,
+    VERS_LINGOT1_1,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -283,11 +288,12 @@ void main(void){
 					active_asser(ASSER_TOURNE,0,&consigne_angle);
 					SetServoPArG(1);
 					etat_strategie = ATTRAPE_CD_3;
+					tempo_s = 750;
 				}
                 break;
             case ATTRAPE_CD_3:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,0,&consigne_angle);
+					active_asser(ASSER_AVANCE,angle,&consigne_angle);
 					etat_strategie = ATTRAPE_CD_4;
 				}
 				break;
@@ -298,10 +304,18 @@ void main(void){
 					if (tempo_s > 20){
 						desactive_asser();
 						prop_stop();
-						etat_strategie = TEST_SERVO_1;
+						etat_strategie = VERS_LINGOT1_1;
+						tempo_s = 0;
 					}
 				}else{
 					tempo_s=0;
+				}
+				break;
+			case VERS_LINGOT1_1:
+				tempo_s++;
+				if(tempo_s > 250){
+					active_asser(ASSER_TOURNE,2700000,&consigne_angle);
+					etat_strategie = TEST_SERVO_1;
 				}
 				break;
             case TEST_SERVO_1:

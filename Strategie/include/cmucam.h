@@ -43,7 +43,7 @@ char cherche_case_bleue(void);
 char nouvelle_recherche(void);
 char ask_figure(void);
 char select_figure(unsigned char);
-char chaine_to_figure(char *chaine,figure_t *figure);
+char chaine_to_figure(char *chaine,volatile figure_t *figure);
 char rec_cmucam(char *chaine);
 char rec_cmucam_cours(void);
 char set_tampon_env(char *chaine);
