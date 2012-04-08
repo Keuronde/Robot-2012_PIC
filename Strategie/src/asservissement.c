@@ -4,9 +4,9 @@
 
 
 // 5 degrés
-//#define SEUIL_ANGLE_LENT  (long) 100000
+#define SEUIL_ANGLE_LENT  (long) 100000
 // 1 degrés
-#define SEUIL_ANGLE_LENT  (long)  20000
+//#define SEUIL_ANGLE_LENT  (long)  20000
 // 1 degrés
 #define SEUIL_ANGLE_ARRET (long)  20000
 
@@ -96,6 +96,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			prop_stop();
 			pap_set_pos(PAP_MAX_ROT);
 			etat_asser = TOURNE_TEMPO;
+			tempo=0;
 			break;
 		case TOURNE_TEMPO:
 			tempo ++;
@@ -113,6 +114,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				prop_set_vitesse(0);
 			}else{
 				prop_set_vitesse(1);
+				//prop_set_vitesse(0);
 			}
 			if((*consigne_angle-*angle) < SEUIL_ANGLE_ARRET && (*consigne_angle-*angle) > -SEUIL_ANGLE_ARRET){
 				prop_stop();
@@ -167,7 +169,7 @@ void desactive_asser(void){
 }
 
 char fin_asser(){
-	if(etat_asser == FIN_ASSER || etat_asser == FIN_TOURNE){
+	if( (etat_asser == FIN_ASSER) || (etat_asser == FIN_TOURNE) ){
 		return 1;
 	}
 	return 0;

@@ -21,6 +21,8 @@ enum etat_strategie_t {
     ATTRAPE_CD_3,
     ATTRAPE_CD_4,
     EVITEMENT_RECULE,
+    TEST_MODE_LENT,
+    TEST_MODE_RAPIDE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
     TEST_SERVO_2_2,
@@ -227,8 +229,8 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=TEST_SERVO_1, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=TEST_MODE_LENT, old_etat_strategie;
     
     
     
@@ -239,7 +241,7 @@ void main(void){
 
 	while(1){
 	    char timer;
-	    int tempo_s;
+	    int tempo_s=1000;
 	    char i,j;
 
 	    while(mTimer == getTimer());
@@ -254,7 +256,7 @@ void main(void){
         * Gestion de la stratégie *
         *                         *
         **************************/
-        //GetDonneesServo();
+        GetDonneesServo();
         
         switch (etat_strategie){
         	case INIT :
@@ -280,15 +282,18 @@ void main(void){
 				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
-					active_asser(ASSER_TOURNE,0,&consigne_angle);
+					active_asser(ASSER_AVANCE,0,&consigne_angle);
 					SetServoPArG(1);
-					etat_strategie = ATTRAPE_CD_3;
+					etat_strategie = ATTRAPE_CD_4;
 				}
                 break;
             case ATTRAPE_CD_3:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,0,&consigne_angle);
-					etat_strategie = ATTRAPE_CD_4;
+					if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+						active_asser(ASSER_AVANCE,angle,&consigne_angle);
+						SetServoPArG(1);
+						etat_strategie = ATTRAPE_CD_4;
+					}
 				}
 				break;
 			case ATTRAPE_CD_4:
@@ -304,12 +309,37 @@ void main(void){
 					tempo_s=0;
 				}
 				break;
+			case TEST_MODE_LENT:
+//				tempo_s--;
+//				if(tempo_s == 0){
+					prop_set_vitesse(0); // LENT
+					prop_set_sens(1); // Avance
+					desactive_asser();
+					CMUcam_desactive();
+					etat_strategie = TEST_SERVO_1;
+					//tempo_s = 1000;
+//				}
+				break;
+			case TEST_MODE_RAPIDE:
+				tempo_s--;
+				if(tempo_s == 0){
+					prop_set_vitesse(1); // Rapide
+					prop_set_sens(1); // Avance
+					desactive_asser();
+					CMUcam_desactive();
+					etat_strategie = TEST_MODE_LENT;
+					tempo_s = 1000;
+				}
+				break;
             case TEST_SERVO_1:
-				GetDonneesServo();
-				if(get_IS_Gauche()){
-					LED_BLEUE=1;
-				}else{
-					LED_BLEUE=0;
+				LED_ROUGE =0;
+				if (fin_asser()){
+					GetDonneesServo();
+					if(get_IS_Gauche()){
+						LED_BLEUE=1;
+					}else{
+						LED_BLEUE=0;
+					}
 				}
 				break;
             case TEST_SERVO_2_1 :

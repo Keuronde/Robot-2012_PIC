@@ -1,18 +1,17 @@
 #include "../include/carte_strategie.h"
-#include "../include/asservissement.h"
 #include "../include/CMUcam.h"
 #include <p18f2550.h>
 #include <string.h>
 
 
 #define CMUCAM_MILIEU_X (int) 176
-#define FACTEUR_CMUCAM_ANGLE (int) 2800
+#define FACTEUR_CMUCAM_ANGLE (int) 5600
 #define ID_INVALIDE 0XFF
 #define CONSIGNE_MAX 176
 
 // FONCTIONS PRIVEES
-unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure);
-int erreur_angle(figure_t * _mFigure);
+unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile figure_t * mFigure);
+int erreur_angle(volatile figure_t * _mFigure);
 
 enum repere_t {
     R_MILIEU=0,
@@ -35,9 +34,8 @@ char cmucam_active=0;
 char tempo_cmucam=0;
 enum etat_cmucam_t etat_cmucam=INIT;
 char chaine[NB_DATA_IN]; // Reception CMUcam
-figure_t mFigure;
+volatile figure_t mFigure;
 unsigned char id_forme;
-extern enum etat_asser_t etat_asser; // Pour l'asservissement
 enum repere_t mRepere;
 char cmucam_perdu=0;
 int critere_figure;
@@ -96,7 +94,6 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				}else{
 					if(TX_libre()){
 						if(select_figure(id_forme)){
-							etat_asser=0;
 							tempo_tracking=0;
 							etat_cmucam=TRACKING;
 						}
@@ -111,18 +108,13 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 		            if(chaine[0]=='t'){
 		            	chaine_to_figure(chaine,&mFigure);
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
-				    		int milieu;
-				    		
 				    		if(mFigure.y1 <= 68){
 								etat_cmucam = TRACKING_PROCHE;
 							}
-
 				    		
-				    		asser_actif=1;
-					        LED_CMUCAM =1;
-					        milieu = mFigure.x1/2 + mFigure.x0/2;
-					        *consigne_angle = (long)*angle + ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE);
-					        //*consigne_angle = (long)*angle + ((long)( milieu - CMUCAM_MILIEU_X ) * (long)FACTEUR_CMUCAM_ANGLE);
+				    		LED_CMUCAM =1;
+				    		
+					        *consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE);
 					        
 					        cmucam_perdu=0;
 				        }else{
@@ -141,6 +133,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 						LED_BLEUE = !LED_BLEUE;
 					}
 				}
+				
                	break;
            case CMUCAM_RESET:
 		    	if(TX_libre()){
@@ -195,7 +188,7 @@ void CMUcam_Init(void){
 
 }
 
-unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t * mFigure){
+unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile figure_t * mFigure){
 	switch (couleur_cmucam){
 		case 'W':
 			if( mFigure->y0 < 225){
@@ -213,7 +206,7 @@ unsigned char test_figure(unsigned char id_forme, int * critere_figure, figure_t
 	return id_forme;
 }
 
-int erreur_angle(figure_t * _mFigure){
+int erreur_angle(volatile figure_t * _mFigure){
 	int iRepere,consigne;
 	switch (mRepere){
 		case R_DROIT:
@@ -338,7 +331,7 @@ char chaine_to_id(char *chaine){
     return id;
 }
 
-char chaine_to_figure(char *chaine,figure_t *figure){
+char chaine_to_figure(char *chaine,volatile figure_t *figure){
     // chaine : "g 0 213 100 267 24"
     unsigned char i=0,j=0;
     unsigned int temp=0;

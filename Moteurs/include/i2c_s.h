@@ -17,6 +17,7 @@ void init_i2c(unsigned char);
 char rec_i2c(unsigned char *);
 char envoi_i2c(char *);
 void com_i2c(void);
+char envoi_ok(void);
 
 /* P A R A M E T R E S *******************************************************/
 #define NB_REC 2

@@ -101,6 +101,9 @@ void main(void){
     int  t_v0;
     
     Init();
+    
+    
+    
     for(index_sonic = 0;index_sonic< 10; index_sonic++){
         valeur_sonic_loin[index_sonic] = 0;
         valeur_sonic_proche[index_sonic] = 0;
@@ -115,11 +118,10 @@ void main(void){
         char total_sonic_proche,total_sonic_loin;
         unsigned int distance;
         
-        
-        
+     
         // Reception d'ordre
         if(rec_i2c(recu)){
-//        	LED_OK = 1;
+
 
             // Consigne PaP
             consigne_recu = (int)recu[0] + (((int) recu[1] & 3) << 8);
@@ -133,6 +135,7 @@ void main(void){
             
             if(sens == 0){
                 Stop();
+                LED_OK=0;
             }else{
                 if(sens == 1){
                     Avance();
@@ -231,15 +234,21 @@ void main(void){
         switch(vitesse){
         case 2:
             V_rapide();
+            if(get_Sens() != AUCUN)
+				LED_OK =0;
             break;
             
         case 1:
             V_lent();
+            if(get_Sens() != AUCUN)
+				LED_OK =1;
             break;
             
         case 0:
         default :
             V_stop();
+            if(get_Sens() != AUCUN)
+				LED_OK =0;
             break;
         }
         
@@ -362,7 +371,7 @@ void Init(){
     Delay10KTCYx(0);
     LED_OK = 0;
     Delay10KTCYx(0);
-    TRIS_CT1 = 1; // entrée
+//    TRIS_CT1 = 1; // entrée
     
 
 
