@@ -1,0 +1,15 @@
+8 avril 2012
+Re : La suppression du mode lent crée un dépassement trop important de la consigne er le CD sort du champ de la CMUCam => Rétablissement du mode lent
+Mode lent sans effet, on dirait que le robot n'avance pas en mode lent.
+
+7 avril 2012
+La suppression du seuil lent crée un dépassement trop important de consigne et le CD sort du champ de la CMUCam
+Si le robot est à l'arret, la vitesse lente ne lui permet pas de démarrer. (?)
+Soupçon : La com Servo perturbe la com moteur => Plantage quand même
+Débranchement physique du capteur sonique
+Passage de mFigure en volatile
+Hyp probable : Si le robot est à l'arret, la vitesse lente ne lui permet pas de démarrer. (?)
+La com servo, meme intensive, ne gène pas.
+Réglage du gain CMUcam : x2. => le robot va vers le CD, pour de vrai maintenant !
+
+
