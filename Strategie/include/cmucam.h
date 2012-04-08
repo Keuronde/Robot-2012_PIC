@@ -20,9 +20,11 @@ enum etat_cmucam_t {
     NOUVELLE_RECHERCHE,
     TEST_FORME,
     ENVOI_ID,
+    TRACKING_ATTENTE,
     TRACKING,
     TRACKING_PROCHE,
     CMUCAM_RESET,
+    CMUCAM_PRETE,
     PERDU
 };
 
@@ -34,22 +36,13 @@ typedef struct  {
 
 /** P U B L I C  P R O T O T Y P E S ***************************************/
 void CMUcam_Init(void);
-char TX_libre(void);
-char env_cmucam(void);
-char chaine_to_id(char*);
+
 char cherche_pion(void);
 char cherche_case_rouge(void);
 char cherche_case_bleue(void);
 char nouvelle_recherche(void);
-char ask_figure(void);
-char select_figure(unsigned char);
-char chaine_to_figure(char *chaine,volatile figure_t *figure);
-char rec_cmucam(char *chaine);
-char rec_cmucam_cours(void);
-char set_tampon_env(char *chaine);
 void CMUcam_int(void);
-char cmucam_reset(void);
-char get_erreur_RC(void);
+void CMUcam_reset(void);
 void setCouleur(char _c);
 char cherche_couleur(void);
 

@@ -7,13 +7,30 @@
 #define CMUCAM_MILIEU_X (int) 176
 // 5600 : un peu violent
 // 2800 : un peu lent
-#define FACTEUR_CMUCAM_ANGLE (int) 4000
+// 4000 : un peu violent avec une batterie neuve
+#define FACTEUR_CMUCAM_ANGLE (int) 3000
 #define ID_INVALIDE 0XFF
 #define CONSIGNE_MAX 176
+
+
+
 
 // FONCTIONS PRIVEES
 unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile figure_t * mFigure);
 int erreur_angle(volatile figure_t * _mFigure);
+char ask_figure(void);
+char select_figure(unsigned char);
+char chaine_to_figure(char *chaine,volatile figure_t *figure);
+char cmucam_envoi_reset(void);
+char get_erreur_RC(void);
+char chaine_to_id(char*);
+char TX_libre(void);
+char env_cmucam(void);
+char rec_cmucam(char *chaine);
+char rec_cmucam_cours(void);
+char set_tampon_env(char *chaine);
+
+
 
 enum repere_t {
     R_MILIEU=0,
@@ -102,6 +119,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					}
 				}
             	break;
+            case TRACKING_ATTENTE:
             case TRACKING:
             case TRACKING_PROCHE:
             	get_erreur_RC();
@@ -112,6 +130,9 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
 				    		if(mFigure.y1 <= 68){
 								etat_cmucam = TRACKING_PROCHE;
+							}
+							if (etat_cmucam == TRACKING_ATTENTE){
+								etat_cmucam = TRACKING;
 							}
 				    		
 				    		LED_CMUCAM =1;
@@ -139,8 +160,9 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
                	break;
            case CMUCAM_RESET:
 		    	if(TX_libre()){
-		    		if(cmucam_reset()){
+		    		if(cmucam_envoi_reset()){
 			    		cmucam_active=0;
+			    		etat_cmucam=CMUCAM_PRETE;
 		    		}
 		    	}
 		    	break;
@@ -234,6 +256,10 @@ void CMUcam_active(){
 void CMUcam_desactive(){
 	cmucam_active=0;
 }
+void CMUcam_reset(){
+	etat_cmucam = CMUCAM_RESET;
+}
+
 enum etat_cmucam_t CMUcam_get_Etat(){
 	return etat_cmucam;
 }
@@ -281,7 +307,7 @@ char get_erreur_RC(void){
 	return 0;
 }
 
-char cmucam_reset(void){
+char cmucam_envoi_reset(void){
     CMUcam_out[0]='~';
     CMUcam_out[1]=CMUCAM_FIN;
     if(env_cmucam()){

@@ -285,7 +285,7 @@ void main(void){
 				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
-					active_asser(ASSER_TOURNE,0,&consigne_angle);
+					active_asser(ASSER_TOURNE,consigne_angle,&consigne_angle);
 					SetServoPArG(1);
 					etat_strategie = ATTRAPE_CD_3;
 					tempo_s = 750;
@@ -303,6 +303,7 @@ void main(void){
 					tempo_s++;
 					if (tempo_s > 20){
 						desactive_asser();
+						CMUcam_reset();
 						prop_stop();
 						etat_strategie = VERS_LINGOT1_1;
 						tempo_s = 0;
@@ -318,6 +319,13 @@ void main(void){
 					etat_strategie = TEST_SERVO_1;
 				}
 				break;
+			/*case VERS_LINGOT1_2:
+				tempo_s++;
+				if(tempo_s > 250){
+					active_asser(ASSER_TOURNE,2700000,&consigne_angle);
+					etat_strategie = TEST_SERVO_1;
+				}
+				break;*/
             case TEST_SERVO_1:
 				GetDonneesServo();
 				if(get_IS_Gauche()){
