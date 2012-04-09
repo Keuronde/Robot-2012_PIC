@@ -8,7 +8,7 @@
 // 5600 : un peu violent
 // 2800 : un peu lent
 // 4000 : un peu violent avec une batterie neuve
-#define FACTEUR_CMUCAM_ANGLE (int) 3000
+#define FACTEUR_CMUCAM_ANGLE (int) 5600
 #define ID_INVALIDE 0XFF
 #define CONSIGNE_MAX 176
 
