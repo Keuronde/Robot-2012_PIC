@@ -243,8 +243,8 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=DEPOSE_1, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=DEPOSE_1, old_etat_strategie;
     
     
     
@@ -389,8 +389,17 @@ void main(void){
 				if ( tempo_s == 0 ){
 					desactive_asser();
 					prop_stop();
-					etat_strategie = TEST_SERVO_2_1;
+					etat_strategie = DEPOSE_3;
+				}
+				break;
+			case DEPOSE_3:
+				active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+				etat_strategie = DEPOSE_4;
+				break;
+			case DEPOSE_4:
+				if(fin_asser()){
 					SetServoPArG(1);
+					etat_strategie = TEST_SERVO_2_1;
 				}
 				break;
             case TEST_SERVO_1:
