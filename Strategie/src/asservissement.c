@@ -4,9 +4,9 @@
 
 
 // 10 degrés
-#define SEUIL_ANGLE_LENT_INIT  (long) 200000
+#define SEUIL_ANGLE_LENT_INIT  (long) 90000
 // 5 degrés
-#define INCREMENT_ANGLE_LENT  (long) 100000
+#define INCREMENT_ANGLE_LENT  (long) 30000
 // 1 degrés
 //#define SEUIL_ANGLE_LENT  (long)  20000
 // 3 degrés
@@ -19,10 +19,12 @@ enum etat_asser_t etat_asser=FIN_ASSER; // Pour l'asservissement
 int consigne_pap=0;
 int consigne_pap_I=0;
 int consigne_pap_P=0;
+char vitesse_lente;
+char recule;
 
 void Asser_gestion(long * consigne_angle,long * angle){
 	static long seuil_angle_lent;
-	static char sens_rotation;
+	static char sens_rotation,inversion;
 	// Essayer d'avancer droit (A24)   
 	if(asser_actif){   
 		switch (etat_asser){
@@ -37,7 +39,14 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			tempo ++;
 			if(tempo > 100){
 				etat_asser = AVANCE_DROIT;
-				Avance();			// Commencer à avancer
+				if (recule == 0){
+					if (vitesse_lente == 0){
+						Avance();			// Commencer à avancer
+					}else{
+						Avance_lent();
+					}
+				}else{
+				}
 			}
 			break;
 
@@ -106,44 +115,49 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			tempo ++;
 			if(tempo > 100){
 				if((*consigne_angle-*angle) > 0){
-					Avance();
+					Avance_lent();
 					sens_rotation = 1;
 				}else{
-					Recule();
+					Recule_lent();
 					sens_rotation = 0;
 				}
 				etat_asser = TOURNE;
 				seuil_angle_lent = SEUIL_ANGLE_LENT_INIT;
 				tempo = 100;
 				tempo_lent = 400;
+				inversion=0;
 			}
 			break;
 		case TOURNE:
 	
 			if((*consigne_angle-*angle) > 0){
-				Avance();
+				Avance_lent();
 				if(sens_rotation != 1){
 					sens_rotation = 1;
-					seuil_angle_lent += INCREMENT_ANGLE_LENT;
+					inversion++;
 				}
 			}else{
-				Recule();
+				Recule_lent();
 				if(sens_rotation != 0){
 					sens_rotation = 0;
-					seuil_angle_lent += INCREMENT_ANGLE_LENT;
+					inversion++;
 				}
+			}
+			if (inversion == 2){
+				seuil_angle_lent += INCREMENT_ANGLE_LENT;
+				inversion=0;
 			}
 	
 		
 			if((*consigne_angle-*angle) < seuil_angle_lent && (*consigne_angle-*angle) > -seuil_angle_lent){
-				prop_set_vitesse(0);
+				prop_stop();
 				tempo_lent--;
 				if(tempo_lent == 0){
 					prop_stop();
 					etat_asser = FIN_TOURNE;
 				}
 			}else{
-				prop_set_vitesse(1);
+				prop_set_vitesse(0);
 				tempo_lent=400;
 			}
 			if((*consigne_angle-*angle) < SEUIL_ANGLE_ARRET && (*consigne_angle-*angle) > -SEUIL_ANGLE_ARRET){
@@ -183,11 +197,19 @@ void Asser_gestion(long * consigne_angle,long * angle){
 	}
 }
 
-
+void active_asser_lent(char avance_droit, long _angle,long * consigne_angle){
+	active_asser(avance_droit, _angle, consigne_angle);
+	vitesse_lente=1;
+}
 
 void active_asser(char avance_droit, long _angle,long * consigne_angle){
 	*consigne_angle = _angle;
-	if(avance_droit == ASSER_AVANCE){
+	recule = 0;
+	vitesse_lente=0;
+	if( (avance_droit == ASSER_AVANCE) || (avance_droit == ASSER_RECULE) ){
+		if (avance_droit == ASSER_RECULE){
+			recule = 1;
+		}
 		if(etat_asser == FIN_TOURNE || etat_asser == TOURNE){
 			etat_asser = TOURNE_VERS_AVANCE;
 		}else{
@@ -208,4 +230,18 @@ char fin_asser(){
 		return 1;
 	}
 	return 0;
+}
+char get_etat_asser(){
+	// renvoie 1 si on avance, 0 sinon
+	switch (etat_asser){
+	case AVANCE_DROIT_INIT:
+	case DROIT_TEMPO:
+	case AVANCE_DROIT:
+	case AVANCE_DROIT_TEMPO:
+		return 1;
+		break;
+	default :
+		return 0;
+
+	}
 }

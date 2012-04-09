@@ -34,8 +34,18 @@ void Avance(){
     prop_set_sens(1);
     a_envoyer_moteur=1;
 }
+void Avance_lent(){
+    prop_set_vitesse(0);
+    prop_set_sens(1);
+    a_envoyer_moteur=1;
+}
 void Recule(){
     prop_set_vitesse(1);
+    prop_set_sens(0);
+    a_envoyer_moteur=1;
+}
+void Recule_lent(){
+    prop_set_vitesse(0);
     prop_set_sens(0);
     a_envoyer_moteur=1;
 }

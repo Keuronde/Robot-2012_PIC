@@ -1,4 +1,5 @@
 #include "../include/carte_strategie.h"
+#include "../include/asservissement.h"
 #include "../include/CMUcam.h"
 #include <p18f2550.h>
 #include <string.h>
@@ -8,7 +9,8 @@
 // 5600 : un peu violent
 // 2800 : un peu lent
 // 4000 : un peu violent avec une batterie neuve
-#define FACTEUR_CMUCAM_ANGLE (int) 5600
+#define FACTEUR_CMUCAM_ANGLE_DROIT (int) 5600
+#define FACTEUR_CMUCAM_ANGLE_TOURNE (int) 2800
 #define ID_INVALIDE 0XFF
 #define CONSIGNE_MAX 176
 
@@ -128,7 +130,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 		            if(chaine[0]=='t'){
 		            	chaine_to_figure(chaine,&mFigure);
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
-				    		if(mFigure.y1 <= 68){
+				    		if(mFigure.y0 >= 230){
 								etat_cmucam = TRACKING_PROCHE;
 							}
 							if (etat_cmucam == TRACKING_ATTENTE){
@@ -136,8 +138,11 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 							}
 				    		
 				    		LED_CMUCAM =1;
-				    		
-					        *consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE);
+				    		if(get_etat_asser()){
+								*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_DROIT);
+							}else{
+								*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_TOURNE);
+							}
 					        
 					        cmucam_perdu=0;
 				        }else{
@@ -208,7 +213,7 @@ void CMUcam_Init(void){
     
     mRepere = R_DROIT;
     cmucam_cible = CMUCAM_MILIEU_X;
-    cmucam_cible = (int)112;
+    cmucam_cible = (int)104; // Nominal : 112
 
 }
 
@@ -217,6 +222,14 @@ unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile
 		case 'W':
 			if( mFigure->y0 < 225){
 				if( (id_forme == ID_INVALIDE) || (mFigure->y1 > *critere_figure) ) {
+					*critere_figure = mFigure->y1;
+					id_forme = mFigure->id;
+				}
+			}
+			break;
+		case 'P':
+			if( mFigure->y0 < 225){
+				if( (id_forme == ID_INVALIDE) || (mFigure->y1 < *critere_figure) ) {
 					*critere_figure = mFigure->y1;
 					id_forme = mFigure->id;
 				}
@@ -275,9 +288,11 @@ char cherche_couleur(void){
 	
 }
 
-char cherche_pion(void){	
+char cherche_lingot(void){	
     CMUcam_out[0]='P';
     CMUcam_out[1]=CMUCAM_FIN;
+    mRepere = R_MILIEU;
+    cmucam_cible = CMUCAM_MILIEU_X;
     return env_cmucam();
 }
 char cherche_case_rouge(void){

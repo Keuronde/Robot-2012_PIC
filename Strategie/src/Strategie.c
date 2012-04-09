@@ -1,6 +1,7 @@
 #include <p18cxxx.h>
 #include <delays.h>
 #include <timers.h>
+#include "../Interfaces/BrasCD.h"
 #include "../include/asservissement.h"
 #include "../include/carte_strategie.h"
 #include "../include/i2c_m.h"
@@ -24,7 +25,13 @@ enum etat_strategie_t {
     ATTRAPE_CD_2_1,
     ATTRAPE_CD_3,
     ATTRAPE_CD_4,
+    ATTRAPE_CD_5,
     VERS_LINGOT1_1,
+    VERS_LINGOT1_2,
+    VERS_LINGOT1_3,
+    VERS_LINGOT1_4,
+    VERS_LINGOT1_5,
+    VERS_LINGOT1_6,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -244,7 +251,7 @@ void main(void){
 
 	while(1){
 	    char timer;
-	    int tempo_s;
+	    int tempo_s,tempo_s2;
 	    char i,j;
 
 	    while(mTimer == getTimer());
@@ -293,39 +300,81 @@ void main(void){
                 break;
             case ATTRAPE_CD_3:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,angle,&consigne_angle);
+					active_asser_lent(ASSER_AVANCE,angle,&consigne_angle);
 					etat_strategie = ATTRAPE_CD_4;
 				}
 				break;
 			case ATTRAPE_CD_4:
 				GetDonneesServo();
-				if(get_Etat_Gauche() >= 2){
+				/*if (get_IS_Gauche()){
+					desactive_asser();
+					prop_stop();
+				}else{
+					//prop_set_vitesse(1);
+				}*/
+				if(get_Etat_Gauche() >= E_BRAS_BAS_FERME){
 					tempo_s++;
 					if (tempo_s > 20){
 						desactive_asser();
 						CMUcam_reset();
 						prop_stop();
-						etat_strategie = VERS_LINGOT1_1;
+						etat_strategie = ATTRAPE_CD_5;
 						tempo_s = 0;
 					}
 				}else{
 					tempo_s=0;
 				}
 				break;
+			case ATTRAPE_CD_5:
+				GetDonneesServo();
+				if(get_Etat_Gauche() >= E_BRAS_ATTENTE_PLEIN){
+					etat_strategie = VERS_LINGOT1_1;
+				}
+				break;
 			case VERS_LINGOT1_1:
 				tempo_s++;
 				if(tempo_s > 250){
 					active_asser(ASSER_TOURNE,2700000,&consigne_angle);
-					etat_strategie = TEST_SERVO_1;
+					etat_strategie = VERS_LINGOT1_2;
 				}
 				break;
-			/*case VERS_LINGOT1_2:
-				tempo_s++;
-				if(tempo_s > 250){
-					active_asser(ASSER_TOURNE,2700000,&consigne_angle);
-					etat_strategie = TEST_SERVO_1;
+			case VERS_LINGOT1_2:
+				if (fin_asser()){
+					cherche_lingot();
+					CMUcam_active();
+					etat_strategie = VERS_LINGOT1_3;
 				}
-				break;*/
+				break;
+			case VERS_LINGOT1_3:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_AVANCE,consigne_angle,&consigne_angle);
+					etat_strategie = VERS_LINGOT1_4;
+				}
+				break;
+			case VERS_LINGOT1_4:
+				if ( CMUcam_get_Etat() == TRACKING_PROCHE ){
+					CMUcam_reset();
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = VERS_LINGOT1_5;
+				}
+				break;
+			case VERS_LINGOT1_5:
+				if ( fin_asser() ){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = VERS_LINGOT1_6;
+					tempo_s = 250;
+				}
+				break;
+			case VERS_LINGOT1_6:
+				tempo_s--;
+				if ( tempo_s == 0 ){
+					desactive_asser();
+					prop_stop();
+					etat_strategie = TEST_SERVO_2_1;
+				}
+				break;
             case TEST_SERVO_1:
 				GetDonneesServo();
 				if(get_IS_Gauche()){

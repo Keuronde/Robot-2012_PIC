@@ -1,3 +1,7 @@
+9 avril 2012
+Asservissement en rotation revu et bien plus performant.
+
+
 8 avril 2012
 Re : La suppression du mode lent crée un dépassement trop important de la consigne er le CD sort du champ de la CMUCam => Rétablissement du mode lent
 Mode lent sans effet, on dirait que le robot n'avance pas en mode lent. => batterie faible

@@ -37,7 +37,7 @@ typedef struct  {
 /** P U B L I C  P R O T O T Y P E S ***************************************/
 void CMUcam_Init(void);
 
-char cherche_pion(void);
+char cherche_lingot(void);
 char cherche_case_rouge(void);
 char cherche_case_bleue(void);
 char nouvelle_recherche(void);

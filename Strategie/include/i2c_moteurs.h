@@ -4,7 +4,9 @@
 #define PAP_DROIT 0
 
 void Avance(void);
+void Avance_lent(void);
 void Recule(void);
+void Recule_lent(void);
 void pap_set_pos(int pos);
 void prop_set_vitesse(char rapide);
 void prop_set_sens(char avant);
