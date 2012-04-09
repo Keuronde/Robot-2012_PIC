@@ -32,6 +32,10 @@ enum etat_strategie_t {
     VERS_LINGOT1_4,
     VERS_LINGOT1_5,
     VERS_LINGOT1_6,
+    DEPOSE_1,
+    DEPOSE_2,
+    DEPOSE_3,
+	DEPOSE_4,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -239,8 +243,8 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=TEST_SERVO_1, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=DEPOSE_1, old_etat_strategie;
     
     
     
@@ -372,7 +376,21 @@ void main(void){
 				if ( tempo_s == 0 ){
 					desactive_asser();
 					prop_stop();
+					etat_strategie = DEPOSE_1;
+				}
+				break;
+			case DEPOSE_1:
+				active_asser(ASSER_RECULE,ANGLE_DEGRES(180),&consigne_angle);
+				etat_strategie = DEPOSE_2;
+				tempo_s = 250;
+				break;
+			case DEPOSE_2:
+				tempo_s--;
+				if ( tempo_s == 0 ){
+					desactive_asser();
+					prop_stop();
 					etat_strategie = TEST_SERVO_2_1;
+					SetServoPArG(1);
 				}
 				break;
             case TEST_SERVO_1:

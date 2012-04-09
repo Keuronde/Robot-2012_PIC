@@ -46,6 +46,11 @@ void Asser_gestion(long * consigne_angle,long * angle){
 						Avance_lent();
 					}
 				}else{
+					if (vitesse_lente == 0){
+						Recule();			// Commencer à avancer
+					}else{
+						Recule_lent();
+					}
 				}
 			}
 			break;
@@ -87,7 +92,11 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				consigne_pap = PAP_MIN_ROT;
 			}
 			// Envoie de la commande à la carte moteur
-			pap_set_pos(consigne_pap);
+			if (recule == 0){
+				pap_set_pos(consigne_pap);
+			}else{
+				pap_set_pos(-consigne_pap);
+			}
 				
 
 			etat_asser = 3; // Boucle sur la tempo
