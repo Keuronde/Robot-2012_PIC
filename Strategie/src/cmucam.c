@@ -213,7 +213,7 @@ void CMUcam_Init(void){
     
     mRepere = R_DROIT;
     cmucam_cible = CMUCAM_MILIEU_X;
-    cmucam_cible = (int)104; // Nominal : 112
+    cmucam_cible = (int)80; // Nominal : 112
 
 }
 

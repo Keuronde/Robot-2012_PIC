@@ -243,8 +243,8 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=DEPOSE_1, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=ATTRAPE_CD_1, old_etat_strategie;
     
     
     
