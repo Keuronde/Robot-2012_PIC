@@ -10,13 +10,13 @@
 // Positions
 // Pince
 //#define PINCE_OUVERT (unsigned int)0x4EF,(char)3
-#define PINCE_OUVERT (unsigned int)0x5A0,(char)3
+#define PINCE_OUVERT (unsigned int)0x550,(char)3
 #define PINCE_FERMEE (unsigned int)0x6FE,(char)3
 #define PINCE_LACHE  (unsigned int)0x6A0,(char)3
 // Bras
 #define BRAS_HAUT    (unsigned int)0x6AE,(char)4
 //#define BRAS_BAS     0x393,4
-#define BRAS_BAS     (unsigned int)0x3C0,(char)4
+#define BRAS_BAS     (unsigned int)0x3B0,(char)4
 #define BRAS_BASCULE (unsigned int)0x7FE,(char)4
 
 

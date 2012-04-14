@@ -287,7 +287,7 @@ void main(void){
 				break;
 			case ATTRAPE_CD_1 :
 				if (fin_asser()){
-					setCouleur('W');
+					setCouleur('P');
 					CMUcam_active();
 					etat_strategie = ATTRAPE_CD_2;
 				}
