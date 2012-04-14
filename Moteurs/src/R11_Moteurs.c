@@ -97,7 +97,7 @@ void main(void){
     char sens;
     char vitesse_cde;
     char acquittement;
-    char T_old;
+    unsigned char T_old;
     int  t_v0;
     
     Init();
@@ -105,8 +105,8 @@ void main(void){
         valeur_sonic_loin[index_sonic] = 0;
         valeur_sonic_proche[index_sonic] = 0;
     }
-    T_old = getTemps_cs();
-    t_v0 = getTemps_cs();
+    
+    CS_Lecture();
 // On allume les LEDs
 
 
@@ -115,7 +115,11 @@ void main(void){
         char total_sonic_proche,total_sonic_loin;
         unsigned int distance;
         
-        
+		if (T_old != getTemps_4ms()){
+			T_old = getTemps_4ms();
+			CS_gestion();
+			
+		}
         
         // Reception d'ordre
         if(rec_i2c(recu)){
@@ -243,22 +247,18 @@ void main(void){
             break;
         }
         
-        // Si le robot est à l'arrêt
-        // Soit à cause d'un ordre, soit à cause d'un obstacle
-        // On note l'heure afin de connaître le temps écoulé depuis le dernier arrêt
-        if(get_Sens() == AUCUN || vitesse == 0){
-			t_v0=getTemps_cs();
-		}
+        
         
         
         // Lecture du capteur sonique
         // Ne pas lire le capteur sonique si la denière lecture date de moins de 50ms.
         // XXX Rajouter une condition ici
         // Quelque chose comme :
-        //if(getTemps_cs() > T_old + 5){
-            //T_old = getTemps_cs();
+        if(CS_LecturePrete()){
+
             
             distance = getDistance();
+            CS_Lecture();
            // distance = _45_CM;
             
             if(index_sonic == 10){
@@ -286,22 +286,22 @@ void main(void){
             }
             if(total_sonic_proche > 2){
                 CAPTEURS.SONIC_PROCHE = 1;
-                //LED_OK =1;
+                LED_OK =1;
             }else{
                 CAPTEURS.SONIC_PROCHE = 0;
-                //LED_OK =0;
+                LED_OK =0;
             }
             
             if(total_sonic_loin > 2){
                 CAPTEURS.SONIC_LOIN = 1;
-                LED_OK =1;
+                //LED_OK =1;
             }else{
                 CAPTEURS.SONIC_LOIN = 0;
-                LED_OK =0;
+                //LED_OK =0;
             }
             
             index_sonic++;
-        //}
+        }
         // Fin Capteur Sonique
         
 		// CapteurSonique désactivé

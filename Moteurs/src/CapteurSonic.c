@@ -4,62 +4,69 @@
 #include <p18cxxx.h>
 #include "../include/CapteurSonic.h"
 #include "../include/temps.h"
+#include "../include/carte_moteurs.h"
+enum etat_cs_t {
+	E_CS_INIT=0,
+	E_CS_CDE,
+	E_CS_ATTENTE_REP,
+	E_CS_LECTURE_REP,
+	E_CS_TEMPO
+} etat_cs=E_CS_INIT;
+
+
 
 /** V A R I A B L E S ********************************************************/
-unsigned int distance_cs, distance_micro_s;
 
-unsigned int getDistance(){
-	// On emet une impulsion 
-	TRIS_SONIC = 0; // Patte en sortie
-	SONIC = 1;    // Etat haut
+static unsigned char distance_cm=0;
 
-	Delay10TCYx(12);
-	// On arrete l'impulsion
-	SONIC = 0;    // Etat bas
-	// On écoute le port
-	TRIS_SONIC = 1; // Patte en entrée
-	Delay1TCY();
-	// On attend que le capteur commence son echelon
-	while(SONIC == 0);
-
-	// On compte le temps pendant lequel le capteur attend
-	distance_cs = getTemps_cs();
-	distance_micro_s = getTemps_micro_s();
-
-	// On attends que l'echellon se termine
-	while(SONIC == 1);
-
-	distance_micro_s = getTemps_micro_s() - distance_micro_s ;
-	if(distance_cs != getTemps_cs()){
-		distance_micro_s = 10000 * (getTemps_cs()-distance_cs)+ distance_micro_s;
+void CS_gestion(){
+	switch (etat_cs){
+		case E_CS_CDE:
+			TRIS_SONIC = 0; // Patte en sortie
+			SONIC = 1;    // Etat haut
+			Delay10TCYx(12);
+			// On arrete l'impulsion
+			SONIC = 0;    // Etat bas
+			// On écoute le port
+			TRIS_SONIC = 1; // Patte en entrée
+			Delay1TCY();
+			etat_cs = E_CS_ATTENTE_REP;
+			break;
+		case E_CS_ATTENTE_REP:
+			if (SONIC == 1){
+				etat_cs = E_CS_LECTURE_REP;
+				distance_cm = 0;
+			}
+			break;
+		case E_CS_LECTURE_REP:
+			distance_cm++;
+			if (SONIC == 0){
+				etat_cs = E_CS_INIT;
+//				tempo_sonique = 12;
+			}
+			break;
+/*		case E_CS_TEMPO:
+			tempo_sonique--;
+			if (tempo_sonique == 0){
+				etat_cs = E_CS_INIT;
+			}
+			break;*/
+		default:
+			break;
 	}
-	return (unsigned int) (distance_micro_s);
+	
 }
 
-unsigned int getDistance_mm(){
-	// On emet une impulsion 
-	TRIS_SONIC = 0; // Patte en sortie
-	SONIC = 1;    // Etat haut
-
-	Delay10TCYx(12);
-	// On arrete l'impulsion
-	SONIC = 0;    // Etat bas
-	// On écoute le port
-	TRIS_SONIC = 1; // Patte en entrée
-	Delay1TCY();
-	// On attend que le capteur commence son echelon
-	while(SONIC == 0);
-
-	// On compte le temps pendant lequel le capteur attend
-	distance_cs = getTemps_cs();
-	distance_micro_s = getTemps_micro_s();
-
-	// On attends que l'echellon se termine
-	while(SONIC == 1);
-
-	distance_micro_s = getTemps_micro_s() - distance_micro_s ;
-	if(distance_cs != getTemps_cs()){
-		distance_micro_s = 10000 * (getTemps_cs()-distance_cs)+ distance_micro_s;
+char CS_LecturePrete(void){
+	if (etat_cs == E_CS_INIT){
+		return 1;
 	}
-	return (unsigned int) (distance_micro_s / 6.4);
+	return 0;
+}
+void CS_Lecture(){
+	etat_cs = E_CS_CDE;
+}
+
+unsigned int getDistance(){
+	return (unsigned int) (distance_cm);
 }
