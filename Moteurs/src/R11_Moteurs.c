@@ -258,8 +258,8 @@ void main(void){
         //if(getTemps_cs() > T_old + 5){
             //T_old = getTemps_cs();
             
-            //distance = getDistance();
-            distance = _45_CM;
+            distance = getDistance();
+           // distance = _45_CM;
             
             if(index_sonic == 10){
                 index_sonic = 0;
@@ -286,18 +286,18 @@ void main(void){
             }
             if(total_sonic_proche > 2){
                 CAPTEURS.SONIC_PROCHE = 1;
-//                LED_OK =1;
+                //LED_OK =1;
             }else{
                 CAPTEURS.SONIC_PROCHE = 0;
-//                LED_OK =0;
+                //LED_OK =0;
             }
             
             if(total_sonic_loin > 2){
                 CAPTEURS.SONIC_LOIN = 1;
-                // LED_OK =1;
+                LED_OK =1;
             }else{
                 CAPTEURS.SONIC_LOIN = 0;
-                // LED_OK =0;
+                LED_OK =0;
             }
             
             index_sonic++;
@@ -362,7 +362,7 @@ void Init(){
     Delay10KTCYx(0);
     LED_OK = 0;
     Delay10KTCYx(0);
-    TRIS_CT1 = 1; // entrée
+    TRIS_CT1 = 0; // sortie
     
 
 
