@@ -171,9 +171,9 @@ void main(void){
                   
             }
             // Si les état capteurs ont bien été envoyés
-            if(envoi_ok()){
-                CAPTEURS_ENVOYES = A_ENVOYER;
-            }
+            //if(envoi_ok()){
+            //    CAPTEURS_ENVOYES = A_ENVOYER;
+            //}
             
         }
         
@@ -308,7 +308,7 @@ void main(void){
         //CAPTEURS.SONIC_LOIN = 0;
         //CAPTEURS.SONIC_PROCHE = 0;
         // Envoi des valeurs 
-        CAPTEURS._CT1 =CT1;
+        /*CAPTEURS._CT1 =CT1;
         CAPTEURS._CT2 =CT2;
         CAPTEURS._CT3 =CT3;
         CAPTEURS._CT4 =CT4;
@@ -316,7 +316,7 @@ void main(void){
         CAPTEURS._CT6 =CT6;
         if(envoi_i2c((char *) &CAPTEURS)){
             A_ENVOYER = CAPTEURS;
-        }
+        }*/
         
     }
 
