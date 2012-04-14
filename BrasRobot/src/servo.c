@@ -1,7 +1,7 @@
 /** I N C L U D E S **********************************************************/ 
 #include <timers.h>	
 #include <p18f2550.h>
-#include "servo/servo.h"
+#include "../include/servo.h"
 
 
 /** V A R I A B L E S ********************************************************/

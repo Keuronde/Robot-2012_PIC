@@ -1,5 +1,5 @@
 #include <p18f2550.h>
-#include "config.h"
+#include "../include/config.h"
 
 
 /** D E F I N E *******************************************************/

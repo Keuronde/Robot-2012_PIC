@@ -2,10 +2,10 @@
 #include <timers.h>
 #include <delays.h>
 #include <pwm.h>
-#include "config.h"
-#include "servo/servo.h"
-#include "moteurs/moteurs.h"
-#include "temps/temps.h"
+#include "../include/config.h"
+#include "../include/servo.h"
+#include "../include/moteurs.h"
+#include "../include/temps.h"
 
 /** D E F I N E D ********************************************************/
 // Identifiant balise

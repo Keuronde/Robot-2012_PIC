@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 /** D E F I N E **************************************************************/
 // Constantes
 #define SERVO_MIN 0x02D0 

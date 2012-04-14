@@ -1,5 +1,5 @@
 #include <timers.h>
-#include "temps.h"
+#include "../include/temps.h"
 #include <p18cxxx.h>
 
 

@@ -1,9 +1,9 @@
 BIN	:=	BrasRobot
 
-SRCS	:=	R12_Bras.c \
-			servo/servo.c \
-			moteurs/moteurs.c \
-			temps/temps.c
+SRCS	:=	src/R12_Bras.c \
+			src/servo.c \
+			src/moteurs.c \
+			src/temps.c
 			
 
 ## Information concernant le compilateur
