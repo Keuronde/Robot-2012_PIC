@@ -6,6 +6,7 @@
 #include "../include/servo.h"
 #include "../include/moteurs.h"
 #include "../include/temps.h"
+#include "../include/i2c_s.h"
 
 /** D E F I N E D ********************************************************/
 // Identifiant balise
@@ -113,9 +114,10 @@ void main(void){
 	enum etat_bras_t e_bras_droit =REPLIE;
 	char i=0;
 	unsigned char delai_sg = 0,delai_sd = 0;
+	unsigned char recu[3];
 	unsigned int temps, temps_old;
     Init();
-
+    init_i2c(0x33);
     M1_ENABLE = 1;
     M1_SENS = 1;
     
@@ -126,11 +128,36 @@ void main(void){
   
 	// Test algo bras gauche
 	e_bras_gauche = REPLIE;
-	Servo_Set(DOIGT_G_OUVERT);
-	Servo_Set(DOIGT_D_OUVERT);
+	Servo_Set(DOIGT_G_FERME);
+	Servo_Set(DOIGT_D_FERME);
 	temps = getTemps_s();
 	temps_old = temps;
     while(1){
+		// Gestion de l'I2C
+		com_i2c();
+		
+		// Reception I2C - Gestion des action
+		if(rec_i2c(recu) == 1){
+			if(recu[0] & 0x01){ // Ouvre les doigts
+				Servo_Set(DOIGT_G_OUVERT);
+				Servo_Set(DOIGT_D_OUVERT);
+				delai_sg = TEMPO_SERVO_CS;
+				delai_sd = TEMPO_SERVO_CS;
+			}
+			if(recu[0] & 0x02){ // Attrappe les lingos
+				e_bras_gauche = OUVRE_DOIGT;
+				e_bras_droit = OUVRE_DOIGT;
+			}
+			if(recu[0] & 0x03){ // Dépose les lingots
+				Servo_Set(DOIGT_G_OUVERT);
+				Servo_Set(DOIGT_G_OUVERT);
+				e_bras_gauche = ROUVRE_DOIGT;
+				e_bras_droit = ROUVRE_DOIGT;
+				delai_sg = TEMPO_SERVO_CS;
+				delai_sd = TEMPO_SERVO_CS;
+			}
+		}
+		
 		// On récupère l'heure 
 		temps = getTemps_cs();
 		if(temps != temps_old){
@@ -259,11 +286,23 @@ void main(void){
 				e_bras_gauche = REPLIE;
 				break;
 			// Deposer le lingo 
-			case ROUVRE_DOIGT:
+			case ROUVRE_DOIGT:	
+				if (delai_sg == 0){
+					e_bras_gauche = POUSSE_LINGOT;
+				}			
 				break;
 			case POUSSE_LINGOT:
+				M1_Avance();
+				if (CT_M1_AV == 0){
+					e_bras_gauche = RENTRE_BRAS;
+				}
 				break;
 			case RENTRE_BRAS:
+				M1_Recule();
+				if (CT_M1_AR == 1){
+					e_bras_gauche = REPLIE;
+					Servo_Set(DOIGT_G_OUVERT);
+				}
 				break;
 			default:
 				break;
