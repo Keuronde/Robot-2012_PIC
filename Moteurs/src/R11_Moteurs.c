@@ -257,8 +257,8 @@ void main(void){
         if(CS_LecturePrete()){
 
             
-            distance = getDistance();
-            CS_Lecture();
+            // distance = getDistance();
+            // CS_Lecture();
            // distance = _45_CM;
             
             if(index_sonic == 10){

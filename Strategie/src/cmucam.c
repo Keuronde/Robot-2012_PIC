@@ -61,6 +61,7 @@ enum repere_t mRepere;
 char cmucam_perdu=0;
 int critere_figure;
 int cmucam_cible;
+char ile_proche;
 
 // Gestion CMUcam
 void CMUcam_gestion(long * consigne_angle,long * angle){
@@ -116,6 +117,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 					if(TX_libre()){
 						if(select_figure(id_forme)){
 							tempo_tracking=0;
+							ile_proche = 0;
 							etat_cmucam=TRACKING;
 						}
 					}
@@ -130,11 +132,14 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 		            if(chaine[0]=='t'){
 		            	chaine_to_figure(chaine,&mFigure);
 				    	if(mFigure.x1!=0 && mFigure.y1!=0){
-				    		if(mFigure.y0 >= 230){
+				    		if(mFigure.y0 >= 200){
 								etat_cmucam = TRACKING_PROCHE;
 							}
 							if (etat_cmucam == TRACKING_ATTENTE){
 								etat_cmucam = TRACKING;
+							}
+							if(mFigure.y1 >= 200){
+								ile_proche=1;
 							}
 				    		
 				    		LED_CMUCAM =1;
@@ -273,6 +278,10 @@ void CMUcam_reset(){
 	etat_cmucam = CMUCAM_RESET;
 }
 
+char cmucam_ile_proche(){
+	return ile_proche;
+}
+
 enum etat_cmucam_t CMUcam_get_Etat(){
 	return etat_cmucam;
 }
@@ -293,6 +302,13 @@ char cherche_lingot(void){
     CMUcam_out[1]=CMUCAM_FIN;
     mRepere = R_MILIEU;
     cmucam_cible = CMUCAM_MILIEU_X;
+    return env_cmucam();
+}
+char cherche_CD_ile(void){	
+    CMUcam_out[0]='P';
+    CMUcam_out[1]=CMUCAM_FIN;
+    mRepere = R_DROIT;
+    cmucam_cible = 80;
     return env_cmucam();
 }
 char cherche_case_rouge(void){

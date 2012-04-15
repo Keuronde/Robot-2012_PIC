@@ -32,10 +32,26 @@ enum etat_strategie_t {
     VERS_LINGOT1_4,
     VERS_LINGOT1_5,
     VERS_LINGOT1_6,
+    VERS_LINGOT1_7,
     DEPOSE_1,
     DEPOSE_2,
     DEPOSE_3,
 	DEPOSE_4,
+	DEPOSE_5,
+	VERS_ILE_NORD_1,
+	VERS_ILE_NORD_2,
+	VERS_ILE_NORD_3,
+	VERS_ILE_NORD_4,
+	VERS_ILE_NORD_5,
+	VERS_ILE_NORD_6,
+	VERS_ILE_NORD_7,
+	VERS_ILE_NORD_8,
+	VERS_ILE_NORD_9,
+	VERS_CD_ILE_1,
+	VERS_CD_ILE_2,
+	VERS_CD_ILE_3,
+	VERS_CD_ILE_4,
+	VERS_CD_ILE_5,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -310,12 +326,6 @@ void main(void){
 				break;
 			case ATTRAPE_CD_4:
 				GetDonneesServo();
-				/*if (get_IS_Gauche()){
-					desactive_asser();
-					prop_stop();
-				}else{
-					//prop_set_vitesse(1);
-				}*/
 				if(get_Etat_Gauche() >= E_BRAS_BAS_FERME){
 					tempo_s++;
 					if (tempo_s > 20){
@@ -344,34 +354,44 @@ void main(void){
 				break;
 			case VERS_LINGOT1_2:
 				if (fin_asser()){
-					cherche_lingot();
-					CMUcam_active();
+					active_asser(ASSER_AVANCE,2700000,&consigne_angle);
+					tempo_s = 200;
 					etat_strategie = VERS_LINGOT1_3;
 				}
 				break;
 			case VERS_LINGOT1_3:
-				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
-					LED_ROUGE =1;
-					LED_BLEUE =1;
-					active_asser(ASSER_AVANCE,consigne_angle,&consigne_angle);
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
+					desactive_asser();
+					cherche_lingot();
+					CMUcam_active();
 					etat_strategie = VERS_LINGOT1_4;
 				}
 				break;
 			case VERS_LINGOT1_4:
-				if ( CMUcam_get_Etat() == TRACKING_PROCHE ){
-					CMUcam_reset();
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_AVANCE,consigne_angle,&consigne_angle);
 					etat_strategie = VERS_LINGOT1_5;
 				}
 				break;
 			case VERS_LINGOT1_5:
-				if ( fin_asser() ){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
+				if ( CMUcam_get_Etat() == TRACKING_PROCHE ){
+					CMUcam_reset();
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
 					etat_strategie = VERS_LINGOT1_6;
-					tempo_s = 250;
 				}
 				break;
 			case VERS_LINGOT1_6:
+				if ( fin_asser() ){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = VERS_LINGOT1_7;
+					tempo_s = 250;
+				}
+				break;
+			case VERS_LINGOT1_7:
 				tempo_s--;
 				if ( tempo_s == 0 ){
 					desactive_asser();
@@ -399,6 +419,90 @@ void main(void){
 			case DEPOSE_4:
 				if(fin_asser()){
 					SetServoPArG(1);
+					etat_strategie = DEPOSE_5;
+					LED_BLEUE =1;
+				}
+				break;
+			case DEPOSE_5:
+				GetDonneesServo();
+				if(get_Etat_Gauche() == E_BRAS_INIT){
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(-45),&consigne_angle);
+					etat_strategie = VERS_ILE_NORD_1;
+				}
+				break;
+			case VERS_ILE_NORD_1:
+				if (fin_asser()){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-45),&consigne_angle);
+					tempo_s = 500;
+					etat_strategie = VERS_ILE_NORD_2;
+				}
+				break;
+			case VERS_ILE_NORD_2:
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
+					desactive_asser();
+					cherche_lingot();
+					CMUcam_active();
+					etat_strategie = VERS_ILE_NORD_3;
+				}
+				break;
+			case VERS_ILE_NORD_3:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_AVANCE,consigne_angle,&consigne_angle);
+					etat_strategie = VERS_ILE_NORD_4;
+				}
+				break;
+			case VERS_ILE_NORD_4:
+				if (cmucam_ile_proche()){
+					CMUcam_reset();
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(90),&consigne_angle);
+					etat_strategie = VERS_CD_ILE_1;
+				}
+				break;
+			case VERS_CD_ILE_1 :
+				if (fin_asser()){
+					cherche_CD_ile();
+					CMUcam_active();
+					desactive_asser();
+					etat_strategie = VERS_CD_ILE_2;
+				}
+				break;
+			case VERS_CD_ILE_2:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_TOURNE,consigne_angle,&consigne_angle);
+					SetServoPArG(1);
+					etat_strategie = VERS_CD_ILE_3;
+				}
+                break;
+            case VERS_CD_ILE_3:
+				if (fin_asser()){
+					active_asser_lent(ASSER_AVANCE,angle,&consigne_angle);
+					etat_strategie = VERS_CD_ILE_4;
+				}
+				break;
+			case VERS_CD_ILE_4:
+				GetDonneesServo();
+				if(get_Etat_Gauche() >= E_BRAS_BAS_FERME){
+					tempo_s++;
+					if (tempo_s > 20){
+						desactive_asser();
+						CMUcam_reset();
+						prop_stop();
+						etat_strategie = VERS_CD_ILE_5;
+						tempo_s = 0;
+					}
+				}else{
+					tempo_s=0;
+				}
+				break;
+			case VERS_CD_ILE_5:
+				GetDonneesServo();
+				if(get_Etat_Gauche() >= E_BRAS_ATTENTE_PLEIN){
 					etat_strategie = TEST_SERVO_2_1;
 				}
 				break;
