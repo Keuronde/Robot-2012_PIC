@@ -6,6 +6,8 @@
 #include "../include/M_prop.h"
 #include "../include/temps.h"
 #include "../include/CapteurSonic.h"
+#include "../Interfaces/interfaceMoteurs.h"
+
 
 /** V A R I A B L E S ********************************************************/
 #pragma udata
@@ -85,7 +87,7 @@ struct {
 
 
 void main(void){
-    unsigned char recu[2];
+    unsigned char recu[NB_STRATEGIE_2_MOTEUR];
     unsigned char envoi;
     char valeur_sonic_loin[10];
     char valeur_sonic_proche[10];

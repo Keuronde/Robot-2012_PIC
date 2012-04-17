@@ -2,6 +2,7 @@
 #include "../include/i2c_m.h"
 #include <p18cxxx.h>
 #include ".../include/carte_strategie.h"
+#include ".../Interfaces/interfaceMoteurs.h"
 
 // Variables globales
 // Envoi
@@ -111,7 +112,7 @@ char GetEnvoiMoteurs(void){
 
 char transmission_moteur(){
     // Préparation de l'envoi
-    unsigned char envoi[2];
+    unsigned char envoi[NB_STRATEGIE_2_MOTEUR];
     unsigned char recu;
     if(a_envoyer_moteur == 1){
         // 9 bits pour la position du moteur pas à pas.
@@ -126,7 +127,7 @@ char transmission_moteur(){
         
         // Initialisation de l'i2c
         // renvoi 1 si ok, 0 sinon
-        if(transmission_i2c(ADRESSE_PAP,2,1,envoi)){ // anciennement (ADRESSE_PAP,2,0,envoi)
+        if(transmission_i2c(ADRESSE_PAP,NB_STRATEGIE_2_MOTEUR,NB_MOTEUR_2_STRATEGIE,envoi)){
             a_envoyer_moteur=0;
             acquittement =0;
 			if(!get_erreur_i2c()){
