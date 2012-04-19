@@ -52,6 +52,12 @@ enum etat_strategie_t {
 	VERS_CD_ILE_3,
 	VERS_CD_ILE_4,
 	VERS_CD_ILE_5,
+	VERS_TOTEM_1,
+	VERS_TOTEM_2,
+	VERS_TOTEM_3,
+	VERS_TOTEM_4,
+	VERS_TOTEM_5,
+	VERS_TOTEM_6,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -584,7 +590,7 @@ void main(void){
             case TEST_DROIT_1:
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
                 etat_strategie = TEST_DROIT_2;
-                tempo_s = 400;
+                tempo_s = 4000;
                 break;
             case TEST_DROIT_2:
 				tempo_s--;

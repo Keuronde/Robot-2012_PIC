@@ -150,11 +150,8 @@ void main(void){
         
         // Lecture des capteurs
         etat_capteurs.CT_AV_D = CT2;
-        if (selection_capteur.VALEUR & etat_capteurs.VALEUR & CAPTEUR_ARRET){
-			LED_OK = 1;
-		}else{
-			LED_OK = 0;
-		}
+        etat_capteurs.CT_AV_G = CT3;
+        
         // Gestion de la vitesse  
         // Vitesse commandées
         if(vitesse_cde){
