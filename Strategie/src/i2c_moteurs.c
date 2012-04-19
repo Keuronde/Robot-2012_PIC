@@ -17,6 +17,7 @@ char vitesse = 0;
 char contacteurs = 0;
 char capteur_sonique = 0;
 unsigned char a_envoyer_moteur =0;
+union c_Moteur_t selection_capteurs_moteur=0xFF;
 
 void pap_set_pos(int pos){
     // On envoie un entier positif compris entre  0 et 400;
@@ -85,6 +86,35 @@ void prop_stop(void){
 void ignore_contacteur(void){
     acquittement = 1;
 }
+void active_contacteur_avant(){
+	selection_capteurs_moteur.CT_AV_D =1;
+	selection_capteurs_moteur.CT_AV_G =1;
+	a_envoyer_moteur =1;
+}
+void active_contacteur_avant_gauche(){
+	selection_capteurs_moteur.CT_AV_G =1;
+	a_envoyer_moteur =1;
+}
+void active_contacteur_avant_droit(){
+	selection_capteurs_moteur.CT_AV_D =1;
+	a_envoyer_moteur =1;
+}
+
+void ignore_contacteur_avant(){
+	selection_capteurs_moteur.CT_AV_D =0;
+	selection_capteurs_moteur.CT_AV_G =0;
+	a_envoyer_moteur =1;
+}
+void ignore_contacteur_avant_gauche(){
+	selection_capteurs_moteur.CT_AV_G =0;
+	a_envoyer_moteur =1;
+}
+void ignore_contacteur_avant_droit(){
+	selection_capteurs_moteur.CT_AV_D =0;
+	a_envoyer_moteur =1;
+}
+
+
 char get_contacteurs(){
     return contacteurs;
 }
@@ -124,6 +154,8 @@ char transmission_moteur(){
         envoi[1] |= ((vitesse & 0x01) << 4);
         // 1 bit pour l'acquittement
         envoi[1] |= ((acquittement & 0x01) << 5);
+        // Geston des capteurs de la carte moteur
+        envoi[2] = selection_capteurs_moteur.VALEUR;
         
         // Initialisation de l'i2c
         // renvoi 1 si ok, 0 sinon

@@ -63,32 +63,13 @@ void MyInterrupt(void){
 
 #pragma code
 
-struct {
-  unsigned ACQ_CT1:1;
-  unsigned ACQ_CT2:1;
-  unsigned ACQ_CT3:1;
-  unsigned ACQ_CT4:1;
-  unsigned ACQ_CT5:1;
-  unsigned ACQ_CT6:1;
-  unsigned SONIC_PROCHE:1;
-  unsigned SONIC_LOIN:1;
-} ACQ_CT;
-
-struct {
-  unsigned _CT1:1;
-  unsigned _CT2:1;
-  unsigned _CT3:1;
-  unsigned _CT4:1;
-  unsigned _CT5:1;
-  unsigned _CT6:1;
-  unsigned SONIC_PROCHE:1;
-  unsigned SONIC_LOIN:1;
-} CAPTEURS, A_ENVOYER,CAPTEURS_ENVOYES;
 
 
 void main(void){
     unsigned char recu[NB_STRATEGIE_2_MOTEUR];
     unsigned char envoi;
+    // Gestion des capteurs
+    union c_Moteur_t etat_capteurs, selection_capteur;
     char valeur_sonic_loin[10];
     char valeur_sonic_proche[10];
     char CT_acquittement;
@@ -102,7 +83,13 @@ void main(void){
     unsigned char T_old;
     int  t_v0;
     
+    // Init 
     Init();
+    selection_capteur.VALEUR = 0xFF;
+    etat_capteurs.VALEUR = 0;
+    // Fin init
+    
+    
     for(index_sonic = 0;index_sonic< 10; index_sonic++){
         valeur_sonic_loin[index_sonic] = 0;
         valeur_sonic_proche[index_sonic] = 0;
@@ -154,55 +141,37 @@ void main(void){
             
             
             // Acquitement contacteur
-            acquittement = (recu[1] >> 5) & 0x01;
-            if(acquittement){
-                if(CAPTEURS_ENVOYES._CT1)
-                    ACQ_CT.ACQ_CT1 = 1;
-                if(CAPTEURS_ENVOYES._CT2)
-                    ACQ_CT.ACQ_CT2 = 1;
-                if(CAPTEURS_ENVOYES._CT3)
-                    ACQ_CT.ACQ_CT3 = 1;    
-                if(CAPTEURS_ENVOYES._CT4)
-                    ACQ_CT.ACQ_CT4 = 1;
-                if(CAPTEURS_ENVOYES._CT5)
-                    ACQ_CT.ACQ_CT5 = 1;
-                if(CAPTEURS_ENVOYES._CT6)
-                    ACQ_CT.ACQ_CT6 = 1;
-                if(CAPTEURS_ENVOYES.SONIC_PROCHE)
-                    ACQ_CT.SONIC_PROCHE = 1;
-                  
-            }
-            // Si les état capteurs ont bien été envoyés
-            //if(envoi_ok()){
-            //    CAPTEURS_ENVOYES = A_ENVOYER;
-            //}
+            selection_capteur.VALEUR = recu[2];
+            
+            // Se servir de ce bit pour l'activation/desactivaiton du moteur pas à pas.
+            //acquittement = (recu[1] >> 5) & 0x01;
             
         }
         
-        // Lecture 
-        if(!CT1)
-            ACQ_CT.ACQ_CT1 = 0;
-        if(!CT2)
-            ACQ_CT.ACQ_CT2 = 0;
-        if(!CT3)
-            ACQ_CT.ACQ_CT3 = 0;    
-        if(!CT4)
-            ACQ_CT.ACQ_CT4 = 0;
-        if(!CT5)
-            ACQ_CT.ACQ_CT5 = 0;
-        if(!CT6)
-            ACQ_CT.ACQ_CT6 = 0;
-        if(!CAPTEURS.SONIC_PROCHE)
-            ACQ_CT.SONIC_PROCHE =0;
-        
+        // Lecture des capteurs
+        etat_capteurs.CT_AV_D = CT2;
+        if (selection_capteur.VALEUR & etat_capteurs.VALEUR & CAPTEUR_ARRET){
+			LED_OK = 1;
+		}else{
+			LED_OK = 0;
+		}
         // Gestion de la vitesse  
         // Vitesse commandées
         if(vitesse_cde){
-				vitesse = 2;
+			vitesse = 2;
         }else{
             vitesse = 1;
         }
         
+        // On ignore les consignes de sens, c'est la carte stratégie qui nous indique quel capteur utiliser.
+        if( selection_capteur.VALEUR & etat_capteurs.VALEUR & CAPTEUR_RALENTI){
+			vitesse = 1;
+		}
+        if( (selection_capteur.VALEUR & etat_capteurs.VALEUR & CAPTEUR_ARRET) ){
+			vitesse = 0;
+		}
+		
+        /*
         if( get_Sens() == AVANT){
             // Ralentissement du au capteur sonique
             if(CAPTEURS.SONIC_LOIN){
@@ -231,7 +200,7 @@ void main(void){
             if(CT5 == 1 && ACQ_CT.ACQ_CT5 == 0){
                 vitesse = 0;
             }
-        }
+        }*/
         
         // Si le robot est sensé avancer, on ajuste la vitesse
         switch(vitesse){
@@ -287,18 +256,18 @@ void main(void){
                 total_sonic_loin += valeur_sonic_loin[i];
             }
             if(total_sonic_proche > 2){
-                CAPTEURS.SONIC_PROCHE = 1;
-                LED_OK =1;
+                etat_capteurs.SONIC_PROCHE_D = 1;
+                //LED_OK =1;
             }else{
-                CAPTEURS.SONIC_PROCHE = 0;
-                LED_OK =0;
+                etat_capteurs.SONIC_PROCHE_D = 0;
+                //LED_OK =0;
             }
             
             if(total_sonic_loin > 2){
-                CAPTEURS.SONIC_LOIN = 1;
+                etat_capteurs.SONIC_LOIN_D = 1;
                 //LED_OK =1;
             }else{
-                CAPTEURS.SONIC_LOIN = 0;
+                etat_capteurs.SONIC_LOIN_D = 0;
                 //LED_OK =0;
             }
             
@@ -306,19 +275,6 @@ void main(void){
         }
         // Fin Capteur Sonique
         
-		// CapteurSonique désactivé
-        //CAPTEURS.SONIC_LOIN = 0;
-        //CAPTEURS.SONIC_PROCHE = 0;
-        // Envoi des valeurs 
-        /*CAPTEURS._CT1 =CT1;
-        CAPTEURS._CT2 =CT2;
-        CAPTEURS._CT3 =CT3;
-        CAPTEURS._CT4 =CT4;
-        CAPTEURS._CT5 =CT5;
-        CAPTEURS._CT6 =CT6;
-        if(envoi_i2c((char *) &CAPTEURS)){
-            A_ENVOYER = CAPTEURS;
-        }*/
         
     }
 
@@ -333,24 +289,6 @@ void Init(){
     MoteurPInit();
     M_prop_init();
     Temps_Init();
-
-    A_ENVOYER._CT1=0;
-    A_ENVOYER._CT2=0;
-    A_ENVOYER._CT3=0;
-    A_ENVOYER._CT4=0;
-    A_ENVOYER._CT5=0;
-    A_ENVOYER._CT6=0;
-    A_ENVOYER.SONIC_PROCHE=0;
-    A_ENVOYER.SONIC_LOIN=0;
-    
-    CAPTEURS_ENVOYES._CT1=0;
-    CAPTEURS_ENVOYES._CT2=0;
-    CAPTEURS_ENVOYES._CT3=0;
-    CAPTEURS_ENVOYES._CT4=0;
-    CAPTEURS_ENVOYES._CT5=0;
-    CAPTEURS_ENVOYES._CT6=0;
-    CAPTEURS_ENVOYES.SONIC_PROCHE=0;
-    CAPTEURS_ENVOYES.SONIC_LOIN=0;
 
     LED_OK = 1;
     Delay10KTCYx(0);

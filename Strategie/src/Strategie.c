@@ -259,8 +259,8 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=DEPOSE_1, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=TEST_DROIT_1, old_etat_strategie;
     
     
     
@@ -584,8 +584,13 @@ void main(void){
             case TEST_DROIT_1:
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
                 etat_strategie = TEST_DROIT_2;
+                tempo_s = 400;
                 break;
             case TEST_DROIT_2:
+				tempo_s--;
+				if (tempo_s == 0){
+					ignore_contacteur_avant();
+				}
                 break;
             case TEST_LIAISON:
                 GetDonneesServo();
