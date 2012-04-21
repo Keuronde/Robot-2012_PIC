@@ -57,6 +57,7 @@ enum etat_strategie_t {
 	VERS_CD_ILE_5,
 	VERS_TOTEM_1,
 	VERS_TOTEM_2,
+	VERS_TOTEM_3,
 	TOTEM_CONTACT_DROIT_1,
 	TOTEM_CONTACT_DROIT_2,
 	TOTEM_CONTACT_DROIT_3,
@@ -65,12 +66,12 @@ enum etat_strategie_t {
 	TOTEM_CONTACT_GAUCHE_2,
 	TOTEM_CONTACT_GAUCHE_3,
 	TOTEM_CONTACT_GAUCHE_4,
+	TOTEM_ATTRAPPE_LINGOTS_1,
 	TOTEM_OUVRE_DOIGTS_1,
-	TOTEM_ATTRAPPE_LINGOTS,
-	VERS_TOTEM_3,
-	VERS_TOTEM_4,
-	VERS_TOTEM_5,
-	VERS_TOTEM_6,
+	TOTEM_OUVRE_DOIGTS_2,
+	TOTEM_ATTRAPPE_LINGOTS_2,
+	TOTEM_SORTIE_1,
+	TOTEM_SORTIE_2,
     EVITEMENT_RECULE,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
@@ -279,7 +280,7 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
 //    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=TOTEM_OUVRE_DOIGTS_1, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
 
     
     
@@ -533,7 +534,7 @@ void main(void){
 				break;
 			case VERS_TOTEM_2:
 				if(fin_asser()){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					active_asser_lent(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = VERS_TOTEM_3;
 				}
 				break;
@@ -578,7 +579,8 @@ void main(void){
 				tempo_s--;
 				if (get_CT_AV_D() && get_CT_AV_G()){
 					prop_stop();
-					etat_strategie = TOTEM_ATTRAPPE_LINGOTS;
+					WMP_set_Angle(0); // On se recale
+					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
 					pap_set_pos(PAP_MAX_ROT/3);
@@ -614,7 +616,8 @@ void main(void){
 				tempo_s--;
 				if (get_CT_AV_D() && get_CT_AV_G()){
 					prop_stop();
-					etat_strategie = TOTEM_ATTRAPPE_LINGOTS;
+					WMP_set_Angle(0); // On se recale
+					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
 					pap_set_pos(-PAP_MAX_ROT/3);
@@ -636,8 +639,52 @@ void main(void){
 					etat_strategie = VERS_TOTEM_1;
 				}
 				break;
+			case TOTEM_ATTRAPPE_LINGOTS_1:
+				active_asser(ASSER_RECULE,ANGLE_DEGRES(0),&consigne_angle);
+				tempo_s = 200;
+				etat_strategie = TOTEM_OUVRE_DOIGTS_1;
+				break;
 			case TOTEM_OUVRE_DOIGTS_1:
-				lingot_ouvre_doigt();
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
+					desactive_asser();
+					lingot_ouvre_doigt();
+					etat_strategie = TOTEM_OUVRE_DOIGTS_2;
+					tempo_s = 125;
+				}
+				break;
+			case TOTEM_OUVRE_DOIGTS_2:
+				tempo_s--;
+				if(tempo_s == 0){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_2;
+				}
+				break;
+			case TOTEM_ATTRAPPE_LINGOTS_2:
+				GetDonneesMoteurs();
+				if (get_CT_AV_D() || get_CT_AV_G()){
+					prop_stop();
+					desactive_asser();
+					lingot_attrappe();
+					tempo_s= 600; // 4s
+					etat_strategie = TOTEM_SORTIE_1;
+				}
+				break;
+			case TOTEM_SORTIE_1:
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_RECULE,ANGLE_DEGRES(0),&consigne_angle);
+					tempo_s = 300;
+					etat_strategie = TOTEM_SORTIE_2;
+				}
+				break;
+			case TOTEM_SORTIE_2:
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = TEST_SERVO_2_1;
+				}
 				break;
             case TEST_SERVO_1:
 				GetDonneesServo();
