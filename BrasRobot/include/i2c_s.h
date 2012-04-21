@@ -16,7 +16,7 @@
 void init_i2c(unsigned char);
 char rec_i2c(unsigned char *);
 char envoi_i2c(char *);
-void com_i2c(void);
+void com_i2c(void); // à mettre en interruption
 
 /* P A R A M E T R E S *******************************************************/
 #define NB_REC 1
@@ -27,3 +27,11 @@ enum booleen {
     OUI
 };
 
+
+extern volatile char data_out[NB_ENV];
+extern volatile char data_in[NB_REC];
+extern volatile char data_index;
+
+extern volatile enum booleen _nouvelle_reception;
+extern volatile enum booleen _donnees_envoyees;
+extern volatile enum booleen _i2c_actif;
