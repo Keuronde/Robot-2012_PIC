@@ -4,6 +4,7 @@ BIN	:=	Strategie
 SRCS	:=	src/Strategie.c \
             src/carte_strategie.c \
             src/i2c_m.c \
+            src/i2c_brasLingot.c \
             src/i2c_moteurs.c \
             src/i2c_servo.c \
             src/WMP.c \

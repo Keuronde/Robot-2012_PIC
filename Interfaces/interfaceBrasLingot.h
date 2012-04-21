@@ -1,9 +1,9 @@
 #define NB_BRAS_2_STRATEGIE 1
 #define NB_STRATEGIE_2_BRAS 1
-
+#define ADRESSE_LINGOT 0x36
 
 #define CDE_BRAS_OUVERT 1
-#define CDE_BRAS_ATTRAPE 2
+#define CDE_BRAS_ATTRAPPE 2
 #define CDE_BRAS_DEPOSE 3
 
 

@@ -106,7 +106,7 @@ void main(void){
 	unsigned char recu[NB_STRATEGIE_2_BRAS];
 	unsigned int temps, temps_old;
     Init();
-    init_i2c(0x33);
+    init_i2c(ADRESSE_LINGOT);
     message.MESSAGE = 0;
     M1_ENABLE = 1;
     M1_SENS = 1;
@@ -133,7 +133,7 @@ void main(void){
 				delai_sg = TEMPO_SERVO_CS;
 				delai_sd = TEMPO_SERVO_CS;
 			}
-			if(message.COMMANDE_BRAS == CDE_BRAS_ATTRAPE){ // Attrappe les lingos
+			if(message.COMMANDE_BRAS == CDE_BRAS_ATTRAPPE){ // Attrappe les lingos
 				e_bras_gauche = OUVRE_DOIGT;
 				e_bras_droit = OUVRE_DOIGT;
 			}

@@ -7,6 +7,7 @@
 #include "../include/i2c_m.h"
 #include "../include/i2c_moteurs.h"
 #include "../include/i2c_servo.h"
+#include "../include/i2c_brasLingot.h"
 #include "../include/WMP.h"
 #include "../include/WCC.h"
 #include "../include/cmucam.h"
@@ -64,6 +65,7 @@ enum etat_strategie_t {
 	TOTEM_CONTACT_GAUCHE_2,
 	TOTEM_CONTACT_GAUCHE_3,
 	TOTEM_CONTACT_GAUCHE_4,
+	TOTEM_OUVRE_DOIGTS_1,
 	TOTEM_ATTRAPPE_LINGOTS,
 	VERS_TOTEM_3,
 	VERS_TOTEM_4,
@@ -277,7 +279,7 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
 //    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=TOTEM_OUVRE_DOIGTS_1, old_etat_strategie;
 
     
     
@@ -634,7 +636,9 @@ void main(void){
 					etat_strategie = VERS_TOTEM_1;
 				}
 				break;
-				
+			case TOTEM_OUVRE_DOIGTS_1:
+				lingot_ouvre_doigt();
+				break;
             case TEST_SERVO_1:
 				GetDonneesServo();
 				if(get_IS_Gauche()){
@@ -979,6 +983,7 @@ void main(void){
         }else{
 			// Echange avec la carte moteurs si nécessaire
             transmission_servo();
+            transmission_lingot();
             DernierEnvoi = SERVO;
         }
 
