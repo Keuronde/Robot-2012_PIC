@@ -218,6 +218,8 @@ void active_asser(char avance_droit, long _angle,long * consigne_angle){
 	if( (avance_droit == ASSER_AVANCE) || (avance_droit == ASSER_RECULE) ){
 		if (avance_droit == ASSER_RECULE){
 			recule = 1;
+		}else{
+			active_contacteur_avant();
 		}
 		if(etat_asser == FIN_TOURNE || etat_asser == TOURNE){
 			etat_asser = TOURNE_VERS_AVANCE;
@@ -227,6 +229,7 @@ void active_asser(char avance_droit, long _angle,long * consigne_angle){
 	}else{
 		etat_asser = TOURNE_INIT;	
 	}
+	
 	asser_actif=1;
 }
 

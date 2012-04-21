@@ -18,6 +18,7 @@ char contacteurs = 0;
 char capteur_sonique = 0;
 unsigned char a_envoyer_moteur =0;
 union c_Moteur_t selection_capteurs_moteur=0xFF;
+union c_Moteur_t etat_capteurs_moteurs=0x00;
 
 void pap_set_pos(int pos){
     // On envoie un entier positif compris entre  0 et 400;
@@ -42,11 +43,13 @@ void Avance_lent(){
     a_envoyer_moteur=1;
 }
 void Recule(){
+	ignore_contacteur_avant();
     prop_set_vitesse(1);
     prop_set_sens(0);
     a_envoyer_moteur=1;
 }
 void Recule_lent(){
+	ignore_contacteur_avant();
     prop_set_vitesse(0);
     prop_set_sens(0);
     a_envoyer_moteur=1;
@@ -119,10 +122,10 @@ char get_contacteurs(){
     return contacteurs;
 }
 char get_CT_AV_G(){
-    return contacteurs & 0x01;
+    return etat_capteurs_moteurs.CT_AV_G;
 }
 char get_CT_AV_D(){
-    return contacteurs & 0x02;
+    return etat_capteurs_moteurs.CT_AV_D;
 }
 char get_capteur_sonique(){
     return capteur_sonique;
@@ -165,7 +168,7 @@ char transmission_moteur(){
 			if(!get_erreur_i2c()){
             while(i2c_en_cours());
 		        get_i2c_data(&recu);
-		        contacteurs = recu;
+		        etat_capteurs_moteurs.VALEUR = recu;
       		}
             return 1;
         }

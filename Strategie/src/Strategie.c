@@ -13,6 +13,8 @@
 
 /* M A C R O **********************************************************/
 #define ANGLE_DEGRES(X) (long)((long)(X) * (long)20000)
+#define TEMPO_TOTEM_LOIN 150
+#define TEMPO_TOTEM_PROCHE 75
 
 /** T Y P E   P R I V E S ****************************************************/
 
@@ -54,6 +56,15 @@ enum etat_strategie_t {
 	VERS_CD_ILE_5,
 	VERS_TOTEM_1,
 	VERS_TOTEM_2,
+	TOTEM_CONTACT_DROIT_1,
+	TOTEM_CONTACT_DROIT_2,
+	TOTEM_CONTACT_DROIT_3,
+	TOTEM_CONTACT_DROIT_4,
+	TOTEM_CONTACT_GAUCHE_1,
+	TOTEM_CONTACT_GAUCHE_2,
+	TOTEM_CONTACT_GAUCHE_3,
+	TOTEM_CONTACT_GAUCHE_4,
+	TOTEM_ATTRAPPE_LINGOTS,
 	VERS_TOTEM_3,
 	VERS_TOTEM_4,
 	VERS_TOTEM_5,
@@ -266,8 +277,8 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
 //    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=TEST_DROIT_1, old_etat_strategie;
-    
+    enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
+
     
     
     
@@ -277,8 +288,10 @@ void main(void){
 
 	while(1){
 	    char timer;
-	    int tempo_s,tempo_s2;
+	    int tempo_s,tempo_s2,tempo_totem;
 	    char i,j;
+	    char contact_totem_gauche=0;
+	    char contact_totem_droit=0;
 
 	    while(mTimer == getTimer());
         // Calculer et récupérer l'angle du gyroscope (A22)
@@ -512,6 +525,116 @@ void main(void){
 					etat_strategie = TEST_SERVO_2_1;
 				}
 				break;
+			case VERS_TOTEM_1:
+				active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+				etat_strategie = VERS_TOTEM_2;
+				break;
+			case VERS_TOTEM_2:
+				if(fin_asser()){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					etat_strategie = VERS_TOTEM_3;
+				}
+				break;
+			case VERS_TOTEM_3:
+				GetDonneesMoteurs();
+				if (get_CT_AV_D()){
+					desactive_asser();
+					pap_set_pos(PAP_DROIT);
+					tempo_s = 100;
+					contact_totem_droit = 1;
+					if(contact_totem_droit & contact_totem_gauche){
+						tempo_totem = TEMPO_TOTEM_PROCHE;
+					}else{
+						tempo_totem = TEMPO_TOTEM_LOIN;
+					}
+					etat_strategie = TOTEM_CONTACT_DROIT_1;
+				}
+				if (get_CT_AV_G()){
+					desactive_asser();
+					pap_set_pos(PAP_DROIT);
+					tempo_s = 100;
+					contact_totem_gauche = 1;
+					if(contact_totem_droit & contact_totem_gauche){
+						tempo_totem = TEMPO_TOTEM_PROCHE;
+					}else{
+						tempo_totem = TEMPO_TOTEM_LOIN;
+					}
+					etat_strategie = TOTEM_CONTACT_GAUCHE_1;
+				}
+				break;
+			case TOTEM_CONTACT_DROIT_1:
+				tempo_s--;
+				if (tempo_s == 0){
+					Avance();
+					ignore_contacteur_avant_droit();
+					tempo_s = 100;
+					etat_strategie = TOTEM_CONTACT_DROIT_2;
+				}
+				break;
+			case TOTEM_CONTACT_DROIT_2:
+				GetDonneesMoteurs();
+				tempo_s--;
+				if (get_CT_AV_D() && get_CT_AV_G()){
+					prop_stop();
+					etat_strategie = TOTEM_ATTRAPPE_LINGOTS;
+				}else if (tempo_s == 0){
+					prop_stop();
+					pap_set_pos(PAP_MAX_ROT/3);
+					tempo_s = 50;
+					etat_strategie = TOTEM_CONTACT_DROIT_3;
+				}
+				break;
+			case TOTEM_CONTACT_DROIT_3:
+				tempo_s--;
+				if (tempo_s == 0){
+					Recule();
+					tempo_s = tempo_totem;
+					etat_strategie = TOTEM_CONTACT_DROIT_4;
+				}
+				break;
+			case TOTEM_CONTACT_DROIT_4:
+				tempo_s--;
+				if (tempo_s == 0){
+					etat_strategie = VERS_TOTEM_1;
+				}
+				break;
+			case TOTEM_CONTACT_GAUCHE_1:
+				tempo_s--;
+				if (tempo_s == 0){
+					Avance();
+					ignore_contacteur_avant_droit();
+					tempo_s = 100;
+					etat_strategie = TOTEM_CONTACT_GAUCHE_2;
+				}
+				break;
+			case TOTEM_CONTACT_GAUCHE_2:
+				GetDonneesMoteurs();
+				tempo_s--;
+				if (get_CT_AV_D() && get_CT_AV_G()){
+					prop_stop();
+					etat_strategie = TOTEM_ATTRAPPE_LINGOTS;
+				}else if (tempo_s == 0){
+					prop_stop();
+					pap_set_pos(-PAP_MAX_ROT/3);
+					tempo_s = 50;
+					etat_strategie = TOTEM_CONTACT_GAUCHE_3;
+				}
+				break;
+			case TOTEM_CONTACT_GAUCHE_3:
+				tempo_s--;
+				if (tempo_s == 0){
+					Recule();
+					tempo_s = tempo_totem;
+					etat_strategie = TOTEM_CONTACT_GAUCHE_4;
+				}
+				break;
+			case TOTEM_CONTACT_GAUCHE_4:
+				tempo_s--;
+				if (tempo_s == 0){
+					etat_strategie = VERS_TOTEM_1;
+				}
+				break;
+				
             case TEST_SERVO_1:
 				GetDonneesServo();
 				if(get_IS_Gauche()){

@@ -77,7 +77,7 @@ void main(void){
     int consigne_recu=0;
     int consigne_recu_old=0;
     char vitesse=0;
-    char sens;
+    char sens,i;
     char vitesse_cde;
     char acquittement;
     unsigned char T_old;
@@ -87,6 +87,11 @@ void main(void){
     Init();
     selection_capteur.VALEUR = 0xFF;
     etat_capteurs.VALEUR = 0;
+    
+    for(i=0;i<10;i++){
+		valeur_sonic_proche[i]=0;
+		valeur_sonic_loin[i]=0;
+	}
     // Fin init
     
     
@@ -151,6 +156,8 @@ void main(void){
         // Lecture des capteurs
         etat_capteurs.CT_AV_D = CT2;
         etat_capteurs.CT_AV_G = CT3;
+        
+        envoi_i2c((char *) &(etat_capteurs.VALEUR));
         
         // Gestion de la vitesse  
         // Vitesse commandées
