@@ -6,6 +6,8 @@
 #include "../include/servo.h"
 #include "../include/moteurs.h"
 #include "../include/temps.h"
+#include "../include/i2c_s.h"
+#include "../../Interfaces/interfaceBrasLingot.h"
 
 /** D E F I N E D ********************************************************/
 // Identifiant balise
@@ -37,19 +39,6 @@ enum etat_cre_t {
     CRE_RECULE
 };
 
-enum etat_bras_t {
-/* Attraper le lingo */
-    REPLIE=0,
-    OUVRE_DOIGT,
-    AVANCE_BRAS,
-    FERME_DOIGT,
-    RECULE_BRAS,
-    RENTRE_LINGOT,
-/* Deposer le lingo */
-	ROUVRE_DOIGT,
-	POUSSE_LINGOT,
-	RENTRE_BRAS
-};
 
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void MyInterrupt(void);
@@ -111,11 +100,14 @@ void MyInterrupt_L(void){
 void main(void){
 	enum etat_bras_t e_bras_gauche=REPLIE;
 	enum etat_bras_t e_bras_droit =REPLIE;
+	union message_bras_t message;
 	char i=0;
 	unsigned char delai_sg = 0,delai_sd = 0;
+	unsigned char recu[NB_STRATEGIE_2_BRAS];
 	unsigned int temps, temps_old;
     Init();
-
+    init_i2c(0x33);
+    message.MESSAGE = 0;
     M1_ENABLE = 1;
     M1_SENS = 1;
     
@@ -124,13 +116,37 @@ void main(void){
     
   
   
-	// Test algo bras gauche
-	e_bras_gauche = REPLIE;
-	Servo_Set(DOIGT_G_OUVERT);
-	Servo_Set(DOIGT_D_OUVERT);
+
+	Servo_Set(DOIGT_G_FERME);
+	Servo_Set(DOIGT_D_FERME);
 	temps = getTemps_s();
 	temps_old = temps;
     while(1){
+		// Gestion de l'I2C
+		com_i2c();
+		
+		// Reception I2C - Gestion des action
+		if(rec_i2c((unsigned char *) &message) == 1){
+			if(message.COMMANDE_BRAS == CDE_BRAS_OUVERT){ // Ouvre les doigts
+				Servo_Set(DOIGT_G_OUVERT);
+				Servo_Set(DOIGT_D_OUVERT);
+				delai_sg = TEMPO_SERVO_CS;
+				delai_sd = TEMPO_SERVO_CS;
+			}
+			if(message.COMMANDE_BRAS == CDE_BRAS_ATTRAPE){ // Attrappe les lingos
+				e_bras_gauche = OUVRE_DOIGT;
+				e_bras_droit = OUVRE_DOIGT;
+			}
+			if(message.COMMANDE_BRAS == CDE_BRAS_DEPOSE){ // Dépose les lingots
+				Servo_Set(DOIGT_G_OUVERT);
+				Servo_Set(DOIGT_D_OUVERT);
+				e_bras_gauche = ROUVRE_DOIGT;
+				e_bras_droit = ROUVRE_DOIGT;
+				delai_sg = TEMPO_SERVO_CS;
+				delai_sd = TEMPO_SERVO_CS;
+			}
+		}
+		
 		// On récupère l'heure 
 		temps = getTemps_cs();
 		if(temps != temps_old){
@@ -202,11 +218,23 @@ void main(void){
 				e_bras_droit = REPLIE;
 				break;
 			// Deposer le lingo 
-			case ROUVRE_DOIGT:
+			case ROUVRE_DOIGT:	
+				if (delai_sd == 0){
+					e_bras_droit = POUSSE_LINGOT;
+				}			
 				break;
 			case POUSSE_LINGOT:
+				M2_Avance();
+				if (CT_M2_AV == 0){
+					e_bras_droit = RENTRE_BRAS;
+				}
 				break;
 			case RENTRE_BRAS:
+				M2_Recule();
+				if (CT_M2_AR == 1){
+					e_bras_droit = REPLIE;
+					Servo_Set(DOIGT_D_FERME);
+				}
 				break;
 			default:
 				break;
@@ -259,11 +287,23 @@ void main(void){
 				e_bras_gauche = REPLIE;
 				break;
 			// Deposer le lingo 
-			case ROUVRE_DOIGT:
+			case ROUVRE_DOIGT:	
+				if (delai_sg == 0){
+					e_bras_gauche = POUSSE_LINGOT;
+				}			
 				break;
 			case POUSSE_LINGOT:
+				M1_Avance();
+				if (CT_M1_AV == 0){
+					e_bras_gauche = RENTRE_BRAS;
+				}
 				break;
 			case RENTRE_BRAS:
+				M1_Recule();
+				if (CT_M1_AR == 1){
+					e_bras_gauche = REPLIE;
+					Servo_Set(DOIGT_G_FERME);
+				}
 				break;
 			default:
 				break;

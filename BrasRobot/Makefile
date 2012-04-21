@@ -3,7 +3,8 @@ BIN	:=	BrasRobot
 SRCS	:=	src/R12_Bras.c \
 			src/servo.c \
 			src/moteurs.c \
-			src/temps.c
+			src/temps.c \
+			src/i2c_s.c
 			
 
 ## Information concernant le compilateur
