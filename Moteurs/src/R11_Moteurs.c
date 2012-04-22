@@ -78,9 +78,10 @@ void main(void){
     int consigne_recu_old=0;
     char vitesse=0;
     char sens,i;
+    int tempo_led=0;
     char vitesse_cde;
     char acquittement;
-    unsigned char T_old;
+    unsigned int T_old;
     int  t_v0;
     
     // Init 
@@ -109,12 +110,18 @@ void main(void){
         char total_sonic_proche,total_sonic_loin;
         unsigned int distance;
         
-		if (T_old != getTemps_4ms()){
-			T_old = getTemps_4ms();
+		if (T_old != getTemps_290us()){
+			T_old = getTemps_290us();
+			tempo_led++;
 			CS_gestion();
 			
 		}
-        
+		// Debug Temps
+        /*if (tempo_led == 3448){
+			tempo_led = 0;
+			LED_OK = !LED_OK;
+		}*/
+		
         // Reception d'ordre
         if(rec_i2c(recu)){
 //        	LED_OK = 1;
@@ -175,36 +182,6 @@ void main(void){
 			vitesse = 0;
 		}
 		
-        /*
-        if( get_Sens() == AVANT){
-            // Ralentissement du au capteur sonique
-            if(CAPTEURS.SONIC_LOIN){
-                vitesse = 1;
-            }
-            // Arrêt du au capteur sonique
-            if(CAPTEURS.SONIC_PROCHE == 1 && ACQ_CT.SONIC_PROCHE == 0){
-                //vitesse = 0;
-                /// En mode télécommande, on ne veut pas d'arrêt intempestif
-            }
-            // Test des contacteurs avant
-            if(CT1 == 1 && ACQ_CT.ACQ_CT1 == 0){
-                vitesse = 0;
-            }
-            if(CT2 == 1 && ACQ_CT.ACQ_CT2 == 0){
-                vitesse = 0;
-            }
-        }else if(get_Sens() == ARRIERE){
-            // Test des contacteurs arriere
-            if(CT3 == 1 && ACQ_CT.ACQ_CT3 == 0){
-                vitesse = 0;
-            }
-            if(CT4 == 1 && ACQ_CT.ACQ_CT4 == 0){
-                vitesse = 0;
-            }
-            if(CT5 == 1 && ACQ_CT.ACQ_CT5 == 0){
-                vitesse = 0;
-            }
-        }*/
         
         // Si le robot est sensé avancer, on ajuste la vitesse
         switch(vitesse){
@@ -232,11 +209,11 @@ void main(void){
         if(CS_LecturePrete()){
 
             
-            // distance = getDistance();
-            // CS_Lecture();
+            distance = getDistance();
+            CS_Lecture();
            // distance = _45_CM;
             
-            if(index_sonic == 10){
+            if(index_sonic == 5){
                 index_sonic = 0;
             }
 
@@ -255,7 +232,7 @@ void main(void){
             
             total_sonic_proche = 0;
             total_sonic_loin = 0;
-            for(i=0;i<10;i++){
+            for(i=0;i<5;i++){
                 total_sonic_proche += valeur_sonic_proche[i];
                 total_sonic_loin += valeur_sonic_loin[i];
             }
@@ -269,10 +246,10 @@ void main(void){
             
             if(total_sonic_loin > 2){
                 etat_capteurs.SONIC_LOIN_D = 1;
-                //LED_OK =1;
+                LED_OK =1;
             }else{
                 etat_capteurs.SONIC_LOIN_D = 0;
-                //LED_OK =0;
+                LED_OK =0;
             }
             
             index_sonic++;

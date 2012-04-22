@@ -17,8 +17,10 @@ enum etat_cs_t {
 
 /** V A R I A B L E S ********************************************************/
 
-static unsigned char distance_cm=0;
+static unsigned char distance_5cm=0;
+unsigned int tempo_sonique;
 
+// Fonciton à appeller périodiquement, toutes les 290 µs
 void CS_gestion(){
 	switch (etat_cs){
 		case E_CS_CDE:
@@ -30,16 +32,21 @@ void CS_gestion(){
 			// On écoute le port
 			TRIS_SONIC = 1; // Patte en entrée
 			Delay1TCY();
+			tempo_sonique=0;
 			etat_cs = E_CS_ATTENTE_REP;
 			break;
 		case E_CS_ATTENTE_REP:
+			tempo_sonique++;
 			if (SONIC == 1){
 				etat_cs = E_CS_LECTURE_REP;
-				distance_cm = 0;
+				distance_5cm = 0;
+			}
+			if (tempo_sonique > 18){ // 5 ms
+				etat_cs = E_CS_CDE;
 			}
 			break;
 		case E_CS_LECTURE_REP:
-			distance_cm++;
+			distance_5cm++;
 			if (SONIC == 0){
 				etat_cs = E_CS_INIT;
 //				tempo_sonique = 12;
@@ -68,5 +75,5 @@ void CS_Lecture(){
 }
 
 unsigned int getDistance(){
-	return (unsigned int) (distance_cm);
+	return (unsigned int) (distance_5cm * 5);
 }

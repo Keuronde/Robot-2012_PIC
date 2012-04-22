@@ -117,6 +117,27 @@ void ignore_contacteur_avant_droit(){
 	a_envoyer_moteur =1;
 }
 
+void ignore_sonique_proche(){
+	selection_capteurs_moteur.SONIC_PROCHE_D =0;
+	selection_capteurs_moteur.SONIC_PROCHE_G =0;
+	a_envoyer_moteur =1;
+}
+void ignore_sonique_loin(){
+	selection_capteurs_moteur.SONIC_LOIN_D =0;
+	selection_capteurs_moteur.SONIC_LOIN_G =0;
+	a_envoyer_moteur =1;
+}
+void active_sonique_proche(){
+	selection_capteurs_moteur.SONIC_PROCHE_D =1;
+	selection_capteurs_moteur.SONIC_PROCHE_G =1;
+	a_envoyer_moteur =1;
+}
+void active_sonique_loin(){
+	selection_capteurs_moteur.SONIC_LOIN_D =1;
+	selection_capteurs_moteur.SONIC_LOIN_G =1;
+	a_envoyer_moteur =1;
+}
+
 
 char get_contacteurs(){
     return contacteurs;

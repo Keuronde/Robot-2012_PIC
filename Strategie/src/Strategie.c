@@ -15,7 +15,7 @@
 /* M A C R O **********************************************************/
 #define ANGLE_DEGRES(X) (long)((long)(X) * (long)20000)
 #define TEMPO_TOTEM_LOIN 150
-#define TEMPO_TOTEM_PROCHE 75
+#define TEMPO_TOTEM_PROCHE 100
 
 /** T Y P E   P R I V E S ****************************************************/
 
@@ -261,7 +261,8 @@ void main(void){
     long angle;
     int pos_pap_offset=0;
     int pos_pap_offset_new=0;
-    
+	char contact_totem_gauche=0;
+	char contact_totem_droit=0;
     
     char DernierEnvoi=0;
 	char couleur;
@@ -288,13 +289,15 @@ void main(void){
 
     Init();
     RELAIS =0;
+    // Tant que les capteur_soniques ne son pas prêt
+    ignore_sonique_loin();
+    ignore_sonique_proche();
 
 	while(1){
 	    char timer;
 	    int tempo_s,tempo_s2,tempo_totem;
 	    char i,j;
-	    char contact_totem_gauche=0;
-	    char contact_totem_droit=0;
+
 
 	    while(mTimer == getTimer());
         // Calculer et récupérer l'angle du gyroscope (A22)
@@ -570,7 +573,7 @@ void main(void){
 				if (tempo_s == 0){
 					Avance();
 					ignore_contacteur_avant_droit();
-					tempo_s = 100;
+					tempo_s = 30;
 					etat_strategie = TOTEM_CONTACT_DROIT_2;
 				}
 				break;
@@ -583,7 +586,7 @@ void main(void){
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
-					pap_set_pos(PAP_MAX_ROT/3);
+					pap_set_pos(PAP_MAX_ROT/2);
 					tempo_s = 50;
 					etat_strategie = TOTEM_CONTACT_DROIT_3;
 				}
@@ -606,8 +609,8 @@ void main(void){
 				tempo_s--;
 				if (tempo_s == 0){
 					Avance();
-					ignore_contacteur_avant_droit();
-					tempo_s = 100;
+					ignore_contacteur_avant_gauche();
+					tempo_s = 30;
 					etat_strategie = TOTEM_CONTACT_GAUCHE_2;
 				}
 				break;
@@ -620,7 +623,7 @@ void main(void){
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
-					pap_set_pos(-PAP_MAX_ROT/3);
+					pap_set_pos(-(PAP_MAX_ROT/2));
 					tempo_s = 50;
 					etat_strategie = TOTEM_CONTACT_GAUCHE_3;
 				}
@@ -657,7 +660,7 @@ void main(void){
 			case TOTEM_OUVRE_DOIGTS_2:
 				tempo_s--;
 				if(tempo_s == 0){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					active_asser_lent(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_2;
 				}
 				break;

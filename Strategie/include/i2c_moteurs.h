@@ -26,3 +26,7 @@ void active_contacteur_avant_droit(void);
 void ignore_contacteur_avant(void);
 void ignore_contacteur_avant_gauche(void);
 void ignore_contacteur_avant_droit(void);
+void ignore_sonique_proche();
+void ignore_sonique_loin();
+void active_sonique_proche();
+void active_sonique_loin();
