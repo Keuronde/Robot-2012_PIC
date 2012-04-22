@@ -68,8 +68,8 @@ void Asser_gestion(long * consigne_angle,long * angle){
 
 			
 			// On s'occupe du terme intégrale que si on avance
-			if( get_CT_AV_G() || get_CT_AV_D() || get_capteur_sonique_proche() ){
-			}else if(get_capteur_sonique_proche()){
+			if( capteur_stop() ){
+			}else if(capteur_lent()){
 				consigne_pap_I=consigne_pap_I + consigne_pap_P/8;	
 			}else{
 				consigne_pap_I=consigne_pap_I + consigne_pap_P; // Consigne I

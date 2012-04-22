@@ -281,7 +281,7 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
 //    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=TEST_DROIT_1, old_etat_strategie;
 
     
     
@@ -290,8 +290,8 @@ void main(void){
     Init();
     RELAIS =0;
     // Tant que les capteur_soniques ne son pas prêt
-    ignore_sonique_loin();
-    ignore_sonique_proche();
+    //ignore_sonique_loin();
+    //ignore_sonique_proche();
 
 	while(1){
 	    char timer;

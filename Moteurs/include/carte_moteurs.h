@@ -16,9 +16,10 @@
 #define TRIS_CT3          TRISBbits.TRISB5
 #define TRIS_CT4          TRISBbits.TRISB3
 #define TRIS_CT5          TRISCbits.TRISC7
-#define TRIS_CT6          TRISCbits.TRISC6
+//#define TRIS_CT6          TRISCbits.TRISC6
 
-#define TRIS_SONIC        TRISBbits.TRISB2
+#define TRIS_SONIC_G      TRISBbits.TRISB2
+#define TRIS_SONIC_D      TRISCbits.TRISC6
 
 
 // Definition des PORTs ou LATs
@@ -38,12 +39,12 @@
 #define CT3          PORTBbits.RB5
 #define CT4          PORTBbits.RB3
 #define CT5          PORTCbits.RC7
-#define CT6          PORTCbits.RC6
+//#define CT6          PORTCbits.RC6
 
 #define LED_OK       LATBbits.LATB7
 
-#define SONIC        PORTBbits.RB2
-
+#define SONIC_G      PORTBbits.RB2
+#define SONIC_D      PORTCbits.RC6
 
 // Public prototypes
 void init_io(void);

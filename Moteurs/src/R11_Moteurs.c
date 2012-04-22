@@ -213,17 +213,17 @@ void main(void){
             CS_Lecture();
            // distance = _45_CM;
             
-            if(index_sonic == 5){
+            if(index_sonic == 3){
                 index_sonic = 0;
             }
 
-            if(distance < _45_CM ){
+            if(distance < _85_CM ){
                 valeur_sonic_loin[index_sonic]=1;
             }else{
                 valeur_sonic_loin[index_sonic]=0;
             }
             
-            if(distance < _25_CM ){
+            if(distance < _55_CM ){
                 valeur_sonic_proche[index_sonic]=1;
             }else{
                 valeur_sonic_proche[index_sonic]=0;
@@ -232,7 +232,7 @@ void main(void){
             
             total_sonic_proche = 0;
             total_sonic_loin = 0;
-            for(i=0;i<5;i++){
+            for(i=0;i<3;i++){
                 total_sonic_proche += valeur_sonic_proche[i];
                 total_sonic_loin += valeur_sonic_loin[i];
             }
