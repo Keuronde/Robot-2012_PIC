@@ -133,7 +133,7 @@ void MyInterrupt(void)
 
 
 void main(void){
-	char tempo_bg,tempo_vitale=0;
+	char tempo_bg,tempo_bd,tempo_vitale=0;
 	unsigned char recu[10];
 	char envoi[NB_ENV];
 	unsigned int temps, temps_old;
@@ -145,6 +145,8 @@ void main(void){
 	Servo_Init();
 	Servo_Set(BRAS_BAS);
 	Servo_Set(PINCE_OUVERT);
+	Servo_Set(PINCE_OUVERT_D);
+	Servo_Set(BRAS_BAS_D);
 	init_i2c(0x33);
 	TRIS_BOOT = 1;
 	// On active toutes les interruptions
@@ -156,6 +158,7 @@ void main(void){
 	ADCON1 = 0x0F; // Tout numérique, pas d'analogique
 	TRIS_LED_OK = 0;
 	TRIS_IS_GAUCHE = 1;
+	TRIS_IS_DROIT = 1;
 	LED_OK = 1;
 	Delay10KTCYx(0);
 	Delay10KTCYx(0);
@@ -175,9 +178,9 @@ void main(void){
 	LED_OK = 1;
 
 	etat_bras_gauche = E_BRAS_INIT;
-	
-	etat_bras_droit = etat_bras_gauche;
+	etat_bras_droit = E_BRAS_INIT;
 	tempo_bg = 0;
+	tempo_bd = 0;
 	temps = getTemps_cs();
 	temps_old = temps;
 	while(1)
@@ -202,6 +205,9 @@ void main(void){
 			// gestion des délais
 			if( tempo_bg > 0){
 				tempo_bg--;
+			}
+			if( tempo_bd > 0){
+				tempo_bd--;
 			}
 			if(tempo_vitale >0){
 				tempo_vitale--;
@@ -231,6 +237,7 @@ void main(void){
 		// Debug
 		if(BOOT == 0){
 			etat_bras_gauche = E_BRAS_ATTENTE_PIECE;
+			etat_bras_droit = E_BRAS_ATTENTE_PIECE;
 		}
 		
 		
@@ -298,6 +305,77 @@ void main(void){
 			case E_BRAS_DEPOSE_OUVERT:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_INIT;
+				}
+				break;
+			default :
+				break;
+			
+		}
+		
+		// Gestion du bras droit
+		switch (etat_bras_droit){
+			case E_BRAS_INIT :
+				Servo_Set(BRAS_HAUT_D);
+				Servo_Set(PINCE_OUVERT_D);
+				tempo_bd=TEMPO_ATTRAPE_PIECE;
+				break;
+			case E_BRAS_ATTENTE_PIECE:
+				Servo_Set(BRAS_BAS_D);
+				Servo_Set(PINCE_OUVERT_D);
+				etat_bras_droit=E_BRAS_BAS_OUVERT;
+				break;
+			case E_BRAS_BAS_OUVERT:
+				if(IS_DROIT){
+					if (tempo_bd == 0){
+						etat_bras_droit = E_BRAS_BAS_FERME;
+						Servo_Set(PINCE_FERMEE_D);
+						tempo_bd=TEMPO_FERME_DOIGT;
+					}
+				}else{
+					tempo_bd=TEMPO_ATTRAPE_PIECE;
+				}
+				break;
+			case E_BRAS_BAS_FERME:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_HAUT_FERME;
+					Servo_Set(BRAS_HAUT_D);
+					tempo_bd=TEMPO_LEVE_BRAS;
+				}
+				break;
+			case E_BRAS_HAUT_FERME:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_HAUT_LACHE;
+					Servo_Set(PINCE_LACHE_D);
+					tempo_bd=TEMPO_CALE_PIECE;
+				}
+				break;
+			case E_BRAS_HAUT_LACHE:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_ATTENTE_PLEIN;
+					Servo_Set(PINCE_FERMEE_D);
+					tempo_bd=TEMPO_CALE_PIECE;
+				}
+				break;
+			case E_BRAS_ATTENTE_PLEIN :
+				break;
+			case E_BRAS_HAUT_RESSERRE:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_DEPOSE_FERME;
+					Servo_Set(BRAS_BASCULE_D);
+					tempo_bd=TEMPO_DEPOSE_BRAS;
+				}
+				break;
+			
+			case E_BRAS_DEPOSE_FERME:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_DEPOSE_OUVERT;
+					Servo_Set(PINCE_OUVERT_D);
+					tempo_bd=TEMPO_LACHE_PIECE;
+				}
+				break;
+			case E_BRAS_DEPOSE_OUVERT:
+				if (tempo_bd == 0){
+					etat_bras_droit = E_BRAS_INIT;
 				}
 				break;
 			default :

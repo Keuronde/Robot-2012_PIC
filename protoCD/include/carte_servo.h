@@ -9,6 +9,7 @@
 #define    TRIS_SERVO_SUP2 TRISCbits.TRISC6
 #define    TRIS_LED_OK TRISCbits.TRISC0
 #define    TRIS_IS_GAUCHE TRISAbits.TRISA0
+#define    TRIS_IS_DROIT TRISAbits.TRISA1
 
 #define    TRIS_CDE_LED_ROUGES TRISAbits.TRISA4
 #define    TRIS_CDE_LED_BLEUES TRISAbits.TRISA5
@@ -35,6 +36,8 @@
 
 // Definition des PORT
 #define    IS_GAUCHE PORTAbits.RA0
+#define    IS_DROIT PORTAbits.RA1
+
 
 
 

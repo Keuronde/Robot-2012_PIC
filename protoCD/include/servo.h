@@ -8,6 +8,7 @@
 #define NB_SERVO 1
 
 // Positions
+// GAUCHE
 // Pince
 //#define PINCE_OUVERT (unsigned int)0x4EF,(char)3
 #define PINCE_OUVERT (unsigned int)0x550,(char)3
@@ -15,9 +16,18 @@
 #define PINCE_LACHE  (unsigned int)0x6A0,(char)3
 // Bras
 #define BRAS_HAUT    (unsigned int)0x6AE,(char)4
-//#define BRAS_BAS     0x393,4
 #define BRAS_BAS     (unsigned int)0x3B0,(char)4
 #define BRAS_BASCULE (unsigned int)0x7FE,(char)4
+
+// DROIT
+// Pince
+#define PINCE_OUVERT_D (unsigned int)0x550,(char)1
+#define PINCE_FERMEE_D (unsigned int)0x3B0,(char)1
+#define PINCE_LACHE_D  (unsigned int)0x400,(char)1
+// Bras
+#define BRAS_HAUT_D    (unsigned int)0x380,(char)2
+#define BRAS_BAS_D     (unsigned int)0x680,(char)2
+#define BRAS_BASCULE_D (unsigned int)0x280,(char)2
 
 
 // Variables globales
