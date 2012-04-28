@@ -305,17 +305,17 @@ char cherche_lingot(void){
     return env_cmucam();
 }
 char cherche_CD_droit(void){	
-    CMUcam_out[0]='P';
+    CMUcam_out[0]='W';
     CMUcam_out[1]=CMUCAM_FIN;
     mRepere = R_GAUCHE;
-    cmucam_cible = 264;
+    cmucam_cible = (int)264;
     return env_cmucam();
 }
 char cherche_CD_gauche(void){	
-    CMUcam_out[0]='P';
+    CMUcam_out[0]='W';
     CMUcam_out[1]=CMUCAM_FIN;
     mRepere = R_DROIT;
-    cmucam_cible = 104;
+    cmucam_cible = (int)104;
     return env_cmucam();
 }
 char cherche_CD_ile(void){	

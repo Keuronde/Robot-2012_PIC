@@ -14,7 +14,7 @@
 
 // Variable du module
 char asser_actif=0; 					// Pour l'asservissement
-char tempo=0,tempo_lent=0;
+char tempo=0,tempo_lent=0,tempo_inversion;
 enum etat_asser_t etat_asser=FIN_ASSER; // Pour l'asservissement
 int consigne_pap=0;
 int consigne_pap_I=0;
@@ -134,6 +134,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				seuil_angle_lent = SEUIL_ANGLE_LENT_INIT;
 				tempo = 100;
 				tempo_lent = 400;
+				tempo_inversion = 1600;
 				inversion=0;
 			}
 			break;
@@ -144,17 +145,24 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				if(sens_rotation != 1){
 					sens_rotation = 1;
 					inversion++;
+					tempo_inversion =1600;
 				}
 			}else{
 				Recule_lent();
 				if(sens_rotation != 0){
 					sens_rotation = 0;
 					inversion++;
+					tempo_inversion =1600;
 				}
 			}
 			if (inversion == 2){
 				seuil_angle_lent += INCREMENT_ANGLE_LENT;
 				inversion=0;
+			}
+			tempo_inversion--;
+			if (tempo_inversion == 0){
+			//	prop_stop();
+			//	etat_asser = FIN_TOURNE;
 			}
 	
 		
