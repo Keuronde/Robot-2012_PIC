@@ -9,6 +9,13 @@ unsigned char IS_Droit=0,IS_Gauche=0,Etat_Gauche=0,Etat_Droit=0;
 unsigned char presence_pion;
 
 
+void CDBrasDroit(){
+	envoi_servo |= 0x10;
+}
+void CDBrasGauche(){
+	envoi_servo |= 0x01;
+}
+
 void SetServoPArG(char haut){
     if(haut){
         envoi_servo |= 0x01;

@@ -278,7 +278,7 @@ void CMUcam_reset(){
 	etat_cmucam = CMUCAM_RESET;
 }
 
-char cmucam_ile_proche(){
+char cmucam_ile_proche(void){
 	return ile_proche;
 }
 

@@ -143,10 +143,10 @@ void main(void){
 	// Init :
 	Temps_Init();
 	Servo_Init();
-	Servo_Set(BRAS_BAS);
-	Servo_Set(PINCE_OUVERT);
+	Servo_Set(BRAS_BASCULE_G);
+	Servo_Set(PINCE_OUVERT_G);
 	Servo_Set(PINCE_OUVERT_D);
-	Servo_Set(BRAS_BAS_D);
+	Servo_Set(BRAS_BASCULE_D);
 	init_i2c(0x33);
 	TRIS_BOOT = 1;
 	// On active toutes les interruptions
@@ -232,6 +232,16 @@ void main(void){
 						break;
 				}
 			}
+			if(recu[0] & 0x10){ // Bras Gauche
+				switch(etat_bras_droit){
+					case E_BRAS_INIT:
+						etat_bras_droit = E_BRAS_ATTENTE_PIECE;
+						break;
+					case E_BRAS_ATTENTE_PLEIN:
+						etat_bras_droit = E_BRAS_HAUT_RESSERRE;
+						break;
+				}
+			}
 		}
 		
 		// Debug
@@ -244,20 +254,20 @@ void main(void){
 		// Gestion du bras gauche
 		switch (etat_bras_gauche){
 			case E_BRAS_INIT :
-				Servo_Set(BRAS_HAUT);
-				Servo_Set(PINCE_OUVERT);
+				Servo_Set(BRAS_HAUT_G);
+				Servo_Set(PINCE_OUVERT_G);
 				tempo_bg=TEMPO_ATTRAPE_PIECE;
 				break;
 			case E_BRAS_ATTENTE_PIECE:
-				Servo_Set(BRAS_BAS);
-				Servo_Set(PINCE_OUVERT);
+				Servo_Set(BRAS_BAS_G);
+				Servo_Set(PINCE_OUVERT_G);
 				etat_bras_gauche=E_BRAS_BAS_OUVERT;
 				break;
 			case E_BRAS_BAS_OUVERT:
 				if(IS_GAUCHE){
 					if (tempo_bg == 0){
 						etat_bras_gauche = E_BRAS_BAS_FERME;
-						Servo_Set(PINCE_FERMEE);
+						Servo_Set(PINCE_FERMEE_G);
 						tempo_bg=TEMPO_FERME_DOIGT;
 					}
 				}else{
@@ -267,21 +277,21 @@ void main(void){
 			case E_BRAS_BAS_FERME:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_HAUT_FERME;
-					Servo_Set(BRAS_HAUT);
+					Servo_Set(BRAS_HAUT_G);
 					tempo_bg=TEMPO_LEVE_BRAS;
 				}
 				break;
 			case E_BRAS_HAUT_FERME:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_HAUT_LACHE;
-					Servo_Set(PINCE_LACHE);
+					Servo_Set(PINCE_LACHE_G);
 					tempo_bg=TEMPO_CALE_PIECE;
 				}
 				break;
 			case E_BRAS_HAUT_LACHE:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_ATTENTE_PLEIN;
-					Servo_Set(PINCE_FERMEE);
+					Servo_Set(PINCE_FERMEE_G);
 					tempo_bg=TEMPO_CALE_PIECE;
 				}
 				break;
@@ -290,7 +300,7 @@ void main(void){
 			case E_BRAS_HAUT_RESSERRE:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_DEPOSE_FERME;
-					Servo_Set(BRAS_BASCULE);
+					Servo_Set(BRAS_BASCULE_G);
 					tempo_bg=TEMPO_DEPOSE_BRAS;
 				}
 				break;
@@ -298,7 +308,7 @@ void main(void){
 			case E_BRAS_DEPOSE_FERME:
 				if (tempo_bg == 0){
 					etat_bras_gauche = E_BRAS_DEPOSE_OUVERT;
-					Servo_Set(PINCE_OUVERT);
+					Servo_Set(PINCE_OUVERT_G);
 					tempo_bg=TEMPO_LACHE_PIECE;
 				}
 				break;

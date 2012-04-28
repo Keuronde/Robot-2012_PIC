@@ -13,6 +13,9 @@ void SetCremaillere(char haut);
 void GetDonneesServo(void);
 char GetEnvoiServo(void);
 
+void CDBrasDroit(void);
+void CDBrasGauche(void);
+
 char get_IS_Droit(void);
 char get_IS_Gauche(void);
 char get_Etat_Droit(void);

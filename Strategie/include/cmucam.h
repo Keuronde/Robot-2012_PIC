@@ -53,4 +53,5 @@ void CMUcam_desactive(void);
 enum etat_cmucam_t CMUcam_get_Etat(void);
 void setCouleur(char _c);
 void CMUcam_gestion(long * consigne_angle,long *angle);
+char cmucam_ile_proche(void);
 

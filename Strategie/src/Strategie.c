@@ -121,6 +121,13 @@ enum etat_strategie_t {
 	TEST_ALLERRETOUR_4
 };
 
+enum etat_action_t {
+	ATTRAPE_CD_GAUCHE_INIT,
+	ATTRAPE_CD_GAUCHE_TRACKING,
+	ATTRAPE_CD_GAUCHE_TOURNE,
+	ATTRAPE_CD_GAUCHE_AVANCE,
+	FIN_ACTION
+};
 
 
 enum etat_poussoirs_t {
@@ -279,8 +286,9 @@ void main(void){
 	
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
-//    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
+    enum etat_action_t etat_action=FIN_ACTION;
+    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+//    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
 
     
     
@@ -292,6 +300,7 @@ void main(void){
 	while(1){
 	    char timer;
 	    int tempo_s,tempo_s2,tempo_totem;
+	    int tempo_action,tempo_avance;
 	    char i,j;
 	    char contact_totem_gauche=0;
 	    char contact_totem_droit=0;
@@ -949,6 +958,54 @@ void main(void){
             default:
                 break;
         }
+        
+        /***********************
+        *                      *
+        *  ACTIONS COMPLEXES   *
+        *                      *
+        ***********************/
+
+        switch(etat_action){
+			// Attrappe CD Bras Gauche
+			case ATTRAPE_CD_GAUCHE_INIT:
+				setCouleur('W');
+				CMUcam_active();
+				etat_action = ATTRAPE_CD_GAUCHE_TRACKING;
+				break;
+			case ATTRAPE_CD_GAUCHE_TRACKING:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_TOURNE,consigne_angle,&consigne_angle);
+					CDBrasGauche();
+					etat_action = ATTRAPE_CD_GAUCHE_TOURNE;
+				}
+				break;
+			case ATTRAPE_CD_GAUCHE_TOURNE:
+				if (fin_asser()){
+					active_asser_lent(ASSER_AVANCE,angle,&consigne_angle);
+					etat_action = ATTRAPE_CD_GAUCHE_AVANCE;
+				}
+				break;
+			case ATTRAPE_CD_GAUCHE_AVANCE:
+				GetDonneesServo();
+				if(get_Etat_Gauche() >= E_BRAS_BAS_FERME){
+					tempo_action++;
+					if (tempo_action > 20){
+						desactive_asser();
+						CMUcam_reset();
+						prop_stop();
+						etat_action = FIN_ACTION;
+						tempo_action = 0;
+					}
+				}else{
+					tempo_action=0;
+				}
+				break;
+			case FIN_ACTION:
+			default:
+				break;
+		}
 
         
         /***********************
