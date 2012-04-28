@@ -21,7 +21,6 @@ void init_io(){
     TRIS_CT3 = 1;
     TRIS_CT4 = 1;
     TRIS_CT5 = 1;
-    TRIS_CT6 = 1;
 
 // config des valeurs des sorties
 

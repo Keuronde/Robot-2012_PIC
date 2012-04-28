@@ -13,9 +13,8 @@
 #include "../include/cmucam.h"
 
 /* M A C R O **********************************************************/
-#define ANGLE_DEGRES(X) (long)((long)(X) * (long)20000)
 #define TEMPO_TOTEM_LOIN 150
-#define TEMPO_TOTEM_PROCHE 75
+#define TEMPO_TOTEM_PROCHE 100
 
 /** T Y P E   P R I V E S ****************************************************/
 
@@ -147,7 +146,7 @@ volatile unsigned char timer;
 volatile int nb3ms; 
 unsigned char mTimer;
 long consigne_angle; // Pour l'asservissement
-
+char couleur;
 // Initialisées
 #pragma idata
 
@@ -158,7 +157,7 @@ long consigne_angle; // Pour l'asservissement
 void MyInterrupt(void);
 void Init(void);
 char getTimer(void);
-
+long ANGLE_DEGRES(int X);
 
 
 
@@ -268,10 +267,10 @@ void main(void){
     long angle;
     int pos_pap_offset=0;
     int pos_pap_offset_new=0;
-    
+	char contact_totem_gauche=0;
+	char contact_totem_droit=0;
     
     char DernierEnvoi=0;
-	char couleur;
 	char essai_cmucam;
 	
 	char ignore_pion = 0;
@@ -290,20 +289,22 @@ void main(void){
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
 //    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
 
-    
-    
-    
 
-    Init();
+    
+    
+    
+	Init();
     RELAIS =0;
+    // Tant que les capteur_soniques ne son pas prêt
+    //ignore_sonique_loin();
+    //ignore_sonique_proche();
 
 	while(1){
 	    char timer;
 	    int tempo_s,tempo_s2,tempo_totem;
 	    int tempo_action,tempo_avance;
 	    char i,j;
-	    char contact_totem_gauche=0;
-	    char contact_totem_droit=0;
+
 
 	    while(mTimer == getTimer());
         // Calculer et récupérer l'angle du gyroscope (A22)
@@ -328,7 +329,7 @@ void main(void){
 			case SORTIR_CASE:
 				tempo_s--;
 				if(tempo_s == 0){
-					active_asser(ASSER_TOURNE,900000,&consigne_angle);
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(45),&consigne_angle);
 					etat_strategie = ATTRAPE_CD_1;
 				}
 				break;
@@ -379,13 +380,13 @@ void main(void){
 			case VERS_LINGOT1_1:
 				tempo_s++;
 				if(tempo_s > 250){
-					active_asser(ASSER_TOURNE,2700000,&consigne_angle);
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(135),&consigne_angle);
 					etat_strategie = VERS_LINGOT1_2;
 				}
 				break;
 			case VERS_LINGOT1_2:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,2700000,&consigne_angle);
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(135),&consigne_angle);
 					tempo_s = 200;
 					etat_strategie = VERS_LINGOT1_3;
 				}
@@ -579,7 +580,7 @@ void main(void){
 				if (tempo_s == 0){
 					Avance();
 					ignore_contacteur_avant_droit();
-					tempo_s = 100;
+					tempo_s = 30;
 					etat_strategie = TOTEM_CONTACT_DROIT_2;
 				}
 				break;
@@ -592,7 +593,7 @@ void main(void){
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
-					pap_set_pos(PAP_MAX_ROT/3);
+					pap_set_pos(PAP_MAX_ROT/2);
 					tempo_s = 50;
 					etat_strategie = TOTEM_CONTACT_DROIT_3;
 				}
@@ -615,8 +616,8 @@ void main(void){
 				tempo_s--;
 				if (tempo_s == 0){
 					Avance();
-					ignore_contacteur_avant_droit();
-					tempo_s = 100;
+					ignore_contacteur_avant_gauche();
+					tempo_s = 30;
 					etat_strategie = TOTEM_CONTACT_GAUCHE_2;
 				}
 				break;
@@ -629,7 +630,7 @@ void main(void){
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_1;
 				}else if (tempo_s == 0){
 					prop_stop();
-					pap_set_pos(-PAP_MAX_ROT/3);
+					pap_set_pos(-(PAP_MAX_ROT/2));
 					tempo_s = 50;
 					etat_strategie = TOTEM_CONTACT_GAUCHE_3;
 				}
@@ -666,7 +667,7 @@ void main(void){
 			case TOTEM_OUVRE_DOIGTS_2:
 				tempo_s--;
 				if(tempo_s == 0){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					active_asser_lent(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_2;
 				}
 				break;
@@ -1109,7 +1110,6 @@ void main(void){
 
 
 void Init(){
-
     init_io();
     init_i2c(); // Active les interruptions
     
@@ -1170,6 +1170,7 @@ void Init(){
 
     // SUITE WMP
     LED_OK1 = 0;
+    LED_BLEUE = 1;
     mTimer = getTimer();
     while(WMP_calibration()){           // Tant que la calibration est en cours
         while(mTimer == getTimer());
@@ -1184,15 +1185,29 @@ void Init(){
         mTimer = getTimer();
     }
     
-    LED_OK1 = 0;
-    LED_OK=0;
+    LED_OK1 = 1;
+    LED_OK=1;
 	LED_ROUGE=0;
+	LED_BLEUE=0;
 	LED_CMUCAM=1;
 	
 
-    //while(TIRETTE);
-    LED_OK1 = 1;
-    LED_OK=1;
+    do{
+		if (COULEUR){
+			LED_ROUGE = 1;
+			LED_BLEUE = 0;
+			couleur = 1;
+		}else{
+			LED_BLEUE = 1;
+			LED_ROUGE = 0;
+			couleur = 0;
+		}
+	}while(TIRETTE);
+    
+    LED_BLEUE=0;
+    LED_OK1 = 0;
+    LED_OK=0;
+    LED_CMUCAM=0;
     nb3ms=80; //80 -> environ 82 secondes en réalité, et 8 secondes de marge au cas où on tire la tirette avant l'initialisation complète
 
 	pap_set_pos(0);
@@ -1211,3 +1226,12 @@ void Init(){
 char getTimer(void){
     return timer;
 }
+
+long ANGLE_DEGRES(int X){
+	if (couleur == 0){
+		return (long)((long)(X) * (long)20000);
+	}else{
+		return (long)((long)(-X) * (long)20000);
+	}
+}		
+

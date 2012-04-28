@@ -2,9 +2,9 @@
 #include "../include/temps.h"
 #include <p18cxxx.h>
 
-#define TIMER_INIT (65535 - 48000)
+#define TIMER_INIT (65535 - 3480)
 
-static unsigned long temps_en_4ms;
+static unsigned int temps_en_290us;
 
 
 
@@ -15,26 +15,26 @@ void Temps_Init(){
 		T3_PS_1_1 &
 		T3_OSC1EN_OFF &
 		T3_SYNC_EXT_OFF );
-	temps_en_4ms = 0;
+	temps_en_290us = 0;
 }
 
 void Temps_Int(){
 	if(PIR2bits.TMR3IF){
 		WriteTimer3(TIMER_INIT);
 		PIR2bits.TMR3IF = 0; // On réarme le Timer3
-		temps_en_4ms++;
+		temps_en_290us++;
 	}
 }
 
-unsigned int getTemps_4ms(){
+unsigned int getTemps_290us(){
 	unsigned int _temp;
 	// Desactivation des interruptions
 	INTCONbits.GIEH = 0;
 	INTCONbits.GIEL = 0;
-	_temp = temps_en_4ms;
+	_temp = temps_en_290us;
 	// Réactivation des interruptions
 	INTCONbits.GIEH = 1;
 	INTCONbits.GIEL = 1;
-	return temps_en_4ms;
+	return _temp;
 }
 
