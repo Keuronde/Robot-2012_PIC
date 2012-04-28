@@ -161,8 +161,8 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			}
 			tempo_inversion--;
 			if (tempo_inversion == 0){
-			//	prop_stop();
-			//	etat_asser = FIN_TOURNE;
+				//prop_stop();
+				//etat_asser = FIN_TOURNE;
 			}
 	
 		

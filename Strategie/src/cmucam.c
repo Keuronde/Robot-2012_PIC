@@ -11,14 +11,14 @@
 // 4000 : un peu violent avec une batterie neuve
 #define FACTEUR_CMUCAM_ANGLE_DROIT (int) 5600
 #define FACTEUR_CMUCAM_ANGLE_TOURNE (int) 2800
-#define ID_INVALIDE 0XFF
+#define ID_INVALIDE (unsigned char) 0XFF
 #define CONSIGNE_MAX 176
 
 
 
 
 // FONCTIONS PRIVEES
-unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile figure_t * mFigure);
+unsigned char test_figure(unsigned char id_forme, unsigned int * critere_figure, volatile figure_t * mFigure);
 int erreur_angle(volatile figure_t * _mFigure);
 char ask_figure(void);
 char select_figure(unsigned char);
@@ -59,7 +59,7 @@ volatile figure_t mFigure;
 unsigned char id_forme;
 enum repere_t mRepere;
 char cmucam_perdu=0;
-int critere_figure;
+unsigned int critere_figure;
 int cmucam_cible;
 char ile_proche;
 
@@ -222,11 +222,11 @@ void CMUcam_Init(void){
 
 }
 
-unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile figure_t * mFigure){
+unsigned char test_figure(unsigned char id_forme, unsigned int * critere_figure, volatile figure_t * mFigure){
 	switch (couleur_cmucam){
 		case 'W':
 			if( mFigure->y0 < 225){
-				if( (id_forme == ID_INVALIDE) || (mFigure->y1 > *critere_figure) ) {
+				if( (id_forme == ID_INVALIDE) || ((unsigned int) (mFigure->y1) > (unsigned int)(*critere_figure) ) ) {
 					*critere_figure = mFigure->y1;
 					id_forme = mFigure->id;
 				}
@@ -234,7 +234,7 @@ unsigned char test_figure(unsigned char id_forme, int * critere_figure, volatile
 			break;
 		case 'P':
 			if( mFigure->y0 < 225){
-				if( (id_forme == ID_INVALIDE) || (mFigure->y1 < *critere_figure) ) {
+				if( (id_forme == ID_INVALIDE) || ((unsigned int)(mFigure->y1) < (unsigned int)(*critere_figure) ) ) {
 					*critere_figure = mFigure->y1;
 					id_forme = mFigure->id;
 				}
@@ -298,29 +298,25 @@ char cherche_couleur(void){
 }
 
 char cherche_lingot(void){	
-    CMUcam_out[0]='P';
-    CMUcam_out[1]=CMUCAM_FIN;
+	couleur_cmucam='P';
     mRepere = R_MILIEU;
     cmucam_cible = CMUCAM_MILIEU_X;
     return env_cmucam();
 }
 char cherche_CD_droit(void){	
-    CMUcam_out[0]='W';
-    CMUcam_out[1]=CMUCAM_FIN;
+	couleur_cmucam='W';
     mRepere = R_GAUCHE;
     cmucam_cible = (int)264;
     return env_cmucam();
 }
 char cherche_CD_gauche(void){	
-    CMUcam_out[0]='W';
-    CMUcam_out[1]=CMUCAM_FIN;
+	couleur_cmucam='W';
     mRepere = R_DROIT;
     cmucam_cible = (int)104;
     return env_cmucam();
 }
 char cherche_CD_ile(void){	
-    CMUcam_out[0]='P';
-    CMUcam_out[1]=CMUCAM_FIN;
+	couleur_cmucam='P';
     mRepere = R_DROIT;
     cmucam_cible = 80;
     return env_cmucam();

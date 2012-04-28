@@ -376,8 +376,6 @@ void main(void){
 			case VERS_LINGOT1_3:
 				tempo_s--;
 				if (tempo_s == 0){
-					prop_stop();
-					desactive_asser();
 					cherche_lingot();
 					CMUcam_active();
 					etat_strategie = VERS_LINGOT1_4;
@@ -485,34 +483,22 @@ void main(void){
 				break;
 			case VERS_CD_ILE_2:
 				if (etat_action == FIN_ACTION){
-					etat_strategie = TEST_SERVO_2_1;
+					etat_strategie = VERS_CD_ILE_4;
 				}
                 break;
             case VERS_CD_ILE_3:
-				if (fin_asser()){
-					active_asser_lent(ASSER_AVANCE,angle,&consigne_angle);
-					etat_strategie = VERS_CD_ILE_4;
-				}
+				active_asser(ASSER_TOURNE,ANGLE_DEGRES(45),&consigne_angle);
+				etat_strategie = VERS_CD_ILE_4;
 				break;
 			case VERS_CD_ILE_4:
-				GetDonneesServo();
-				if(get_Etat_Gauche() >= E_BRAS_BAS_FERME){
-					tempo_s++;
-					if (tempo_s > 20){
-						desactive_asser();
-						CMUcam_reset();
-						prop_stop();
-						etat_strategie = VERS_CD_ILE_5;
-						tempo_s = 0;
-					}
-				}else{
-					tempo_s=0;
-				}
+				//if (fin_asser()){
+					etat_action = ATTRAPE_CD_GAUCHE_INIT;
+					etat_strategie = VERS_CD_ILE_5;
+				//}
 				break;
 			case VERS_CD_ILE_5:
-				GetDonneesServo();
-				if(get_Etat_Gauche() >= E_BRAS_ATTENTE_PLEIN){
-					etat_strategie = TEST_SERVO_2_1;
+				if (etat_action == FIN_ACTION){
+					etat_strategie = VERS_TOTEM_1;
 				}
 				break;
 			case VERS_TOTEM_1:

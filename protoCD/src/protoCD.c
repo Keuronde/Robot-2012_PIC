@@ -137,6 +137,8 @@ void main(void){
 	unsigned char recu[10];
 	char envoi[NB_ENV];
 	unsigned int temps, temps_old;
+	enum etat_bras_t etat_bras_gauche = E_BRAS_INIT;
+	enum etat_bras_t etat_bras_droit = E_BRAS_INIT;
 	
 	envoi[0]=3;
 	envoi[1]=4;
@@ -177,8 +179,7 @@ void main(void){
 	Delay10KTCYx(0);
 	LED_OK = 1;
 
-	etat_bras_gauche = E_BRAS_INIT;
-	etat_bras_droit = E_BRAS_INIT;
+	
 	tempo_bg = 0;
 	tempo_bd = 0;
 	temps = getTemps_cs();

@@ -12,4 +12,4 @@ enum etat_bras_t {
 	E_BRAS_DEPOSE_FERME,
 	E_BRAS_DEPOSE_OUVERT,
 	E_BRAS_ATTENTE_PLEIN
-} etat_bras_gauche,etat_bras_droit;
+};
