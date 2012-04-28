@@ -304,6 +304,20 @@ char cherche_lingot(void){
     cmucam_cible = CMUCAM_MILIEU_X;
     return env_cmucam();
 }
+char cherche_CD_droit(void){	
+    CMUcam_out[0]='P';
+    CMUcam_out[1]=CMUCAM_FIN;
+    mRepere = R_GAUCHE;
+    cmucam_cible = 264;
+    return env_cmucam();
+}
+char cherche_CD_gauche(void){	
+    CMUcam_out[0]='P';
+    CMUcam_out[1]=CMUCAM_FIN;
+    mRepere = R_DROIT;
+    cmucam_cible = 104;
+    return env_cmucam();
+}
 char cherche_CD_ile(void){	
     CMUcam_out[0]='P';
     CMUcam_out[1]=CMUCAM_FIN;

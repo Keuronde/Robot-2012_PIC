@@ -72,6 +72,8 @@ enum etat_strategie_t {
 	TOTEM_SORTIE_1,
 	TOTEM_SORTIE_2,
     EVITEMENT_RECULE,
+    TEST_CD_DROIT_1,
+    TEST_CD_DROIT_2,
     TEST_SERVO_1,
     TEST_SERVO_2_1,
     TEST_SERVO_2_2,
@@ -121,6 +123,10 @@ enum etat_strategie_t {
 };
 
 enum etat_action_t {
+	ATTRAPE_CD_DROIT_INIT,
+	ATTRAPE_CD_DROIT_TRACKING,
+	ATTRAPE_CD_DROIT_TOURNE,
+	ATTRAPE_CD_DROIT_AVANCE,
 	ATTRAPE_CD_GAUCHE_INIT,
 	ATTRAPE_CD_GAUCHE_TRACKING,
 	ATTRAPE_CD_GAUCHE_TOURNE,
@@ -286,18 +292,16 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-//    enum etat_strategie_t etat_strategie=VERS_TOTEM_2, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=TEST_CD_DROIT_1, old_etat_strategie;
 
 
-    
-    
     
 	Init();
     RELAIS =0;
     // Tant que les capteur_soniques ne son pas prêt
-    //ignore_sonique_loin();
-    //ignore_sonique_proche();
+    ignore_sonique_loin();
+    ignore_sonique_proche();
 
 	while(1){
 	    char timer;
@@ -321,6 +325,15 @@ void main(void){
         //GetDonneesServo();
         
         switch (etat_strategie){
+			case TEST_CD_DROIT_1:
+				etat_action = ATTRAPE_CD_DROIT_INIT;
+				etat_strategie = TEST_CD_DROIT_2;
+				break;
+			case TEST_CD_DROIT_2:
+				if (etat_action == FIN_ACTION) {
+					
+				}
+				break;
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
 				tempo_s = 350;
@@ -967,9 +980,46 @@ void main(void){
         ***********************/
 
         switch(etat_action){
+			// Attrappe CD Bras Droit
+			case ATTRAPE_CD_DROIT_INIT:
+				cherche_CD_droit();
+				CMUcam_active();
+				etat_action = ATTRAPE_CD_DROIT_TRACKING;
+				break;
+			case ATTRAPE_CD_DROIT_TRACKING:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					LED_ROUGE =1;
+					LED_BLEUE =1;
+					active_asser(ASSER_TOURNE,consigne_angle,&consigne_angle);
+					CDBrasDroit();
+					etat_action = ATTRAPE_CD_DROIT_TOURNE;
+				}
+				break;
+			case ATTRAPE_CD_DROIT_TOURNE:
+				if (fin_asser()){
+					active_asser_lent(ASSER_AVANCE,angle,&consigne_angle);
+					etat_action = ATTRAPE_CD_DROIT_AVANCE;
+				}
+				break;
+			case ATTRAPE_CD_DROIT_AVANCE:
+				GetDonneesServo();
+				if(get_Etat_Droit() >= E_BRAS_BAS_FERME){
+					tempo_action++;
+					if (tempo_action > 20){
+						desactive_asser();
+						CMUcam_reset();
+						prop_stop();
+						etat_action = FIN_ACTION;
+						tempo_action = 0;
+					}
+				}else{
+					tempo_action=0;
+				}
+				break;
+
 			// Attrappe CD Bras Gauche
 			case ATTRAPE_CD_GAUCHE_INIT:
-				setCouleur('W');
+				cherche_CD_gauche();
 				CMUcam_active();
 				etat_action = ATTRAPE_CD_GAUCHE_TRACKING;
 				break;

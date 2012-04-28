@@ -39,6 +39,8 @@ void CMUcam_Init(void);
 
 char cherche_lingot(void);
 char cherche_CD_ile(void);
+char cherche_CD_droit(void);
+char cherche_CD_gauche(void);
 char cmucam_ile_proche();
 char cherche_case_rouge(void);
 char cherche_case_bleue(void);
