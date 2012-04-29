@@ -432,8 +432,6 @@ void main(void){
 			case DEPOSE_5:
 				GetDonneesServo();
 				if(get_Etat_Gauche() == E_BRAS_INIT){
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
-					tempo_s = 50;
 					etat_strategie = VERS_ILE_NORD_1;
 				}
 				break;
@@ -443,7 +441,6 @@ void main(void){
 					CMUcam_active();
 					CMUcam_desactive_asser();
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
-					tempo_s = 500;
 					etat_strategie = VERS_ILE_NORD_4;
 				}
 				break;
