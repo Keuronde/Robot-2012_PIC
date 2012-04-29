@@ -37,10 +37,10 @@ typedef struct  {
 /** P U B L I C  P R O T O T Y P E S ***************************************/
 void CMUcam_Init(void);
 
-char cherche_lingot(void);
-char cherche_CD_ile(void);
-char cherche_CD_droit(void);
-char cherche_CD_gauche(void);
+void cherche_lingot(void);
+void cherche_CD_ile(void);
+void cherche_CD_droit(void);
+void cherche_CD_gauche(void);
 char cmucam_ile_proche();
 char cherche_case_rouge(void);
 char cherche_case_bleue(void);
@@ -52,6 +52,7 @@ char cherche_couleur(void);
 
 void CMUcam_active(void);
 void CMUcam_desactive(void);
+void CMUcam_desactive_asser(void);
 enum etat_cmucam_t CMUcam_get_Etat(void);
 void setCouleur(char _c);
 void CMUcam_gestion(long * consigne_angle,long *angle);

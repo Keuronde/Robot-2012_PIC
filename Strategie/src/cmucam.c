@@ -37,7 +37,8 @@ char set_tampon_env(char *chaine);
 enum repere_t {
     R_MILIEU=0,
     R_DROIT,
-    R_GAUCHE
+    R_GAUCHE,
+    R_AUCUN
 };
 
 volatile char CMUcam_in[NB_DATA_IN]; // Au maximum : 1 lettre, 5 lots de trois chiffres, 5 espaces, un caractère de fin
@@ -143,10 +144,12 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 							}
 				    		
 				    		LED_CMUCAM =1;
-				    		if(get_etat_asser()){
-								*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_DROIT);
-							}else{
-								*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_TOURNE);
+				    		if (mRepere != R_AUCUN){
+								if(get_etat_asser()){
+									*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_DROIT);
+								}else{
+									*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_TOURNE);
+								}
 							}
 					        
 					        cmucam_perdu=0;
@@ -274,6 +277,9 @@ void CMUcam_active(){
 void CMUcam_desactive(){
 	cmucam_active=0;
 }
+void CMUcam_desactive_asser(){
+	mRepere = R_AUCUN;
+}
 void CMUcam_reset(){
 	etat_cmucam = CMUCAM_RESET;
 }
@@ -297,29 +303,25 @@ char cherche_couleur(void){
 	
 }
 
-char cherche_lingot(void){	
+void cherche_lingot(void){	
 	couleur_cmucam='P';
     mRepere = R_MILIEU;
     cmucam_cible = CMUCAM_MILIEU_X;
-    return env_cmucam();
 }
-char cherche_CD_droit(void){	
+void cherche_CD_droit(void){	
 	couleur_cmucam='W';
     mRepere = R_GAUCHE;
     cmucam_cible = (int)264;
-    return env_cmucam();
 }
-char cherche_CD_gauche(void){	
+void cherche_CD_gauche(void){	
 	couleur_cmucam='W';
     mRepere = R_DROIT;
     cmucam_cible = (int)104;
-    return env_cmucam();
 }
-char cherche_CD_ile(void){	
+void cherche_CD_ile(void){	
 	couleur_cmucam='P';
     mRepere = R_DROIT;
     cmucam_cible = 80;
-    return env_cmucam();
 }
 char cherche_case_rouge(void){
     CMUcam_out[0]='R';

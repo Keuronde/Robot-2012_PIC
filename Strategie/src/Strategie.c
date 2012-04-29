@@ -295,7 +295,7 @@ void main(void){
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    //enum etat_strategie_t etat_strategie=ATTRAPE_CD_1, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=DEPOSE_5, old_etat_strategie;
 
 
     
@@ -440,14 +440,17 @@ void main(void){
 				if(get_Etat_Gauche() == E_BRAS_INIT){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
 					tempo_s = 50;
-					etat_strategie = VERS_ILE_NORD_2;
+					etat_strategie = VERS_ILE_NORD_1;
 				}
 				break;
 			case VERS_ILE_NORD_1:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-45),&consigne_angle);
+					cherche_lingot();
+					CMUcam_active();
+					CMUcam_desactive_asser();
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
 					tempo_s = 500;
-					etat_strategie = VERS_ILE_NORD_2;
+					etat_strategie = VERS_ILE_NORD_4;
 				}
 				break;
 			case VERS_ILE_NORD_2:
