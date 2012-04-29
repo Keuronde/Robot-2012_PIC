@@ -72,6 +72,8 @@ enum etat_strategie_t {
 	TOTEM_SORTIE_1,
 	TOTEM_SORTIE_2,
     EVITEMENT_RECULE,
+    TEST_VITESSE_FINE_1,
+    TEST_VITESSE_FINE_2,
     TEST_CD_DROIT_1,
     TEST_CD_DROIT_2,
     TEST_SERVO_1,
@@ -270,6 +272,7 @@ void main(void){
     char sens =1;
     unsigned char id_pion_1=255;
     unsigned char id_pion_2=255;
+    unsigned char vitesse_test=0;
     long _5degres = 100000;
     long _3degres =  60000;
     long angle;
@@ -295,7 +298,7 @@ void main(void){
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    //enum etat_strategie_t etat_strategie=DEPOSE_5, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=TEST_VITESSE_FINE_1, old_etat_strategie;
 
 
     
@@ -327,6 +330,14 @@ void main(void){
         //GetDonneesServo();
         
         switch (etat_strategie){
+			case TEST_VITESSE_FINE_1:
+				Avance();
+				prop_set_vitesse_fine(vitesse_test);
+				vitesse_test++;
+//				etat_strategie = TEST_VITESSE_FINE_2;
+				break;
+			case TEST_VITESSE_FINE_2:
+				break;
 			case TEST_CD_DROIT_1:
 				etat_action = ATTRAPE_CD_DROIT_INIT;
 				etat_strategie = TEST_CD_DROIT_2;

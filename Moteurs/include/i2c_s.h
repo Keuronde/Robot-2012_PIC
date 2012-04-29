@@ -18,9 +18,6 @@ char rec_i2c(unsigned char *);
 char envoi_i2c(char *);
 void com_i2c(void);
 
-/* P A R A M E T R E S *******************************************************/
-#define NB_REC 3
-#define NB_ENV 1
 
 enum booleen {
     NON=0,

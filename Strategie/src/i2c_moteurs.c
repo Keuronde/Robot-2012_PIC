@@ -10,6 +10,7 @@ char acquittement=0;
 int pos_pap = 0;
 char sens = 0;
 char vitesse = 0;
+unsigned char vitesse_fine;
 // Reception
 // Contacteurs non acquités (6 bits)
 // Capteur sonique (2 bits)
@@ -61,6 +62,11 @@ void prop_set_vitesse(char rapide){
     }else{
         vitesse = 0;
     }
+    a_envoyer_moteur=1;
+}
+void prop_set_vitesse_fine(unsigned char _vitesse){
+    vitesse = 3;
+    vitesse_fine = _vitesse;
     a_envoyer_moteur=1;
 }
 
@@ -181,13 +187,12 @@ char transmission_moteur(){
         envoi[1] = (pos_pap >> 8) & 0x03;
         // 2 bits pour le sens du moteur
         envoi[1] |= ((sens & 0x03) << 2);
-        // 1 bit pour la vitesse
-        envoi[1] |= ((vitesse & 0x01) << 4);
-        // 1 bit pour l'acquittement
-        envoi[1] |= ((acquittement & 0x01) << 5);
+        // 2 bit pour la vitesse
+        envoi[1] |= ((vitesse & 0x03) << 4);
         // Geston des capteurs de la carte moteur
         envoi[2] = selection_capteurs_moteur.VALEUR;
-        
+        // Gestion fine de la vitesse
+        envoi[3] = vitesse_fine;
         // Initialisation de l'i2c
         // renvoi 1 si ok, 0 sinon
         if(transmission_i2c(ADRESSE_PAP,NB_STRATEGIE_2_MOTEUR,NB_MOTEUR_2_STRATEGIE,envoi)){

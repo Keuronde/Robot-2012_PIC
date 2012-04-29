@@ -2,6 +2,10 @@
 #include <pwm.h>
 #include "../include/M_prop.h"
 
+/** D E F I N E *******************************************************/
+#define VITESSE_MIN (unsigned int) 639
+
+
 // Fonctions privées
 void _sens(char);
 
@@ -18,6 +22,10 @@ void M_prop_init(void){
 	SetDCPWM1(0);
 	// Stop 
 	Stop();
+}
+
+void V_fine(unsigned char _vitesse){
+	SetDCPWM1( ((int)_vitesse) * 1.5 + VITESSE_MIN);
 }
 void V_lent(){
     SetDCPWM1((int)800);

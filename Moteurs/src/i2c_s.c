@@ -15,14 +15,15 @@
 
 /** I N C L U D E S **********************************************************/
 #include "../include/i2c_s.h"
+#include "../Interfaces/interfaceMoteurs.h"
 #include <p18cxxx.h>
 #include <string.h>
 
 
 
 /** VARIABLES GLOBALES ***/
-char data_out[NB_ENV];
-char data_in[NB_REC];
+char data_out[NB_MOTEUR_2_STRATEGIE];
+char data_in[NB_STRATEGIE_2_MOTEUR];
 char data_index;
 
 volatile enum booleen _nouvelle_reception = NON;
@@ -76,7 +77,7 @@ char rec_i2c(unsigned char *chaine){
             return 0;
         }
     }
-    memcpy( (void*) chaine, (void*) data_in, NB_REC );
+    memcpy( (void*) chaine, (void*) data_in, NB_STRATEGIE_2_MOTEUR );
     _nouvelle_reception = NON; // On se note que nous avons lu ces données. 
     return 1;
 }
@@ -101,7 +102,7 @@ char envoi_i2c(char *chaine){
             return 0;
         }
     }
-    memcpy( (void*) data_out, (void*) chaine, NB_ENV );
+    memcpy( (void*) data_out, (void*) chaine, NB_MOTEUR_2_STRATEGIE );
     _donnees_envoyees = NON;
     return 1;
 }
@@ -138,7 +139,7 @@ void com_i2c(){
                 data_in[data_index] = SSPBUF;
                 data_index++;
                 // Dernier octet ? 
-                if(data_index == NB_REC){
+                if(data_index == NB_STRATEGIE_2_MOTEUR){
                     // Fin de transaction
                     _nouvelle_reception = OUI;
                     _i2c_actif = NON;
@@ -148,7 +149,7 @@ void com_i2c(){
                 SSPBUF = data_out[data_index];
                 SSPCON1bits.CKP =1;
                 data_index++;
-                if(data_index == NB_ENV){
+                if(data_index == NB_MOTEUR_2_STRATEGIE){
                     // Fin de transaction
                     _donnees_envoyees = OUI;
                     _i2c_actif = NON;
@@ -166,7 +167,7 @@ void com_i2c(){
                 SSPBUF = data_out[data_index];
                 SSPCON1bits.CKP =1;
                 data_index++;
-                if(data_index == NB_ENV){
+                if(data_index == NB_MOTEUR_2_STRATEGIE){
                     // Fin de transaction
                     _donnees_envoyees = OUI;
                     _i2c_actif = NON;

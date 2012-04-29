@@ -8,6 +8,7 @@ void Avance_lent(void);
 void Recule(void);
 void Recule_lent(void);
 void pap_set_pos(int pos);
+void prop_set_vitesse_fine(unsigned char _vitesse);
 void prop_set_vitesse(char rapide);
 void prop_set_sens(char avant);
 void prop_stop(void);

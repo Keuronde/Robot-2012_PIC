@@ -8,6 +8,7 @@ void M_prop_init(void);
 void V_stop(void);
 void V_lent(void);
 void V_rapide(void);
+void V_fine(unsigned char _vitesse);
 void Avance(void);
 void Recule(void);
 void Stop(void);

@@ -6,7 +6,8 @@
 #include "../include/M_prop.h"
 #include "../include/temps.h"
 #include "../include/CapteurSonic.h"
-#include "../Interfaces/interfaceMoteurs.h"
+#include "../../Interfaces/interfaceMoteurs.h"
+
 
 
 /** V A R I A B L E S ********************************************************/
@@ -81,6 +82,7 @@ void main(void){
     int tempo_led=0;
     char vitesse_cde;
     char acquittement;
+    unsigned char vitesse_fine;
     unsigned int T_old;
     int  t_v0;
     
@@ -148,8 +150,8 @@ void main(void){
             
             
             // Vitess M_Propulsion
-            vitesse_cde = (recu[1] >> 4) & 0x01;
-            
+            vitesse_cde = (recu[1] >> 4) & 0x03;
+            vitesse_fine = recu[3];
             
             
             // Acquitement contacteur
@@ -168,9 +170,11 @@ void main(void){
         
         // Gestion de la vitesse  
         // Vitesse commandées
-        if(vitesse_cde){
+        if(vitesse_cde == 3){
+			vitesse = 3;
+        }else if(vitesse_cde == 1){
 			vitesse = 2;
-        }else{
+        }else if(vitesse_cde == 0){
             vitesse = 1;
         }
         
@@ -185,6 +189,9 @@ void main(void){
         
         // Si le robot est sensé avancer, on ajuste la vitesse
         switch(vitesse){
+		case 3:
+			V_fine(vitesse_fine);
+			break;
         case 2:
             V_rapide();
             break;
