@@ -18,6 +18,8 @@ void Moteurs_Init(){
 	TRIS_M2_SENS = 0;
     OpenPWM2(0xff);
     OpenPWM1(0xff);
+    SetDCPWM1(0);
+    SetDCPWM2(0);
     e_moteur_1 = M_ARRET;
     e_moteur_2 = M_ARRET;
 }
