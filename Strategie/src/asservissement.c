@@ -19,6 +19,10 @@ enum etat_asser_t etat_asser=FIN_ASSER; // Pour l'asservissement
 int consigne_pap=0;
 int consigne_pap_I=0;
 int consigne_pap_P=0;
+int consigne_prop = 0;
+int consigne_prop_P=0;
+int consigne_prop_I=0;
+
 char vitesse_lente;
 char recule;
 
@@ -139,43 +143,24 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			}
 			break;
 		case TOURNE:
-	
-			if((*consigne_angle-*angle) > 0){
-				Avance_lent();
-				if(sens_rotation != 1){
-					sens_rotation = 1;
-					inversion++;
-					tempo_inversion =1600;
+			consigne_prop_P=(int)((long)(*consigne_angle - *angle)/(long)4000); // Pour un asservissement plus nerveux (anciennement 12000)
+			consigne_prop_I= consigne_prop_I + consigne_prop_P;
+			consigne_prop = consigne_prop_P;// + consigne_prop_I;
+			if (consigne_prop > 0){
+				Avance();
+				if (consigne_prop > 255){
+					consigne_prop = 255;
+					consigne_prop_I = 0;
 				}
+				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}else{
-				Recule_lent();
-				if(sens_rotation != 0){
-					sens_rotation = 0;
-					inversion++;
-					tempo_inversion =1600;
+				Recule();
+				consigne_prop = -consigne_prop;
+				if (consigne_prop > 255){
+					consigne_prop = 255;
+					consigne_prop_I = 0;
 				}
-			}
-			if (inversion == 2){
-				seuil_angle_lent += INCREMENT_ANGLE_LENT;
-				inversion=0;
-			}
-			tempo_inversion--;
-			if (tempo_inversion == 0){
-				//prop_stop();
-				//etat_asser = FIN_TOURNE;
-			}
-	
-		
-			if((*consigne_angle-*angle) < seuil_angle_lent && (*consigne_angle-*angle) > -seuil_angle_lent){
-				prop_stop();
-				tempo_lent--;
-				if(tempo_lent == 0){
-					prop_stop();
-					etat_asser = FIN_TOURNE;
-				}
-			}else{
-				prop_set_vitesse(0);
-				tempo_lent=400;
+				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}
 			if((*consigne_angle-*angle) < SEUIL_ANGLE_ARRET && (*consigne_angle-*angle) > -SEUIL_ANGLE_ARRET){
 				tempo--;
@@ -188,13 +173,8 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				tempo=100;				
 			}
 			// Penser à ignorer le capteur sonique
-			if( prop_get_sens_avant() ){
-				if( get_capteur_sonique_loin() || get_capteur_sonique_proche()){
-					if( !get_CT_AV_D() && !get_CT_AV_G() ){
-						ignore_contacteur();
-					}
-				}
-			}
+			ignore_sonique_loin();
+			ignore_sonique_proche();
 			break;
 		case TOURNE_VERS_AVANCE:
 			pap_set_pos(PAP_DROIT);

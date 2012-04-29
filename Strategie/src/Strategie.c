@@ -330,23 +330,6 @@ void main(void){
         //GetDonneesServo();
         
         switch (etat_strategie){
-			case TEST_VITESSE_FINE_1:
-				Avance();
-				prop_set_vitesse_fine(vitesse_test);
-				vitesse_test++;
-//				etat_strategie = TEST_VITESSE_FINE_2;
-				break;
-			case TEST_VITESSE_FINE_2:
-				break;
-			case TEST_CD_DROIT_1:
-				etat_action = ATTRAPE_CD_DROIT_INIT;
-				etat_strategie = TEST_CD_DROIT_2;
-				break;
-			case TEST_CD_DROIT_2:
-				if (etat_action == FIN_ACTION) {
-					
-				}
-				break;
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
 				tempo_s = 350;
@@ -671,6 +654,22 @@ void main(void){
 				if (tempo_s == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
 					etat_strategie = TEST_SERVO_2_1;
+				}
+				break;
+			case TEST_VITESSE_FINE_1:
+				Avance();
+				prop_set_vitesse_fine(vitesse_test);
+				vitesse_test++;
+				break;
+			case TEST_VITESSE_FINE_2:
+				break;
+			case TEST_CD_DROIT_1:
+				etat_action = ATTRAPE_CD_DROIT_INIT;
+				etat_strategie = TEST_CD_DROIT_2;
+				break;
+			case TEST_CD_DROIT_2:
+				if (etat_action == FIN_ACTION) {
+					
 				}
 				break;
             case TEST_SERVO_1:
