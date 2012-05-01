@@ -10,11 +10,6 @@
 #include "../../Interfaces/interfaceBrasLingot.h"
 
 /** D E F I N E D ********************************************************/
-// Identifiant balise
-#define ID_BALISE 0x44
-// Emission IR
-#define NB_MESSAGES 16
-#define NB_MSG_TOTAL 48
 // Clignotement LED
 #define F_1HZ 90
 #define F_5HZ 18
@@ -23,6 +18,7 @@
 #define LED LATBbits.LATB7
 // TEMPO (en centisecondes)
 #define TEMPO_SERVO_CS (unsigned char) 40
+#define TEMPO_DEPOSE (unsigned char) 100
 // 50536 = 0xC568
 
 /** V A R I A B L E S ********************************************************/
@@ -104,6 +100,7 @@ void main(void){
 	char i=0;
 	unsigned char delai_sg = 0,delai_sd = 0;
 	unsigned char recu[NB_STRATEGIE_2_BRAS];
+	unsigned char envoi[NB_BRAS_2_STRATEGIE];
 	unsigned int temps, temps_old;
     Init();
     init_i2c(ADRESSE_LINGOT);
@@ -226,11 +223,22 @@ void main(void){
 			case POUSSE_LINGOT:
 				M2_Avance();
 				if (CT_M2_AV == 0){
-					e_bras_droit = RENTRE_BRAS;
+					e_bras_droit = RENTRE_BRAS_1;
 				}
 				break;
-			case RENTRE_BRAS:
+			case RENTRE_BRAS_1:
 				M2_Recule();
+				if (CT_M2_AV == 1){
+					e_bras_droit = RENTRE_BRAS_2;
+					M2_Stop();
+					delai_sd = TEMPO_DEPOSE;
+					delai_sg = TEMPO_DEPOSE;
+				}
+				break;
+			case RENTRE_BRAS_2:
+				if (delai_sd == 0){
+					M2_Recule();
+				}
 				if (CT_M2_AR == 1){
 					e_bras_droit = REPLIE;
 					Servo_Set(DOIGT_D_FERME);
@@ -295,11 +303,22 @@ void main(void){
 			case POUSSE_LINGOT:
 				M1_Avance();
 				if (CT_M1_AV == 0){
-					e_bras_gauche = RENTRE_BRAS;
+					e_bras_gauche = RENTRE_BRAS_1;
 				}
 				break;
-			case RENTRE_BRAS:
+			case RENTRE_BRAS_1:
 				M1_Recule();
+				if (CT_M1_AV == 1){
+					e_bras_gauche = RENTRE_BRAS_2;
+					M1_Stop();
+					delai_sd = TEMPO_DEPOSE;
+					delai_sg = TEMPO_DEPOSE;
+				}
+				break;
+			case RENTRE_BRAS_2:
+				if (delai_sg == 0){
+					M1_Recule();
+				}
 				if (CT_M1_AR == 1){
 					e_bras_gauche = REPLIE;
 					Servo_Set(DOIGT_G_FERME);
@@ -308,6 +327,9 @@ void main(void){
 			default:
 				break;
 		}
+		envoi[0] = e_bras_gauche;
+		envoi[1] = e_bras_droit;
+		envoi_i2c((void *)envoi);
 
 		
     }

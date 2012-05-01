@@ -1,0 +1,6 @@
+TODO :
+* Asservissement qui oscille en rotation. => corrigé 23b2b55071486bcf2b1aef4b6b395184d74ad6c5
+* CMUcam qui voit mais asservissement qui ne suit pas.
+* Petit pas d'approche du totem un peu trop grand
+* Depose des lingots trop courte 
+

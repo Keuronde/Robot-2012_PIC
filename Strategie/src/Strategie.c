@@ -71,6 +71,11 @@ enum etat_strategie_t {
 	TOTEM_ATTRAPPE_LINGOTS_2,
 	TOTEM_SORTIE_1,
 	TOTEM_SORTIE_2,
+	DEPOSE_TOTEM_1,
+	DEPOSE_TOTEM_2,
+	DEPOSE_TOTEM_3,
+	DEPOSE_TOTEM_4,
+	DEPOSE_TOTEM_5,
     EVITEMENT_RECULE,
     TEST_TOURNE_1,
     TEST_TOURNE_2,
@@ -299,8 +304,8 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
-    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    //enum etat_strategie_t etat_strategie=TEST_TOURNE_1, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
 
 
     
@@ -477,7 +482,7 @@ void main(void){
             case VERS_CD_ILE_3:
 				active_asser_lent(ASSER_RECULE,ANGLE_DEGRES(90),&consigne_angle);
 				etat_strategie = VERS_CD_ILE_4;
-				tempo_s = 800;// 3s
+				tempo_s = 800;//  un peu plus de 3s
 				break;
 			case VERS_CD_ILE_4:
 				tempo_s--;
@@ -622,7 +627,7 @@ void main(void){
 			case TOTEM_OUVRE_DOIGTS_2:
 				tempo_s--;
 				if(tempo_s == 0){
-					active_asser_lent(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_2;
 				}
 				break;
@@ -647,9 +652,53 @@ void main(void){
 			case TOTEM_SORTIE_2:
 				tempo_s--;
 				if (tempo_s == 0){
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(-135),&consigne_angle);
+					etat_strategie = DEPOSE_TOTEM_1;
+				}
+				break;
+			case DEPOSE_TOTEM_1:
+				if (fin_asser()){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-135),&consigne_angle);
+					etat_strategie = DEPOSE_TOTEM_2;
+					tempo_s =300;
+				}
+				break;
+			case DEPOSE_TOTEM_2:
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-180),&consigne_angle);
+					tempo_s= 200;
+					etat_strategie = DEPOSE_TOTEM_3;
+				}
+				break;
+			case DEPOSE_TOTEM_3:
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
+					desactive_asser();
+					lingot_depose();
+					etat_strategie = DEPOSE_TOTEM_4;
+					tempo_s =750;
+				}
+				break;
+			case DEPOSE_TOTEM_4:
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+					etat_strategie = DEPOSE_TOTEM_5;
+				}
+				break;
+			case DEPOSE_TOTEM_5:
+				if (fin_asser()){
+					CDBrasDroit();
+					CDBrasGauche();
+					LED_OK=0;
+					LED_OK1=0;
+					LED_BLEUE=0;
+					LED_ROUGE=0;
 					etat_strategie = TEST_SERVO_2_1;
 				}
+				
 				break;
 			case TEST_TOURNE_1:
 				active_asser(ASSER_TOURNE,ANGLE_DEGRES(5),&consigne_angle);

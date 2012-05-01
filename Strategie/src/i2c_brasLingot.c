@@ -1,9 +1,11 @@
 #include <p18cxxx.h>
 #include "../include/i2c_m.h"
-#include ".../Interfaces/interfaceBrasLingot.h"
+#include "../../Interfaces/interfaceBrasLingot.h"
 
 char a_envoyer_lingot=0;
 union message_bras_t message_bras=0x00;
+enum etat_bras_t lingot_gauche;
+enum etat_bras_t lingot_droit;
 
 void lingot_ouvre_doigt(void){
 	message_bras.COMMANDE_BRAS = CDE_BRAS_OUVERT;
@@ -18,8 +20,16 @@ void lingot_depose(void){
 	a_envoyer_lingot = 1;
 }
 
+enum etat_bras_t get_lingot_gauche(void){
+	return lingot_gauche;
+}
+
+enum etat_bras_t get_lingot_droit(void){
+	return lingot_droit;
+}
+
 char transmission_lingot(){
-    unsigned char recu;
+    unsigned char recu[NB_BRAS_2_STRATEGIE];
     if(a_envoyer_lingot == 1){
         // Initialisation de l'i2c
         // renvoi 1 si ok, 0 sinon
@@ -27,7 +37,9 @@ char transmission_lingot(){
             a_envoyer_lingot=0;
 			if(!get_erreur_i2c()){
 				while(i2c_en_cours());
-		        get_i2c_data(&recu);
+		        get_i2c_data(recu);
+		        lingot_gauche = recu[0];
+		        lingot_droit = recu[1];
       		}
             return 1;
         }

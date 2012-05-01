@@ -11,7 +11,7 @@
 *  parametrable.                                                             *
 *                                                                            *
 ******************************************************************************/
-
+#include "../../Interfaces/interfaceBrasLingot.h"
 /** P U B L I C   P R O T O T Y P E S ***/
 void init_i2c(unsigned char);
 char rec_i2c(unsigned char *);
@@ -19,8 +19,6 @@ char envoi_i2c(char *);
 void com_i2c(void); // à mettre en interruption
 
 /* P A R A M E T R E S *******************************************************/
-#define NB_REC 1
-#define NB_ENV 1
 
 enum booleen {
     NON=0,
@@ -28,8 +26,8 @@ enum booleen {
 };
 
 
-extern volatile char data_out[NB_ENV];
-extern volatile char data_in[NB_REC];
+extern volatile char data_out[NB_BRAS_2_STRATEGIE];
+extern volatile char data_in[NB_STRATEGIE_2_BRAS];
 extern volatile char data_index;
 
 extern volatile enum booleen _nouvelle_reception;

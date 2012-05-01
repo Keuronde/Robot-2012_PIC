@@ -1,4 +1,4 @@
-#define NB_BRAS_2_STRATEGIE 1
+#define NB_BRAS_2_STRATEGIE 2
 #define NB_STRATEGIE_2_BRAS 1
 #define ADRESSE_LINGOT 0x36
 
@@ -27,5 +27,6 @@ enum etat_bras_t {
 /* Deposer le lingo */
 	ROUVRE_DOIGT,
 	POUSSE_LINGOT,
-	RENTRE_BRAS
+	RENTRE_BRAS_1,
+	RENTRE_BRAS_2
 };
