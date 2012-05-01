@@ -435,6 +435,8 @@ void main(void){
 				GetDonneesServo();
 				if(get_Etat_Gauche() == E_BRAS_INIT){
 					etat_strategie = VERS_ILE_NORD_1;
+					LED_ROUGE =0;
+					LED_BLEUE =0;
 				}
 				break;
 			case VERS_ILE_NORD_1:
@@ -443,16 +445,6 @@ void main(void){
 					CMUcam_active();
 					CMUcam_desactive_asser();
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
-					etat_strategie = VERS_ILE_NORD_3;
-				}
-				break;
-			case VERS_ILE_NORD_2:
-				tempo_s--;
-				if (tempo_s == 0){
-					prop_stop();
-					desactive_asser();
-					cherche_lingot();
-					CMUcam_active();
 					etat_strategie = VERS_ILE_NORD_3;
 				}
 				break;
@@ -479,18 +471,22 @@ void main(void){
 				break;
 			case VERS_CD_ILE_2:
 				if (etat_action == FIN_ACTION){
-					etat_strategie = VERS_CD_ILE_4;
+					etat_strategie = VERS_CD_ILE_3;
 				}
                 break;
             case VERS_CD_ILE_3:
-				active_asser(ASSER_TOURNE,ANGLE_DEGRES(45),&consigne_angle);
+				active_asser_lent(ASSER_RECULE,ANGLE_DEGRES(90),&consigne_angle);
 				etat_strategie = VERS_CD_ILE_4;
+				tempo_s = 800;// 3s
 				break;
 			case VERS_CD_ILE_4:
-				//if (fin_asser()){
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
+					desactive_asser();
 					etat_action = ATTRAPE_CD_GAUCHE_INIT;
 					etat_strategie = VERS_CD_ILE_5;
-				//}
+				}
 				break;
 			case VERS_CD_ILE_5:
 				if (etat_action == FIN_ACTION){
@@ -503,7 +499,7 @@ void main(void){
 				break;
 			case VERS_TOTEM_2:
 				if(fin_asser()){
-					active_asser_lent(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = VERS_TOTEM_3;
 				}
 				break;
@@ -794,23 +790,6 @@ void main(void){
 				    LED_OK1 =0;
 				}
 				break;
-			case TEST_PIED_1:
-				RELAIS=1;
-				tempo_s++;
-                if(tempo_s > 1000){
-                    etat_strategie = TEST_PIED_2;
-					SetCremaillere(BAS);
-                    tempo_s=0;
-                }
-				break;
-			case TEST_PIED_2:
-				tempo_s++;
-				if(tempo_s > 1000){
-                    etat_strategie = TEST_PIED_1;
-					SetCremaillere(HAUT);
-                    tempo_s=0;
-                }
-				break;break;
 			case TEST_PAS_1:
 				desactive_asser();
 				pap_set_pos(180);
@@ -862,44 +841,6 @@ void main(void){
 			case TEST_CMUCAM_1:
 				CMUcam_active();
 				etat_strategie = TEST_CMUCAM_2;
-				break;
-			case TEST_ABSENCE_PION:
-				LED_OK=ABSENCE_PION;
-				LED_OK1=ABSENCE_PION;
-				LED_CMUCAM=ABSENCE_PION;
-				break;
-			case TEST_ABSENCE_PION_INIT:
-				SetServoPArD(BAS);
-				SetServoPArG(BAS);
-				SetServoPAv(HAUT);
-				etat_strategie = TEST_ABSENCE_PION_1;
-				break;
-			case TEST_ABSENCE_PION_1:
-				if(! ABSENCE_PION){
-					SetServoPAv(BAS);
-					etat_strategie = TEST_ABSENCE_PION_2;
-				}
-				break;
-			case TEST_ABSENCE_PION_2:
-				if(! BOOT){
-					SetServoPArD(HAUT);
-					SetServoPArG(HAUT);
-					SetServoPAv(HAUT);
-					etat_strategie = TEST_ABSENCE_PION_3;
-				}
-				break;
-			case TEST_ABSENCE_PION_3:
-				if(ABSENCE_PION){
-					tempo_s = 0;
-					etat_strategie = TEST_ABSENCE_PION_4;
-				}
-				break;
-			case TEST_ABSENCE_PION_4:
-				tempo_s++;
-				if(tempo_s > 1000){
-					tempo_s = 0;
-					etat_strategie = TEST_ABSENCE_PION_INIT;
-				}
 				break;
 			case TEST_ASSER_1:
 				// On donne une consigne de 90°
