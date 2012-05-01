@@ -21,7 +21,7 @@ int consigne_pap_I=0;
 int consigne_pap_P=0;
 int consigne_prop = 0;
 int consigne_prop_P=0;
-int consigne_prop_I=0;
+
 
 char vitesse_lente;
 char recule;
@@ -144,13 +144,11 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			break;
 		case TOURNE:
 			consigne_prop_P=(int)((long)(*consigne_angle - *angle)/(long)4000); // Pour un asservissement plus nerveux (anciennement 12000)
-			consigne_prop_I= consigne_prop_I + consigne_prop_P;
 			consigne_prop = consigne_prop_P;// + consigne_prop_I;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
 					consigne_prop = 255;
-					consigne_prop_I = 0;
 				}
 				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}else{
@@ -158,7 +156,6 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				consigne_prop = -consigne_prop;
 				if (consigne_prop > 255){
 					consigne_prop = 255;
-					consigne_prop_I = 0;
 				}
 				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}

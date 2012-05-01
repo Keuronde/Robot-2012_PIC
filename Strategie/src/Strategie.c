@@ -72,6 +72,8 @@ enum etat_strategie_t {
 	TOTEM_SORTIE_1,
 	TOTEM_SORTIE_2,
     EVITEMENT_RECULE,
+    TEST_TOURNE_1,
+    TEST_TOURNE_2,
     TEST_VITESSE_FINE_1,
     TEST_VITESSE_FINE_2,
     TEST_CD_DROIT_1,
@@ -298,7 +300,7 @@ void main(void){
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    //enum etat_strategie_t etat_strategie=TEST_VITESSE_FINE_1, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=TEST_TOURNE_1, old_etat_strategie;
 
 
     
@@ -441,7 +443,7 @@ void main(void){
 					CMUcam_active();
 					CMUcam_desactive_asser();
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
-					etat_strategie = VERS_ILE_NORD_4;
+					etat_strategie = VERS_ILE_NORD_3;
 				}
 				break;
 			case VERS_ILE_NORD_2:
@@ -651,6 +653,24 @@ void main(void){
 				if (tempo_s == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
 					etat_strategie = TEST_SERVO_2_1;
+				}
+				break;
+			case TEST_TOURNE_1:
+				active_asser(ASSER_TOURNE,ANGLE_DEGRES(5),&consigne_angle);
+				LED_BLEUE = 0;
+				LED_ROUGE = 0;
+				LED_OK = 0;
+				LED_OK1 = 0;
+				LED_CMUCAM = 0;
+				etat_strategie = TEST_TOURNE_2;
+				break;
+			case TEST_TOURNE_2:
+				if(fin_asser()){
+					LED_BLEUE = 1;
+					LED_ROUGE = 1;
+					LED_OK = 1;
+					LED_OK1 = 1;
+					LED_CMUCAM = 1;
 				}
 				break;
 			case TEST_VITESSE_FINE_1:
