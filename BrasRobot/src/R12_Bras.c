@@ -232,7 +232,6 @@ void main(void){
 					e_bras_droit = RENTRE_BRAS_2;
 					M2_Stop();
 					delai_sd = TEMPO_DEPOSE;
-					delai_sg = TEMPO_DEPOSE;
 				}
 				break;
 			case RENTRE_BRAS_2:
@@ -311,7 +310,6 @@ void main(void){
 				if (CT_M1_AV == 1){
 					e_bras_gauche = RENTRE_BRAS_2;
 					M1_Stop();
-					delai_sd = TEMPO_DEPOSE;
 					delai_sg = TEMPO_DEPOSE;
 				}
 				break;

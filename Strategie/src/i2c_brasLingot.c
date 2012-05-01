@@ -19,13 +19,16 @@ void lingot_depose(void){
 	message_bras.COMMANDE_BRAS = CDE_BRAS_DEPOSE;
 	a_envoyer_lingot = 1;
 }
+void get_donnees_lingot(void){
+	a_envoyer_lingot = 1;
+}
 
 enum etat_bras_t get_lingot_gauche(void){
-	return lingot_gauche;
+	return (lingot_gauche > RENTRE_BRAS_1);
 }
 
 enum etat_bras_t get_lingot_droit(void){
-	return lingot_droit;
+	return (lingot_droit > RENTRE_BRAS_1);
 }
 
 char transmission_lingot(){
@@ -38,6 +41,8 @@ char transmission_lingot(){
 			if(!get_erreur_i2c()){
 				while(i2c_en_cours());
 		        get_i2c_data(recu);
+		        message_bras.COMMANDE_BRAS = CDE_BRAS_AUCUNE;
+		        
 		        lingot_gauche = recu[0];
 		        lingot_droit = recu[1];
       		}

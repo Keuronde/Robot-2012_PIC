@@ -2,6 +2,7 @@
 #include <delays.h>
 #include <timers.h>
 #include "../Interfaces/BrasCD.h"
+#include "../../Interfaces/interfaceBrasLingot.h"
 #include "../include/asservissement.h"
 #include "../include/carte_strategie.h"
 #include "../include/i2c_m.h"
@@ -304,8 +305,8 @@ void main(void){
     
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
-    //enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
+    enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
 
 
     
@@ -634,8 +635,8 @@ void main(void){
 			case TOTEM_ATTRAPPE_LINGOTS_2:
 				GetDonneesMoteurs();
 				if (get_CT_AV_D() || get_CT_AV_G()){
-					prop_stop();
 					desactive_asser();
+					Avance_lent();
 					lingot_attrappe();
 					tempo_s= 600; // 4s
 					etat_strategie = TOTEM_SORTIE_1;
@@ -667,7 +668,7 @@ void main(void){
 				tempo_s--;
 				if (tempo_s == 0){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-180),&consigne_angle);
-					tempo_s= 200;
+					tempo_s= 350;
 					etat_strategie = DEPOSE_TOTEM_3;
 				}
 				break;
@@ -676,19 +677,27 @@ void main(void){
 				if (tempo_s == 0){
 					prop_stop();
 					desactive_asser();
+					pap_set_pos(PAP_DROIT);
 					lingot_depose();
 					etat_strategie = DEPOSE_TOTEM_4;
-					tempo_s =750;
 				}
 				break;
 			case DEPOSE_TOTEM_4:
+				get_donnees_lingot();
+				if ((get_lingot_gauche() ) || (get_lingot_droit() ) ){
+					Recule_lent();
+					tempo_s =250;
+					etat_strategie = DEPOSE_TOTEM_5;
+				}
+				break;
+			case DEPOSE_TOTEM_5:
 				tempo_s--;
 				if (tempo_s == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
 					etat_strategie = DEPOSE_TOTEM_5;
 				}
 				break;
-			case DEPOSE_TOTEM_5:
+			/*
 				if (fin_asser()){
 					CDBrasDroit();
 					CDBrasGauche();
@@ -699,7 +708,7 @@ void main(void){
 					etat_strategie = TEST_SERVO_2_1;
 				}
 				
-				break;
+				break;*/
 			case TEST_TOURNE_1:
 				active_asser(ASSER_TOURNE,ANGLE_DEGRES(5),&consigne_angle);
 				LED_BLEUE = 0;

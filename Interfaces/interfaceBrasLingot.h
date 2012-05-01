@@ -5,6 +5,7 @@
 #define CDE_BRAS_OUVERT 1
 #define CDE_BRAS_ATTRAPPE 2
 #define CDE_BRAS_DEPOSE 3
+#define CDE_BRAS_AUCUNE 0
 
 
 union message_bras_t {
