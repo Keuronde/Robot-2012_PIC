@@ -28,7 +28,7 @@ char recule;
 
 void Asser_gestion(long * consigne_angle,long * angle){
 	static long seuil_angle_lent;
-	static unsigned int prop_kp;
+	static unsigned char prop_kp;
 	static char sens_rotation,inversion;
 	// Essayer d'avancer droit (A24)   
 	if(asser_actif){   
@@ -141,13 +141,13 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				tempo_lent = 400;
 				tempo_inversion = 1600;
 				tempo_kp = 400;
-				prop_kp = (unsigned int)4000;
+				prop_kp = 1;
 				inversion=0;
 			}
 			break;
 		case TOURNE:
-			consigne_prop_P=(int)((long)(*consigne_angle - *angle)/(long)prop_kp); // (anciennement 4000, des problèmes de convergence)
-			consigne_prop = consigne_prop_P;// + consigne_prop_I;
+			consigne_prop_P=(int)((long)(*consigne_angle - *angle)/(unsigned int)6000); // (anciennement 4000, des problèmes de convergence)
+			consigne_prop = consigne_prop_P;// / prop_kp;// + consigne_prop_I;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
@@ -170,11 +170,13 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				}
 
 			}else{
-				tempo=100;				
+				tempo=50;				
 			}
 			tempo_kp--;
 			if (tempo_kp == 0){
-				prop_kp = 2 * prop_kp;
+				if (prop_kp < 33){
+					prop_kp=prop_kp*2;
+				}
 				tempo_kp=400;
 			}
 			// Penser à ignorer le capteur sonique

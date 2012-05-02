@@ -55,6 +55,7 @@ enum etat_strategie_t {
 	VERS_CD_ILE_3,
 	VERS_CD_ILE_4,
 	VERS_CD_ILE_5,
+	VERS_TOTEM_0,
 	VERS_TOTEM_1,
 	VERS_TOTEM_2,
 	VERS_TOTEM_3,
@@ -77,6 +78,7 @@ enum etat_strategie_t {
 	DEPOSE_TOTEM_3,
 	DEPOSE_TOTEM_4,
 	DEPOSE_TOTEM_5,
+	DEPOSE_TOTEM_6,
     EVITEMENT_RECULE,
     TEST_TOURNE_1,
     TEST_TOURNE_2,
@@ -496,10 +498,18 @@ void main(void){
 				break;
 			case VERS_CD_ILE_5:
 				if (etat_action == FIN_ACTION){
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(90),&consigne_angle);
+					tempo_s = 220;
+					etat_strategie = VERS_TOTEM_0;
+				}
+				break;
+			case VERS_TOTEM_0:
+				tempo_s--;
+				if (tempo_s == 0){
 					etat_strategie = VERS_TOTEM_1;
 				}
 				break;
-			case VERS_TOTEM_1:
+			case VERS_TOTEM_1:				
 				active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
 				etat_strategie = VERS_TOTEM_2;
 				break;
@@ -694,10 +704,10 @@ void main(void){
 				tempo_s--;
 				if (tempo_s == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
-					etat_strategie = DEPOSE_TOTEM_5;
+					etat_strategie = DEPOSE_TOTEM_6;
 				}
 				break;
-			/*
+			case DEPOSE_TOTEM_6:
 				if (fin_asser()){
 					CDBrasDroit();
 					CDBrasGauche();
@@ -707,8 +717,7 @@ void main(void){
 					LED_ROUGE=0;
 					etat_strategie = TEST_SERVO_2_1;
 				}
-				
-				break;*/
+				break;
 			case TEST_TOURNE_1:
 				active_asser(ASSER_TOURNE,ANGLE_DEGRES(5),&consigne_angle);
 				LED_BLEUE = 0;

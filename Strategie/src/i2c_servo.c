@@ -11,9 +11,11 @@ unsigned char presence_pion;
 
 void CDBrasDroit(){
 	envoi_servo |= 0x10;
+	a_envoyer = 1;
 }
 void CDBrasGauche(){
 	envoi_servo |= 0x01;
+	a_envoyer = 1;
 }
 
 void SetServoPArG(char haut){
