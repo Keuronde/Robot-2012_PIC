@@ -460,7 +460,6 @@ void main(void){
 				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
 					LED_ROUGE =1;
 					LED_BLEUE =1;
-					active_asser(ASSER_AVANCE,consigne_angle,&consigne_angle);
 					etat_strategie = VERS_ILE_NORD_4;
 				}
 				break;

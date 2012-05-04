@@ -10,11 +10,12 @@
 // 1 degrés
 //#define SEUIL_ANGLE_LENT  (long)  20000
 // 3 degrés
-#define SEUIL_ANGLE_ARRET (long)  60000
+#define SEUIL_ARRET_ASSER (long)  60000
+#define SEUIL_ANGLE_ARRET (long)  20000
 
 // Variable du module
 char asser_actif=0; 					// Pour l'asservissement
-char tempo=0,tempo_lent=0,tempo_inversion,tempo_kp;
+char tempo=0,tempo_lent=0,tempo_inversion;
 enum etat_asser_t etat_asser=FIN_ASSER; // Pour l'asservissement
 int consigne_pap=0;
 int consigne_pap_I=0;
@@ -28,7 +29,7 @@ char recule;
 
 void Asser_gestion(long * consigne_angle,long * angle){
 	static long seuil_angle_lent;
-	static unsigned char prop_kp;
+	long erreur_asser;
 	static char sens_rotation,inversion;
 	// Essayer d'avancer droit (A24)   
 	if(asser_actif){   
@@ -140,29 +141,37 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				tempo = 100;
 				tempo_lent = 400;
 				tempo_inversion = 1600;
-				tempo_kp = 400;
-				prop_kp = 1;
+
 				inversion=0;
 			}
 			break;
 		case TOURNE:
-			consigne_prop_P=(int)((long)(*consigne_angle - *angle)/(unsigned int)6000); // (anciennement 4000, des problèmes de convergence)
-			consigne_prop = consigne_prop_P;// / prop_kp;// + consigne_prop_I;
+			erreur_asser = (*consigne_angle - *angle);
+			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)6000); // (anciennement 4000, des problèmes de convergence)
+			consigne_prop = consigne_prop_P;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
 					consigne_prop = 255;
 				}
-				prop_set_vitesse_fine((unsigned char) consigne_prop);
+				if (erreur_asser < SEUIL_ANGLE_ARRET){
+					prop_stop();
+				}else{
+					prop_set_vitesse_fine((unsigned char) consigne_prop);
+				}
 			}else{
 				Recule();
 				consigne_prop = -consigne_prop;
 				if (consigne_prop > 255){
 					consigne_prop = 255;
 				}
-				prop_set_vitesse_fine((unsigned char) consigne_prop);
+				if (erreur_asser > -SEUIL_ANGLE_ARRET){
+					prop_stop();
+				}else{
+					prop_set_vitesse_fine((unsigned char) consigne_prop);
+				}
 			}
-			if((*consigne_angle-*angle) < SEUIL_ANGLE_ARRET && (*consigne_angle-*angle) > -SEUIL_ANGLE_ARRET){
+			if((erreur_asser) < SEUIL_ARRET_ASSER && (erreur_asser) > -SEUIL_ARRET_ASSER){
 				tempo--;
 				if(tempo == 0){
 					prop_stop();
@@ -172,13 +181,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			}else{
 				tempo=50;				
 			}
-			tempo_kp--;
-			if (tempo_kp == 0){
-				if (prop_kp < 33){
-					prop_kp=prop_kp*2;
-				}
-				tempo_kp=400;
-			}
+
 			// Penser à ignorer le capteur sonique
 			ignore_sonique_loin();
 			ignore_sonique_proche();
