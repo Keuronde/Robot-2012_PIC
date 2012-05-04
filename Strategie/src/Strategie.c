@@ -315,8 +315,8 @@ void main(void){
 	Init();
     RELAIS =0;
     // Tant que les capteur_soniques ne son pas prêt
-    ignore_sonique_loin();
-    ignore_sonique_proche();
+    //ignore_sonique_loin();
+    //ignore_sonique_proche();
 
 	while(1){
 	    char timer;
@@ -337,17 +337,24 @@ void main(void){
         * Gestion de la stratégie *
         *                         *
         **************************/
-        //GetDonneesServo();
+        if (tempo_avance > 0){
+			if ((get_etat_asser() == AVANCE_DROIT_TEMPO) ||  (get_etat_asser() == AVANCE_DROIT) ){
+				if (!capteur_stop()){
+					tempo_avance--;
+				}
+			}
+		}
         
         switch (etat_strategie){
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
 				tempo_s = 350;
+				tempo_avance = 250;
 				etat_strategie = SORTIR_CASE;
 				break;
 			case SORTIR_CASE:
 				tempo_s--;
-				if(tempo_s == 0){
+				if(tempo_avance == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(45),&consigne_angle);
 					etat_strategie = ATTRAPE_CD_1;
 				}

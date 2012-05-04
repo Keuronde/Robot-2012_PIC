@@ -241,17 +241,6 @@ char fin_asser(){
 	}
 	return 0;
 }
-char get_etat_asser(){
-	// renvoie 1 si on avance, 0 sinon
-	switch (etat_asser){
-	case AVANCE_DROIT_INIT:
-	case DROIT_TEMPO:
-	case AVANCE_DROIT:
-	case AVANCE_DROIT_TEMPO:
-		return 1;
-		break;
-	default :
-		return 0;
-
-	}
+enum etat_asser_t get_etat_asser(){
+	return etat_asser;
 }

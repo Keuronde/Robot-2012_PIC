@@ -145,10 +145,10 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 				    		
 				    		LED_CMUCAM =1;
 				    		if (mRepere != R_AUCUN){
-								if(get_etat_asser()){
-									*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_DROIT);
-								}else{
+								if( get_etat_asser() == TOURNE ){
 									*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_TOURNE);
+								}else{
+									*consigne_angle = (long)*angle + (long) ((long)( erreur_angle(&mFigure) ) * (long)FACTEUR_CMUCAM_ANGLE_DROIT);
 								}
 							}
 					        
