@@ -17,7 +17,7 @@
 //590
 #define DOIGT_D_TIRE   0x5F0,1
 #define DOIGT_D_RABAT  0x410,1
-#define DOIGT_D_FERME  0x2D0,1
+#define DOIGT_D_FERME  0x30F,1
 
 /** P R I V A T E  P R O T O T Y P E S ***************************************/
 void Servo_Set(unsigned int,char);
