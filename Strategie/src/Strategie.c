@@ -79,6 +79,16 @@ enum etat_strategie_t {
 	DEPOSE_TOTEM_4,
 	DEPOSE_TOTEM_5,
 	DEPOSE_TOTEM_6,
+	DEPOSE_TOTEM_7,
+	CD_4_1,
+	CD_4_2,
+	CD_4_3,
+	CD_4_4,
+	CD_4_5,
+	DEPOSE3_1,
+	DEPOSE3_2,
+	DEPOSE3_3,
+	DEPOSE3_4,
     EVITEMENT_RECULE,
     TEST_TOURNE_1,
     TEST_TOURNE_2,
@@ -308,7 +318,7 @@ void main(void){
     enum etat_poussoirs_t etat_poussoirs=INIT;
     enum etat_action_t etat_action=FIN_ACTION;
     enum etat_strategie_t etat_strategie=INIT, old_etat_strategie;
-    //enum etat_strategie_t etat_strategie=VERS_TOTEM_1, old_etat_strategie;
+    //enum etat_strategie_t etat_strategie=CD_4_1, old_etat_strategie;
 
 
     
@@ -348,12 +358,10 @@ void main(void){
         switch (etat_strategie){
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
-				tempo_s = 350;
-				tempo_avance = 250;
+				tempo_avance = 400;
 				etat_strategie = SORTIR_CASE;
 				break;
 			case SORTIR_CASE:
-				tempo_s--;
 				if(tempo_avance == 0){
 					active_asser(ASSER_TOURNE,ANGLE_DEGRES(45),&consigne_angle);
 					etat_strategie = ATTRAPE_CD_1;
@@ -380,13 +388,12 @@ void main(void){
 			case VERS_LINGOT1_2:
 				if (fin_asser()){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(135),&consigne_angle);
-					tempo_s = 200;
+					tempo_avance = 200;
 					etat_strategie = VERS_LINGOT1_3;
 				}
 				break;
 			case VERS_LINGOT1_3:
-				tempo_s--;
-				if (tempo_s == 0){
+				if (tempo_avance == 0){
 					cherche_lingot();
 					CMUcam_active();
 					etat_strategie = VERS_LINGOT1_4;
@@ -411,12 +418,11 @@ void main(void){
 				if ( fin_asser() ){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
 					etat_strategie = VERS_LINGOT1_7;
-					tempo_s = 250;
+					tempo_avance = 150;
 				}
 				break;
 			case VERS_LINGOT1_7:
-				tempo_s--;
-				if ( tempo_s == 0 ){
+				if ( tempo_avance == 0 ){
 					desactive_asser();
 					prop_stop();
 					etat_strategie = DEPOSE_1;
@@ -424,6 +430,8 @@ void main(void){
 				break;
 			case DEPOSE_1:
 				active_asser(ASSER_RECULE,ANGLE_DEGRES(180),&consigne_angle);
+				ignore_sonique_loin();
+				ignore_sonique_proche();
 				etat_strategie = DEPOSE_2;
 				tempo_s = 250;
 				break;
@@ -460,6 +468,8 @@ void main(void){
 					CMUcam_active();
 					CMUcam_desactive_asser();
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
+					active_sonique_loin();
+					active_sonique_proche();
 					etat_strategie = VERS_ILE_NORD_3;
 				}
 				break;
@@ -721,6 +731,75 @@ void main(void){
 					LED_OK1=0;
 					LED_BLEUE=0;
 					LED_ROUGE=0;
+					etat_strategie = DEPOSE_TOTEM_7;
+				}
+				break;
+			case DEPOSE_TOTEM_7:
+				GetDonneesServo();
+				if ( (get_Etat_Droit() == E_BRAS_INIT) || (get_Etat_Gauche() == E_BRAS_INIT)){
+					etat_strategie = CD_4_1;
+				}
+				break;
+			
+			case CD_4_1:
+				cherche_lingot();
+				CMUcam_active();
+				CMUcam_desactive_asser();
+				active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+				active_sonique_loin();
+				active_sonique_proche();
+				etat_strategie = CD_4_2;
+				break;
+			case CD_4_2:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					if (cmucam_ile_proche()){
+						CMUcam_reset();
+						active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+						etat_strategie = CD_4_3;
+					}
+				}
+				break;
+			case CD_4_3:
+				if (fin_asser()){
+					etat_action = ATTRAPE_CD_DROIT_INIT;
+					etat_strategie = CD_4_4;
+				}
+				break;
+			case CD_4_4:
+				if (etat_action == FIN_ACTION){
+					active_asser(ASSER_RECULE,ANGLE_DEGRES(0),&consigne_angle);
+					tempo_s = 200;
+					etat_strategie = DEPOSE3_1;
+				}
+				break;
+			case DEPOSE3_1:
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = DEPOSE3_2;
+				}
+				break;
+			case DEPOSE3_2:
+				if (fin_asser()){
+					cherche_lingot();
+					CMUcam_active();
+					CMUcam_desactive_asser();
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
+					etat_strategie = DEPOSE3_3;
+				}
+				break;
+			case DEPOSE3_3:
+				if ((CMUcam_get_Etat() == TRACKING) || (CMUcam_get_Etat() == TRACKING_PROCHE)){
+					if (cmucam_ile_proche()){
+						CMUcam_reset();
+						active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+						etat_strategie = DEPOSE3_4;
+					}
+				}
+				break;
+			case DEPOSE3_4:
+				if(fin_asser()){
+					CDBrasDroit();
 					etat_strategie = TEST_SERVO_2_1;
 				}
 				break;

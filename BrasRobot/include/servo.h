@@ -15,7 +15,7 @@
 // SERVO 2 (marqué servo 1 sur la carte réelle)
 #define DOIGT_D_OUVERT 0x710,1
 //590
-#define DOIGT_D_TIRE   0x5F0,1
+#define DOIGT_D_TIRE   0x580,1
 #define DOIGT_D_RABAT  0x410,1
 #define DOIGT_D_FERME  0x30F,1
 

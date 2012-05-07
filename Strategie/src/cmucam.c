@@ -139,7 +139,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 							if (etat_cmucam == TRACKING_ATTENTE){
 								etat_cmucam = TRACKING;
 							}
-							if(mFigure.y1 >= 200){
+							if(mFigure.y1 >= 180){
 								ile_proche=1;
 							}
 				    		
@@ -175,7 +175,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 		    	if(TX_libre()){
 		    		if(cmucam_envoi_reset()){
 			    		cmucam_active=0;
-			    		etat_cmucam=CMUCAM_PRETE;
+			    		etat_cmucam=CMUCAM_RESETING;
 		    		}
 		    	}
 		    	break;

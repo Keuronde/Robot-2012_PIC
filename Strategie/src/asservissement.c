@@ -154,22 +154,14 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				if (consigne_prop > 255){
 					consigne_prop = 255;
 				}
-				if (erreur_asser < SEUIL_ANGLE_ARRET){
-					prop_stop();
-				}else{
-					prop_set_vitesse_fine((unsigned char) consigne_prop);
-				}
+				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}else{
 				Recule();
 				consigne_prop = -consigne_prop;
 				if (consigne_prop > 255){
 					consigne_prop = 255;
 				}
-				if (erreur_asser > -SEUIL_ANGLE_ARRET){
-					prop_stop();
-				}else{
-					prop_set_vitesse_fine((unsigned char) consigne_prop);
-				}
+				prop_set_vitesse_fine((unsigned char) consigne_prop);
 			}
 			if((erreur_asser) < SEUIL_ARRET_ASSER && (erreur_asser) > -SEUIL_ARRET_ASSER){
 				tempo--;
@@ -179,7 +171,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				}
 
 			}else{
-				tempo=50;				
+				tempo=10;				
 			}
 
 			// Penser à ignorer le capteur sonique
