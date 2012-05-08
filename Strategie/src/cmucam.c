@@ -319,7 +319,7 @@ void cherche_lingot(void){
 void cherche_CD_droit(void){	
 	couleur_cmucam='W';
     mRepere = R_GAUCHE;
-    cmucam_cible = (int)264;
+    cmucam_cible = (int)280;// anciennement 264
 }
 void cherche_CD_gauche(void){	
 	couleur_cmucam='W';
