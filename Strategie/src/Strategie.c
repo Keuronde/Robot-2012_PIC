@@ -504,9 +504,13 @@ void main(void){
 				}
                 break;
             case VERS_CD_ILE_3:
-				active_asser_lent(ASSER_RECULE,ANGLE_DEGRES(90),&consigne_angle);
+				/*active_asser_lent(ASSER_RECULE,ANGLE_DEGRES(90),&consigne_angle);
 				etat_strategie = VERS_CD_ILE_4;
-				tempo_s = 800;//  un peu plus de 3s
+				tempo_s = 800;//  un peu plus de 3s*/
+				if (CMUcam_get_Etat() == CMUCAM_PRETE){
+					etat_strategie = VERS_CD_ILE_4;
+					tempo_s=10;
+				}
 				break;
 			case VERS_CD_ILE_4:
 				tempo_s--;
