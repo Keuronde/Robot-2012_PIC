@@ -328,7 +328,7 @@ void main(void){
     //ignore_sonique_loin();
     //ignore_sonique_proche();
 
-	while(1){
+	while(nb3ms > 0){
 	    char timer;
 	    int tempo_s,tempo_s2,tempo_totem;
 	    int tempo_action,tempo_avance;
@@ -1351,7 +1351,8 @@ void Init(){
     LED_OK1 = 0;
     LED_OK=0;
     LED_CMUCAM=0;
-    nb3ms=80; //80 -> environ 82 secondes en réalité, et 8 secondes de marge au cas où on tire la tirette avant l'initialisation complète
+    nb3ms=89; // 90s
+    //80 -> environ 82 secondes en réalité, et 8 secondes de marge au cas où on tire la tirette avant l'initialisation complète
 
 	pap_set_pos(0);
 	transmission_moteur();
