@@ -467,7 +467,7 @@ void main(void){
 					cherche_lingot();
 					CMUcam_active();
 					CMUcam_desactive_asser();
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(25),&consigne_angle);
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(5),&consigne_angle);
 					active_sonique_loin();
 					active_sonique_proche();
 					etat_strategie = VERS_ILE_NORD_3;

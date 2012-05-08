@@ -20,6 +20,7 @@ union message_bras_t {
 enum etat_bras_t {
 /* Attraper le lingo */
     REPLIE=0,
+    REPLIE_FIN,
     OUVRE_DOIGT,
     AVANCE_BRAS,
     FERME_DOIGT,

@@ -4,13 +4,16 @@
 
 /** D E F I N E *******************************************************/
 //#define V_MOTEUR 0x035F
-#define V_MOTEUR 0x0270
+#define V_MOTEUR 0x0320
+#define V_MOTEUR_LENT 0x0160
 
 /** P R O T O T Y P E S   P U B L I C *********************************/
 void Moteurs_Init(void); // A appeler après Servo_Init();
 void M1_Avance(void);
 void M1_Recule(void);
+void M1_Recule_Lent(void);
 void M1_Stop(void);
 void M2_Avance(void);
 void M2_Recule(void);
+void M2_Recule_Lent(void);
 void M2_Stop(void);

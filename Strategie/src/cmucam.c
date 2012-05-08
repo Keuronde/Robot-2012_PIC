@@ -139,7 +139,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 							if (etat_cmucam == TRACKING_ATTENTE){
 								etat_cmucam = TRACKING;
 							}
-							if(mFigure.y1 >= 140){
+							if(mFigure.y1 >= 180){
 								ile_proche=1;
 							}
 				    		

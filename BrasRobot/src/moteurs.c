@@ -6,7 +6,8 @@ enum etat_moteur_t {
 /* Attraper le lingo */
     M_ARRET=0,
     M_AVANCE,
-    M_RECULE
+    M_RECULE,
+    M_RECULE_LENT
 };
 enum etat_moteur_t e_moteur_1;
 enum etat_moteur_t e_moteur_2;
@@ -41,6 +42,13 @@ void M1_Recule(void){
 		e_moteur_1 = M_RECULE;
 	}
 }
+void M1_Recule_Lent(void){
+	if(e_moteur_1 != M_RECULE_LENT){
+		M1_SENS = 0;
+		SetDCPWM1(V_MOTEUR_LENT);
+		e_moteur_1 = M_RECULE_LENT;
+	}
+}
 
 void M1_Stop(void){
 	if(e_moteur_1 != M_ARRET){
@@ -64,6 +72,13 @@ void M2_Recule(void){
 		M2_SENS = 1;
 		SetDCPWM2(V_MOTEUR);
 		e_moteur_2 = M_RECULE;
+	}
+}
+void M2_Recule_Lent(void){
+	if(e_moteur_2 != M_RECULE_LENT){
+		M2_SENS = 1;
+		SetDCPWM2(V_MOTEUR_LENT);
+		e_moteur_2 = M_RECULE_LENT;
 	}
 }
 

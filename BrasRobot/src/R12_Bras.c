@@ -176,6 +176,14 @@ void main(void){
 					M2_Avance();
 				}else{
 					M2_Stop();
+					e_bras_droit=REPLIE_FIN;
+				}
+				break;
+			case REPLIE_FIN:
+				if (CT_M2_AR == 0){
+					M2_Recule_Lent();
+				}else{
+					M2_Stop();
 				}
 				break;
 			// Attraper le lingo 
@@ -253,6 +261,14 @@ void main(void){
 			case REPLIE:
 				if (CT_M1_AR == 1){
 					M1_Avance();
+				}else{
+					e_bras_gauche=REPLIE_FIN;
+					M1_Stop();
+				}
+				break;
+			case REPLIE_FIN:
+				if (CT_M1_AR == 0){
+					M1_Recule_Lent();
 				}else{
 					M1_Stop();
 				}
