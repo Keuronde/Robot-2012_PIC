@@ -21,6 +21,7 @@ int consigne_pap=0;
 int consigne_pap_I=0;
 int consigne_pap_P=0;
 int consigne_prop = 0;
+int consigne_prop_I=0;
 int consigne_prop_P=0;
 
 
@@ -141,14 +142,15 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				tempo = 100;
 				tempo_lent = 400;
 				tempo_inversion = 1600;
-
+				consigne_prop_I = 0;
 				inversion=0;
 			}
 			break;
 		case TOURNE:
 			erreur_asser = (*consigne_angle - *angle);
 			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)6000); // (anciennement 4000, des problèmes de convergence)
-			consigne_prop = consigne_prop_P;
+			consigne_prop_I = consigne_prop_I +consigne_prop_P;
+			consigne_prop = consigne_prop_P+ consigne_prop_I/(int)300;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
