@@ -483,12 +483,17 @@ void main(void){
 			case VERS_ILE_NORD_4:
 				if (cmucam_ile_proche()){
 					CMUcam_reset();
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(0),&consigne_angle);
+					desactive_asser();
+					prop_stop();
+					LED_BLEUE = 1;
+					LED_ROUGE = 1;
 					etat_strategie = VERS_CD_ILE_1;
 				}
 				break;
 			case VERS_CD_ILE_1 :
-				if (fin_asser()){
+				if (CMUcam_get_Etat() == CMUCAM_PRETE){
+					LED_BLEUE = 0;
+					LED_ROUGE = 0;
 					etat_action = ATTRAPE_CD_DROIT_INIT;
 					etat_strategie = VERS_CD_ILE_2;
 				}

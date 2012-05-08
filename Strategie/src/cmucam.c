@@ -139,7 +139,7 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
 							if (etat_cmucam == TRACKING_ATTENTE){
 								etat_cmucam = TRACKING;
 							}
-							if(mFigure.y1 >= 180){
+							if(mFigure.y1 >= 140){
 								ile_proche=1;
 							}
 				    		
@@ -174,11 +174,19 @@ void CMUcam_gestion(long * consigne_angle,long * angle){
            case CMUCAM_RESET:
 		    	if(TX_libre()){
 		    		if(cmucam_envoi_reset()){
-			    		cmucam_active=0;
 			    		etat_cmucam=CMUCAM_RESETING;
 		    		}
 		    	}
 		    	break;
+		    case CMUCAM_RESETING:
+				get_erreur_RC();
+	            if(rec_cmucam(chaine)){
+					if(chaine[0]=='r'){
+						etat_cmucam=CMUCAM_PRETE;
+						cmucam_active=0;
+					}
+				}
+				break;
         	}
         }
 	}
@@ -524,7 +532,7 @@ void CMUcam_int(void){
 			_nouvelle_reception = NON;
 		}
 		CMUcam_in[CMUcam_in_index] = RCREG;
-		if(CMUcam_in[CMUcam_in_index] == 'g' || CMUcam_in[CMUcam_in_index] == 't' || (CMUcam_in[CMUcam_in_index] >= '0' && CMUcam_in[CMUcam_in_index] <= '9') || CMUcam_in[CMUcam_in_index] == ' ' || CMUcam_in[CMUcam_in_index] == 0x0D || CMUcam_in[CMUcam_in_index] == 0x0A){
+		if(CMUcam_in[CMUcam_in_index] == 'g' || CMUcam_in[CMUcam_in_index] == 'r' || CMUcam_in[CMUcam_in_index] == 't' || (CMUcam_in[CMUcam_in_index] >= '0' && CMUcam_in[CMUcam_in_index] <= '9') || CMUcam_in[CMUcam_in_index] == ' ' || CMUcam_in[CMUcam_in_index] == 0x0D || CMUcam_in[CMUcam_in_index] == 0x0A){
 			if(CMUcam_in[CMUcam_in_index] == CMUCAM_FIN || CMUcam_in_index == NB_DATA_IN || CMUcam_in[CMUcam_in_index] == 0 ){
 				// Fin de la reception
 				CMUcam_RX_libre = OUI;

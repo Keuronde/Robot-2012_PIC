@@ -24,6 +24,7 @@ enum etat_cmucam_t {
     TRACKING,
     TRACKING_PROCHE,
     CMUCAM_RESET,
+    CMUCAM_RESETING,
     CMUCAM_PRETE,
     PERDU
 };
