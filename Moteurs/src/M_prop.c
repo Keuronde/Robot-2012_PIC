@@ -3,7 +3,7 @@
 #include "../include/M_prop.h"
 
 /** D E F I N E *******************************************************/
-#define VITESSE_MIN (unsigned int) 639
+#define VITESSE_MIN (unsigned int) 510
 
 
 // Fonctions privées
@@ -25,7 +25,7 @@ void M_prop_init(void){
 }
 
 void V_fine(unsigned char _vitesse){
-	SetDCPWM1( ((int)_vitesse) * 1.5 + VITESSE_MIN);
+	SetDCPWM1( ((int)_vitesse) * 2 + VITESSE_MIN);
 }
 void V_lent(){
     SetDCPWM1((int)800);

@@ -341,6 +341,35 @@ void main(void){
         
         WMP_calcul(mTimer); // On actualise l'angle
         angle = WMP_get_Angle(); // Récupérer l'angle du gyrosocpe
+        
+        /****************************
+        *                           *
+        * Gestion de l'intelligence *
+        *                           *
+        ****************************/
+        
+        switch (etat_strategie){
+			case VERS_TOTEM_0 :
+			case VERS_TOTEM_1 :
+			case VERS_TOTEM_2:
+			case VERS_TOTEM_3:
+			case TOTEM_CONTACT_DROIT_1:
+			case TOTEM_CONTACT_DROIT_2:
+			case TOTEM_CONTACT_DROIT_3:
+			case TOTEM_CONTACT_DROIT_4:
+			case TOTEM_CONTACT_GAUCHE_1:
+			case TOTEM_CONTACT_GAUCHE_2:
+			case TOTEM_CONTACT_GAUCHE_3:
+			case TOTEM_CONTACT_GAUCHE_4:
+				if (nb3ms < 16){
+					CMUcam_reset();
+					tempo_s = 10;
+					etat_strategie = TOTEM_SORTIE_1;
+				}
+				break;
+			default:
+				break;
+		}
 		
         /**************************
         *                         *
@@ -379,11 +408,8 @@ void main(void){
 				}
 				break;
 			case VERS_LINGOT1_1:
-				tempo_s++;
-				if(tempo_s > 250){
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(135),&consigne_angle);
-					etat_strategie = VERS_LINGOT1_2;
-				}
+				active_asser(ASSER_TOURNE,ANGLE_DEGRES(135),&consigne_angle);
+				etat_strategie = VERS_LINGOT1_2;
 				break;
 			case VERS_LINGOT1_2:
 				if (fin_asser()){
@@ -504,9 +530,6 @@ void main(void){
 				}
                 break;
             case VERS_CD_ILE_3:
-				/*active_asser_lent(ASSER_RECULE,ANGLE_DEGRES(90),&consigne_angle);
-				etat_strategie = VERS_CD_ILE_4;
-				tempo_s = 800;//  un peu plus de 3s*/
 				if (CMUcam_get_Etat() == CMUCAM_PRETE){
 					etat_strategie = VERS_CD_ILE_4;
 					tempo_s=10;
@@ -672,8 +695,9 @@ void main(void){
 				if (get_CT_AV_D() || get_CT_AV_G()){
 					desactive_asser();
 					Avance_lent();
+					ignore_contacteur_avant();
 					lingot_attrappe();
-					tempo_s= 600; // 4s
+					tempo_s= 600; // 1,5s
 					etat_strategie = TOTEM_SORTIE_1;
 				}
 				break;
@@ -688,28 +712,27 @@ void main(void){
 			case TOTEM_SORTIE_2:
 				tempo_s--;
 				if (tempo_s == 0){
-					active_asser(ASSER_TOURNE,ANGLE_DEGRES(-135),&consigne_angle);
+					active_asser(ASSER_TOURNE,ANGLE_DEGRES(-160),&consigne_angle);
 					etat_strategie = DEPOSE_TOTEM_1;
 				}
 				break;
 			case DEPOSE_TOTEM_1:
 				if (fin_asser()){
-					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-135),&consigne_angle);
-					etat_strategie = DEPOSE_TOTEM_2;
-					tempo_s =300;
+					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-160),&consigne_angle);
+					etat_strategie = DEPOSE_TOTEM_3;
+					tempo_avance =500;
 				}
 				break;
 			case DEPOSE_TOTEM_2:
 				tempo_s--;
 				if (tempo_s == 0){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-180),&consigne_angle);
-					tempo_s= 350;
+					tempo_s= 650;
 					etat_strategie = DEPOSE_TOTEM_3;
 				}
 				break;
 			case DEPOSE_TOTEM_3:
-				tempo_s--;
-				if (tempo_s == 0){
+				if (tempo_avance == 0){
 					prop_stop();
 					desactive_asser();
 					pap_set_pos(PAP_DROIT);
@@ -809,7 +832,7 @@ void main(void){
 			case DEPOSE3_4:
 				if(fin_asser()){
 					CDBrasDroit();
-					etat_strategie = TEST_SERVO_2_1;
+					etat_strategie = CD_4_1;
 				}
 				break;
 			case TEST_TOURNE_1:

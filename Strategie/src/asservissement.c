@@ -148,12 +148,13 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			break;
 		case TOURNE:
 			erreur_asser = (*consigne_angle - *angle);
-			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)6000); // (anciennement 4000, des problèmes de convergence)
-			if (((consigne_prop_I > (short long) -75000) && (consigne_prop_P < 0) && (consigne_prop_P > -(int)255) ) || 
-			    ((consigne_prop_I < (short long) 75000)  && (consigne_prop_P > 0) && (consigne_prop_P < (int)255) ) ){
+			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)1000); // (anciennement 4000, des problèmes de convergence)
+			// 75000 ~= 300  * 254 
+			if (((consigne_prop_I > (short long) -12000) && (consigne_prop_P < 0) && (consigne_prop_P > -(int)255) ) || 
+			    ((consigne_prop_I < (short long) 12000)  && (consigne_prop_P > 0) && (consigne_prop_P < (int)255) ) ){
 				consigne_prop_I = consigne_prop_I +consigne_prop_P;
 			}
-			consigne_prop = consigne_prop_P+ consigne_prop_I/(int)300;
+			consigne_prop = consigne_prop_P+ consigne_prop_I/(int)500;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
@@ -176,7 +177,7 @@ void Asser_gestion(long * consigne_angle,long * angle){
 				}
 
 			}else{
-				tempo=10;				
+				tempo=50;				
 			}
 
 			// Penser à ignorer le capteur sonique
