@@ -387,6 +387,7 @@ void main(void){
         switch (etat_strategie){
         	case INIT :
 				active_asser(ASSER_AVANCE,0,&consigne_angle);
+				ignore_sonique_loin();
 				tempo_avance = 400;
 				etat_strategie = SORTIR_CASE;
 				break;
@@ -398,7 +399,11 @@ void main(void){
 				break;
 			case ATTRAPE_CD_1 :
 				if (fin_asser()){
-					etat_action = ATTRAPE_CD_GAUCHE_INIT;
+					if (couleur == 0){
+						etat_action = ATTRAPE_CD_GAUCHE_INIT;
+					}else{
+						etat_action = ATTRAPE_CD_DROIT_INIT;
+					}
 					etat_strategie = ATTRAPE_CD_5;	
 				}
 				break;
@@ -443,6 +448,8 @@ void main(void){
 			case VERS_LINGOT1_6:
 				if ( fin_asser() ){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(180),&consigne_angle);
+					ignore_sonique_loin();
+					ignore_sonique_proche();
 					etat_strategie = VERS_LINGOT1_7;
 					tempo_avance = 150;
 				}
@@ -475,14 +482,19 @@ void main(void){
 				break;
 			case DEPOSE_4:
 				if(fin_asser()){
-					SetServoPArG(1);
+					if (couleur == 0){
+						CDBrasGauche();
+					}else{
+						CDBrasDroit();
+					}
 					etat_strategie = DEPOSE_5;
 					LED_BLEUE =1;
 				}
 				break;
 			case DEPOSE_5:
 				GetDonneesServo();
-				if(get_Etat_Gauche() == E_BRAS_INIT){
+				if( ((get_Etat_Gauche() == E_BRAS_INIT) && (couleur == 0)) ||
+				    ((get_Etat_Droit() == E_BRAS_INIT) && (couleur != 0)) ){
 					etat_strategie = VERS_ILE_NORD_1;
 					LED_ROUGE =0;
 					LED_BLEUE =0;
@@ -564,6 +576,8 @@ void main(void){
 			case VERS_TOTEM_2:
 				if(fin_asser()){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					ignore_sonique_loin();
+					ignore_sonique_proche();
 					etat_strategie = VERS_TOTEM_3;
 				}
 				break;
@@ -687,6 +701,8 @@ void main(void){
 				tempo_s--;
 				if(tempo_s == 0){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(0),&consigne_angle);
+					ignore_sonique_loin();
+					ignore_sonique_proche();
 					etat_strategie = TOTEM_ATTRAPPE_LINGOTS_2;
 				}
 				break;
@@ -696,6 +712,8 @@ void main(void){
 					desactive_asser();
 					Avance_lent();
 					ignore_contacteur_avant();
+					ignore_sonique_loin();
+					ignore_sonique_proche();
 					lingot_attrappe();
 					tempo_s= 600; // 1,5s
 					etat_strategie = TOTEM_SORTIE_1;
@@ -720,7 +738,7 @@ void main(void){
 				if (fin_asser()){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(-160),&consigne_angle);
 					etat_strategie = DEPOSE_TOTEM_3;
-					tempo_avance =500;
+					tempo_avance =400;
 				}
 				break;
 			case DEPOSE_TOTEM_2:

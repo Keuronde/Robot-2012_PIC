@@ -148,13 +148,13 @@ void Asser_gestion(long * consigne_angle,long * angle){
 			break;
 		case TOURNE:
 			erreur_asser = (*consigne_angle - *angle);
-			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)1000); // (anciennement 4000, des problèmes de convergence)
+			consigne_prop_P=(int)((long)(erreur_asser)/(unsigned int)1500); // (anciennement 1000, un peu violent)
 			// 75000 ~= 300  * 254 
-			if (((consigne_prop_I > (short long) -12000) && (consigne_prop_P < 0) && (consigne_prop_P > -(int)255) ) || 
-			    ((consigne_prop_I < (short long) 12000)  && (consigne_prop_P > 0) && (consigne_prop_P < (int)255) ) ){
+			if (((consigne_prop_I > (short long) -1200) && (consigne_prop_P < 0) && (consigne_prop_P > -(int)255) ) || 
+			    ((consigne_prop_I < (short long) 1200)  && (consigne_prop_P > 0) && (consigne_prop_P < (int)255) ) ){
 				consigne_prop_I = consigne_prop_I +consigne_prop_P;
 			}
-			consigne_prop = consigne_prop_P+ consigne_prop_I/(int)500;
+			consigne_prop = consigne_prop_P+ consigne_prop_I/(int)50;
 			if (consigne_prop > 0){
 				Avance();
 				if (consigne_prop > 255){
@@ -214,8 +214,13 @@ void active_asser(char avance_droit, long _angle,long * consigne_angle){
 	if( (avance_droit == ASSER_AVANCE) || (avance_droit == ASSER_RECULE) ){
 		if (avance_droit == ASSER_RECULE){
 			recule = 1;
+			ignore_contacteur_avant();
+			ignore_sonique_loin();
+			ignore_sonique_proche();
 		}else{
 			active_contacteur_avant();
+			active_sonique_loin();
+			active_sonique_proche();
 		}
 		if(etat_asser == FIN_TOURNE || etat_asser == TOURNE){
 			etat_asser = TOURNE_VERS_AVANCE;
