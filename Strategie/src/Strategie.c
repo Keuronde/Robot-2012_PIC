@@ -55,6 +55,7 @@ enum etat_strategie_t {
 	VERS_CD_ILE_3,
 	VERS_CD_ILE_4,
 	VERS_CD_ILE_5,
+	VERS_CD_ILE_6,
 	VERS_TOTEM_0,
 	VERS_TOTEM_1,
 	VERS_TOTEM_2,
@@ -90,6 +91,7 @@ enum etat_strategie_t {
 	DEPOSE3_2,
 	DEPOSE3_3,
 	DEPOSE3_4,
+	DEPOSE3_5,
     EVITEMENT_RECULE,
     TEST_TOURNE_1,
     TEST_TOURNE_2,
@@ -299,6 +301,7 @@ void main(void){
     long angle;
     int pos_pap_offset=0;
     int pos_pap_offset_new=0;
+    int tempo_s=400;
 	char contact_totem_gauche=0;
 	char contact_totem_droit=0;
     
@@ -331,7 +334,7 @@ void main(void){
 
 	while(nb3ms > 0){
 	    char timer;
-	    int tempo_s,tempo_s2,tempo_totem;
+	    int tempo_s2,tempo_totem;
 	    int tempo_action,tempo_avance;
 	    char i,j;
 
@@ -387,10 +390,13 @@ void main(void){
         
         switch (etat_strategie){
         	case INIT :
-				active_asser(ASSER_AVANCE,0,&consigne_angle);
-				ignore_sonique_loin();
-				tempo_avance = 400;
-				etat_strategie = SORTIR_CASE;
+				tempo_s--;
+				if (tempo_s == 0){
+					active_asser(ASSER_AVANCE,0,&consigne_angle);
+					ignore_sonique_loin();
+					tempo_avance = 250;
+					etat_strategie = SORTIR_CASE;
+				}
 				break;
 			case SORTIR_CASE:
 				if(tempo_avance == 0){
@@ -543,16 +549,29 @@ void main(void){
 				break;
 			case VERS_CD_ILE_2:
 				if (etat_action == FIN_ACTION){
-					etat_strategie = VERS_CD_ILE_3;
+					if (couleur == 1){
+						etat_strategie = VERS_CD_ILE_3;
+						Recule();
+						tempo_s = 250;
+					}else{
+						etat_strategie = VERS_CD_ILE_4;
+					}
 				}
                 break;
             case VERS_CD_ILE_3:
-				if (CMUcam_get_Etat() == CMUCAM_PRETE){
+				tempo_s--;
+				if (tempo_s == 0){
+					prop_stop();
 					etat_strategie = VERS_CD_ILE_4;
+				}
+				break;
+            case VERS_CD_ILE_4:
+				if (CMUcam_get_Etat() == CMUCAM_PRETE){
+					etat_strategie = VERS_CD_ILE_5;
 					tempo_s=10;
 				}
 				break;
-			case VERS_CD_ILE_4:
+			case VERS_CD_ILE_5:
 				tempo_s--;
 				if (tempo_s == 0){
 					prop_stop();
@@ -562,10 +581,10 @@ void main(void){
 					}else{
 						etat_action = ATTRAPE_CD_DROIT_INIT;
 					}
-					etat_strategie = VERS_CD_ILE_5;
+					etat_strategie = VERS_CD_ILE_6;
 				}
 				break;
-			case VERS_CD_ILE_5:
+			case VERS_CD_ILE_6:
 				if (etat_action == FIN_ACTION){
 					active_asser(ASSER_AVANCE,ANGLE_DEGRES(90),&consigne_angle);
 					tempo_s = 220;
@@ -887,7 +906,14 @@ void main(void){
 			case DEPOSE3_4:
 				if(fin_asser()){
 					CDBrasDroit();
-					etat_strategie = CD_4_1;
+					etat_strategie = DEPOSE3_5;
+				}
+				break;
+			case DEPOSE3_5:
+				GetDonneesServo();
+				if( ((get_Etat_Gauche() == E_BRAS_INIT) && (couleur == 0)) ||
+				    ((get_Etat_Droit() == E_BRAS_INIT) && (couleur != 0)) ){
+					etat_strategie = CD_4_1;	
 				}
 				break;
 			case TEST_TOURNE_1:
