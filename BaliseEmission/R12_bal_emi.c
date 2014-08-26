@@ -50,7 +50,7 @@ void _low_ISR (void)
 #pragma interrupt MyInterrupt 
 void MyInterrupt(void){
 	// code de "Rustre Corner"
-	// Adapté et modifié par S. KAY
+	// Adapté et modifié par Keuronde
 	unsigned char sauv1;
 	unsigned char sauv2;
 
